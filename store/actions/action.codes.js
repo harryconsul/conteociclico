@@ -1,0 +1,6 @@
+export const USER_LOGIN = "LOGIN";
+export const UPDATE_STACK="UPDATE_STACK";
+export const CLOSE_STACK="CLOSE_STACK";
+export const SET_ARTICLES_MAP="SETAMAPS";
+export const SET_ARTICLES_ARRAY="SETAARAYS";
+export const SET_CURRENT_SCREEN="SETCURRENTS";
