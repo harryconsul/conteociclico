@@ -7,10 +7,16 @@ class PlaceSign extends React.Component{
     render(){
         return(
             <View>
-                <SignCanvas />
+                <SignCanvas token={this.props.user.token} />
             </View>
         )
     }
 }
+const mapStateToProps = (state) => {
+    return {
+        user: state.user,        
+    }
 
-export default connect()(PlaceSign);
+}
+
+export default connect(mapStateToProps)(PlaceSign);

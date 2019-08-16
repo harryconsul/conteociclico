@@ -79,7 +79,7 @@ export const selectCyclicCount =(token,stack,rowId,callback)=>{
 }
 export const enterCyclicCount =(token,stack,rows,callback)=>{
     const action = pushStack(token,actionEnterCyclicCount(rows),stack);
-    console.log(JSON.stringify(action));
+    
     callStackService(action,callback,(reason)=>console.warn(reason));
         
     

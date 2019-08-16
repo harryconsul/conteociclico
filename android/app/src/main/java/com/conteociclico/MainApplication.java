@@ -3,6 +3,7 @@ package com.conteociclico;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.rnfs.RNFSPackage;
 import com.terrylinla.rnsketchcanvas.SketchCanvasPackage;
 import org.reactnative.camera.RNCameraPackage;
 import io.realm.react.RealmReactPackage;
@@ -33,7 +34,8 @@ public class MainApplication extends NavigationApplication {
       return Arrays.<ReactPackage>asList(
             new RealmReactPackage(),
             new RNCameraPackage(),
-            new SketchCanvasPackage()
+            new SketchCanvasPackage(),
+            new RNFSPackage()
       );
     }
     @Override
