@@ -166,7 +166,7 @@ class Auth extends Component {
                             title="Iniciar Sesión"
                         />
                         <View style={{ flexDirection: "row" }}>
-                            <Text style={styles.instructions}>Recordarme en este telefono</Text>
+                            <Text style={styles.instructions}>Recordarme en este teléfono</Text>
                             <Switch value={this.state.rememberMe}
                                 onValueChange={(value) => this.setState({ rememberMe: value })}
                             />

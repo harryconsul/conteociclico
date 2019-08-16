@@ -8,7 +8,8 @@ export const componentstyles=StyleSheet.create({
         marginBottom:20,
         width:"80%"    ,
         textAlign:"center",
-        fontSize:15,        
+        fontSize:15, 
+        height: 45       
     },
     textbox:{
         color:"#ffffff",

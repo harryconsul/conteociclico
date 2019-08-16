@@ -55,8 +55,8 @@ class QueryArticles extends React.Component {
             return (
                 <ImageBackground source={backgroundImage} style={componentstyles.background}>
                     <View style={componentstyles.containerView}>
-                        <Field placeholder="#####" label="Numero de Articulo" />
-                      
+                        <Field placeholder="#####" label="No. de artículo" />
+                        <Button title="Buscar" />
 
                         <ActivityIndicator color="#ffffff"
                             animating={this.state.isLoading} size={"large"} />
