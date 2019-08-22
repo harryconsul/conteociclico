@@ -10,6 +10,8 @@ import { ItemView, ItemHightLight, ItemLabel } from '../components';
 import { componentstyles } from '../styles';
 import Field from '../components/Field';
 import backgroundImage from '../assets/labmicroBg.jpg';
+import {queryArticle} from '../apicalls/query.operation';
+import console = require('console');
 
 class QueryArticles extends React.Component {
 
@@ -17,6 +19,7 @@ class QueryArticles extends React.Component {
             super(props);
             Navigation.events().bindComponent(this);
             this.state = {
+                item:"",
                 rows: [],
                 isLoading: false,
             }
@@ -33,30 +36,16 @@ class QueryArticles extends React.Component {
         }
         search() {
             this.setState({ isLoading: true });
-            listCyclicCount(this.props.user.token, (response) => {
-
-                const rawRows = response.data.fs_P41240_W41240A.data.gridData.rowset;
-                const rows = rawRows.map(item => ({
-                    key: item.mnCycleNumber_25.value,
-                    number: item.mnCycleNumber_25.value,
-                    description: item.sDescription_30.value,
-                }));
-                this.setState({ rows, isLoading: false });
-                const stack = {
-                    stackId: response.data.stackId,
-                    stateId: response.data.stateId,
-                    rid: response.data.rid,
-                    currentApplication: "P41240_W41240A",
-                }
-                this.props.dispatch(actionUpdateStack(stack));
-            }, (reason) => console.warn("error", reason));
+            queryArticle(this.state.item,this.props.user.token,(data)=>{
+                console.warn(data);
+            })
         }       
         render() {
             return (
                 <ImageBackground source={backgroundImage} style={componentstyles.background}>
                     <View style={componentstyles.containerView}>
-                        <Field placeholder="#####" label="No. de artículo" />
-                        <Button title="Buscar" />
+                        <Field onChangeText={(text)=>this.setState({item:text})} placeholder="#####" label="No. de artículo" />
+                        <Button title="Buscar" onPress={this.search} />
 
                         <ActivityIndicator color="#ffffff"
                             animating={this.state.isLoading} size={"large"} />
