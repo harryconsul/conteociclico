@@ -1,0 +1,3 @@
+export const READ_RETURN="READANDRETURN";
+export const READ_ADD="READANDADD";
+export const READ_SUBTRACT="READANDSUB";

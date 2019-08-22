@@ -13,17 +13,32 @@ export const actionUpdateStack=(stack)=>{
         stack,
     }
 }
-export const actionSetArticlesMap=(articlesMap)=>{
+export const actionSetArticlesMap=(articles)=>{
     return{
         type:actionTypes.SET_ARTICLES_MAP,
-        articlesMap,
+        articles,
     }
 }
 
-export const actionSetArticlesArray=(articlesArray)=>{
+export const actionSetArticle=(article)=>{
     return{
-        type:actionTypes.SET_ARTICLES_ARRAY,
-        articlesArray,
+        type:actionTypes.SET_ARTICLE,
+        article
+    }
+}
+
+export const actionSetTransactionMode=(transactionMode)=>{
+    return{
+        type:actionTypes.SET_TRANSMODE,
+        transactionMode
+    }
+}
+
+
+export const actionSetProductsToPickup=(products)=>{
+    return{
+        type:actionTypes.SET_PRODUCTS_PICKUP,
+        products,
     }
 }
 
