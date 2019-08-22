@@ -11,7 +11,7 @@ import { componentstyles } from '../styles';
 import Field from '../components/Field';
 import backgroundImage from '../assets/labmicroBg.jpg';
 import {queryArticle} from '../apicalls/query.operation';
-import console = require('console');
+
 
 class QueryArticles extends React.Component {
 
@@ -34,7 +34,7 @@ class QueryArticles extends React.Component {
                 }
             });
         }
-        search() {
+        search=()=> {
             this.setState({ isLoading: true });
             queryArticle(this.state.item,this.props.user.token,(data)=>{
                 console.warn(data);
