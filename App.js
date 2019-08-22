@@ -13,6 +13,7 @@ import EnterCycleCount from './screens/CountList/EnterCycleCount';
 import BarcodeReader from './screens/BarcodeReader';
 import SideMenu from './screens/SideMenu';
 import QueryArticles from './screens/QueryArticles';
+import ProductsPickup from './screens/ProductsPickup';
 import PlaceSign from './screens/PlaceSign';
 import store from './store/store';
 import { actionSetCurrentScreen } from './store/actions/actions.creators';
@@ -57,6 +58,12 @@ Navigation.registerComponent("QueryArticles", () => (props) => (
 Navigation.registerComponent("PlaceSign", () => (props) => (
   <Provider store={store}>
     <PlaceSign  {...props} />
+  </Provider>
+));
+
+Navigation.registerComponent("ProductsPickup", () => (props) => (
+  <Provider store={store}>
+    <ProductsPickup  {...props} />
   </Provider>
 ));
 

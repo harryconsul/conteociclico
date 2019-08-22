@@ -20,7 +20,7 @@ class SignCanvas extends React.Component {
                         if(success){
                             uploadSignature(22471,path,this.props.token);
                         }else{
-                            Alert.alert("error");
+                            Alert.alert("Error al guardar la firma");
                         }
 
                         }}

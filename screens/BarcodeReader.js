@@ -3,8 +3,9 @@ import { View, Text, Button, FlatList, StyleSheet, Alert, TouchableOpacity, Text
 import { RNCamera } from 'react-native-camera';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
 import { connect } from 'react-redux';
-import {actionSetArticlesArray,actionSetArticlesMap} from '../store/actions/actions.creators';
-
+import { Navigation } from 'react-native-navigation';
+import { actionSetArticle } from '../store/actions/actions.creators';
+import { transactionModes } from '../constants'
 const PendingView = () => (
   <View
     style={{
@@ -22,62 +23,49 @@ class BarcodeReader extends React.Component {
   state = {
     editingItem: null,
     isEditing: false,
-    qty: 0,   
+    qty: 0,
   }
-  handleAcept=()=>{
-    const {editingItem,qty} = this.state;
-    editingItem.qty = qty;
-   
+  handleAccept = () => {
+    const { editingItem, qty } = this.state;
+    const item = { ...editingItem.qty, qty };
 
-    const array = [...this.props.list];
-    if(editingItem.indexOfItem){
-      array[editingItem.indexOfItem]=editingItem;
-    }else{
-      editingItem.indexOfItem=array.length-1;
-      array.push(editingItem);
-    }
-    this.props.dispatch(actionSetArticlesArray(array));
-    
-    const map = {...this.props.listMap};
-    map[editingItem.key] = editingItem;
-    this.props.dispatch(actionSetArticlesMap(map));
+
+
+
+    this.props.dispatch(actionSetArticle(item));
 
     this.setState(
       {
         editingItem: null,
         isEditing: false,
-        qty: 0,       
-        
+        qty: 0,
+
       }
     )
   }
   barCodeHandler = event => {
-    const item = this.props.listMap[event.data];
+    //Get the item
+    const item = this.props.list[event.data];
 
     if (item) {
-      
-      const editingItem={...item};
-      const indexOfItem=editingItem.indexOfItem;
-      
-      if (indexOfItem) {
-        editingItem.qty++;
-       
 
-      } else {
-       
-        editingItem.qty = 1;
-        
-        editingItem.key = item.serial;     
-       
-       
+      const editingItem = { ...item };
 
+      if (this.props.transactionMode === transactionModes.READ_RETURN) {
+          this.props.dispatch(actionSetArticle(editingItem));
+          Navigation.pop(this.props.componentId);
+      } else { // en los demas modos debo mostrar algo
+        if (!editingItem.qty) {
+          editingItem.qty = 0;
+        }
+        editingItem.qty += this.props.transactionMode === transactionModes.READ_ADD ? 1 : -1;
+
+        this.setState({
+          editingItem,
+          qty: editingItem.qty,
+          isEditing: true,
+        });
       }
-      this.setState({ 
-        editingItem, 
-        qty: editingItem.qty ,        
-        isEditing:true,
-      });
-      //this.setState({ articles, mapIndex });
 
     } else {
       this.setState({ isEditing: true });
@@ -116,8 +104,8 @@ class BarcodeReader extends React.Component {
             const qty = this.state.qty;
             if (status !== 'READY') return <PendingView />;
             return (
-              <View style={{ height:"100%", flexDirection: 'row', justifyContent: 'center' ,alignItems:'center'}}>
-                {item ? <View style={{height:"80%"}}><ItemView index={0}>
+              <View style={{ height: "100%", flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                {item ? <View style={{ height: "80%" }}><ItemView index={0}>
                   <View style={{ flex: 1, justifyContent: "space-between" }}>
                     <ItemLabel text={item.serial} />
                     <ItemLabel text={item.location} />
@@ -127,11 +115,11 @@ class BarcodeReader extends React.Component {
                   <View style={{ flex: 1, justifyContent: "space-between" }}>
                     <TextInput value={String(qty)} onChangeText={(text) => this.setState({ qty: text })} />
                   </View>
-                  <TouchableOpacity onPress={this.handleAcept} >
+                  <TouchableOpacity onPress={this.handleAccept} >
                     <Text style={{ fontSize: 14 }}> Aceptar </Text>
                   </TouchableOpacity>
                 </ItemView>
-                  
+
                 </View>
                   :
                   <View style={styles.barcodeGuide}></View>
@@ -146,21 +134,21 @@ class BarcodeReader extends React.Component {
 }
 const mapStateToProps = state => {
   return {
-    listMap: state.articlesMap,
-    list: state.articlesArray,
+    list: state.articles,
+    transactionMode: state.transactionMode,
   };
 }
 const styles = StyleSheet.create({
-  barcodeGuide:{
-    alignSelf:"center",
-    borderStyle:"solid",
-    borderColor:"#ffffff",
-    borderWidth:1,
-    height:"30%",
-    width:"70%",
-    
-    
-   
+  barcodeGuide: {
+    alignSelf: "center",
+    borderStyle: "solid",
+    borderColor: "#ffffff",
+    borderWidth: 1,
+    height: "30%",
+    width: "70%",
+
+
+
   }
 })
 export default connect(mapStateToProps)(BarcodeReader);

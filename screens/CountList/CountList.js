@@ -9,7 +9,8 @@ import { Navigation } from 'react-native-navigation';
 import Field from '../../components/Field';
 import { ItemView, ItemHightLight, ItemLabel } from '../../components'
 import { listCyclicCount, selectCyclicCount } from '../../apicalls/count.operations';
-import { actionUpdateStack, actionSetArticlesMap } from '../../store/actions/actions.creators';
+import {transactionModes} from '../../constants'
+import { actionUpdateStack, actionSetArticlesMap ,actionSetTransactionMode} from '../../store/actions/actions.creators';
 import { componentstyles } from '../../styles';
 import backgroundImage from '../../assets/labmicroBg.jpg';
 class CountList extends React.Component {
@@ -60,7 +61,9 @@ class CountList extends React.Component {
             const rowsData = response.data.fs_P4141_W4141A.data.gridData.rowset;
 
             const articlesMap = rowsData.reduce((previous, current, index) => {
-                previous[current.sLotSerial_27.value] = {
+                const key = current.sLotSerial_27.value;
+                previous[key] = {
+                    key,
                     serial: current.sLotSerial_27.value,
                     description: current.sDescription_30.value,
                     location: current.sLocation_82.value,
@@ -79,7 +82,7 @@ class CountList extends React.Component {
 
             }
             this.props.dispatch(actionUpdateStack(stack));
-
+            this.props.dispatch(actionSetTransactionMode(transactionModes.READ_ADD));
             Navigation.push(this.props.componentId, {
                 component: {
                     name: 'EnterCycleCount',
