@@ -1,8 +1,7 @@
 import React from 'react';
 import {
-    View, Text, Button, TextInput, FlatList,
-    ImageBackground, StyleSheet, TouchableOpacity,
-    ActivityIndicator,
+    View, FlatList, ImageBackground,
+    StyleSheet, ActivityIndicator,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
@@ -10,62 +9,89 @@ import { ItemView, ItemHightLight, ItemLabel } from '../components';
 import { componentstyles } from '../styles';
 import Field from '../components/Field';
 import backgroundImage from '../assets/labmicroBg.jpg';
-import {queryArticle} from '../apicalls/query.operation';
+import { queryArticle } from '../apicalls/query.operation';
 
 
 class QueryArticles extends React.Component {
 
-        constructor(props) {
-            super(props);
-            Navigation.events().bindComponent(this);
-            this.state = {
-                item:"",
-                rows: [],
-                isLoading: false,
-            }
-        }
-
-        navigationButtonPressed({ buttonId }) {
-            Navigation.mergeOptions('SideMenu', {
-                sideMenu: {
-                    left: {
-                        visible: true
-                    }
-                }
-            });
-        }
-        search=()=> {
-            this.setState({ isLoading: true });
-            queryArticle(this.state.item,this.props.user.token,(data)=>{
-                console.warn(data);
-            })
-        }       
-        render() {
-            return (
-                <ImageBackground source={backgroundImage} style={componentstyles.background}>
-                    <View style={componentstyles.containerView}>
-                        <Field onChangeText={(text)=>this.setState({item:text})} placeholder="#####" label="No. de artículo" />
-                        <Button title="Buscar" onPress={this.search} />
-
-                        <ActivityIndicator color="#ffffff"
-                            animating={this.state.isLoading} size={"large"} />
-                        <FlatList data={this.state.rows}
-                            renderItem={({ item, index }) =>
-                                <TouchableOpacity onPress={() => this.handleSelectRow(index)}>
-                                    <ItemView index={index} >
-                                        <ItemLabel text={"Numero: " + item.number} />
-                                        <ItemHightLight text={"Descripcion: " + item.description} />
-
-                                    </ItemView>
-                                </TouchableOpacity>
-
-                            } />
-                    </View>
-                </ImageBackground>
-
-            )
+    constructor(props) {
+        super(props);
+        Navigation.events().bindComponent(this);
+        this.state = {
+            item: "",
+            rows: [],
+            isLoading: false,
         }
     }
+
+    navigationButtonPressed({ buttonId }) {
+        Navigation.mergeOptions('SideMenu', {
+            sideMenu: {
+                left: {
+                    visible: true
+                }
+            }
+        });
+    }
+    search = () => {
+        this.setState({ isLoading: true });
+        queryArticle(this.state.item, this.props.user.token, (data) => {
+            const rawRows = data.fs_P574102E_W574102EA.data.gridData.rowset;
+
+            const rows = rawRows.map((item, index) => ({
+                key: index,
+                description: item.sDescripcin_55.value,
+                bussinessUnit: item.sBusinessUnit_17.value,
+                location: item.sLocation_18.value,
+                lotNumber: item.sLotSerialNumber_19.value,
+                quantity: item.mnQuantityOnHand_22.value,
+                customerNumber: item.mnNoCliente_24.value,
+                projectNumber: item.sProyecto_25.value,
+                expirationDate: item.dtExpirationDateMonth_56.value,
+            }));
+
+            this.setState({ rows, isLoading: false });
+
+        }, (reason) => console.warn("error", reason));
+    }
+    render() {
+        return (
+            <ImageBackground source={backgroundImage} style={componentstyles.background}>
+                <View style={componentstyles.containerView}>
+                    <Field onChangeText={(text) => this.setState({ item: text })}
+                        onSubmitEditing={this.search}
+                        placeholder="#####" label="No. de artículo" />
+
+                    <ActivityIndicator color="#ffffff"
+                        animating={this.state.isLoading} size={"large"} />
+                        
+                    <FlatList data={this.state.rows}
+                        renderItem={({ item, index }) =>
+                            <ItemView index={index} >
+                                <ItemHightLight text={item.description} />
+                                <View style={styles.enLinea}>
+                                    <ItemLabel text={"Lote: " + item.lotNumber} />
+                                    <ItemLabel text={"Caducidad: " + item.expirationDate} />
+                                    <ItemLabel style={{ fontWeight: 'bold', }} text={"Cantidad: " + item.quantity} />
+                                </View >
+                                <View style={styles.enLinea}>
+                                    <ItemLabel text={"Cliente: " + item.customerNumber} />
+                                    <ItemLabel text={"Ubicación: " + item.location} />
+                                </View>
+                                <View style={styles.enLinea}>
+                                    <ItemLabel text={"Unidad de Negocio: " + item.bussinessUnit} />
+                                    <ItemLabel text={"Proyecto: " + item.projectNumber} />
+                                </View>
+
+                            </ItemView>
+
+                        } />
+                </View>
+            </ImageBackground>
+
+        )
+    }
+}
 const mapStateToProps = (state) => {
     return {
         user: state.user,
@@ -84,6 +110,10 @@ const styles = StyleSheet.create({
     itemText: {
         color: "#000000",
         fontSize: 20,
+    },
+    enLinea: {
+        flexDirection: 'row',
+        justifyContent: "space-between",
     }
 });
 export default connect(mapStateToProps)(QueryArticles);
