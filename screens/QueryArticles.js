@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
-import { ItemView, ItemHightLight, ItemLabel } from '../components';
+import { ItemView, ItemLabel } from '../components';
 import { componentstyles } from '../styles';
 import Field from '../components/Field';
 import backgroundImage from '../assets/labmicroBg.jpg';
