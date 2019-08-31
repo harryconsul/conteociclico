@@ -12,6 +12,7 @@ import CountList from './screens/CountList/CountList';
 import EnterCycleCount from './screens/CountList/EnterCycleCount';
 import BarcodeReader from './screens/BarcodeReader';
 import BarcodeInput from './screens/BarcodeInput';
+import InventoryTransfer from './screens/InventoryTransfer';
 import SideMenu from './screens/SideMenu';
 import QueryArticles from './screens/QueryArticles';
 import ProductsPickup from './screens/ProductsPickup';
@@ -73,6 +74,12 @@ Navigation.registerComponent("ProductsPickup", () => (props) => (
     <ProductsPickup  {...props} />
   </Provider>
 ));
+Navigation.registerComponent("InventoryTransfer", () => (props) => (
+  <Provider store={store}>
+    <InventoryTransfer  {...props} />
+  </Provider>
+));
+
 
 
 // Subscribe

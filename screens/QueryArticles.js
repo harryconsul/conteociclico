@@ -37,12 +37,9 @@ class QueryArticles extends React.Component {
         });
     }
 
-    unidadNegocio = (_unidad, _nombre) => {
+    unidadNegocio = (unidad) => {
         //Los datos de esta función, se alimentan desde BusinessUnit
-        this.setState({
-            unidad: _unidad,
-            unidadNombre: _nombre,
-        });
+        this.setState({ unidad });
     }
 
     search = () => {
@@ -75,7 +72,9 @@ class QueryArticles extends React.Component {
                 <View style={componentstyles.containerView}>
                     <View style={styles.linea} >
                         <View style={{ width: "40%" }}>
-                            <BusinessUnit token={this.props.user.token} unidad={this.unidadNegocio} />
+                            <BusinessUnit token={this.props.user.token} 
+                                label={"Unidad de Negocio"} placeholder={"####"}
+                            unidad={this.unidadNegocio} />
                         </View>
                         <View style={{ width: "60%" }}>
                             <Field onChangeText={(text) => this.setState({ producto: text })}
@@ -83,9 +82,7 @@ class QueryArticles extends React.Component {
                                 placeholder="#####" label="Número único" />
                         </View>
                     </View>
-                    <View style={{ alignItems: 'center' }} >
-                        <Text style={styles.titulo} >{this.state.unidadNombre} </Text>
-                    </View>
+                   
                     {
                         this.state.isLoading ?
                             <ActivityIndicator color="#ffffff"

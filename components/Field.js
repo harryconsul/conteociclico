@@ -2,7 +2,7 @@ import React from 'react';
 import { componentstyles } from '../styles';
 import {View,Text,TextInput} from 'react-native';
 
-const Field = ({label,value,onSubmitEditing,onChangeText,placeholder,keyboardType})=>{
+const Field = ({label,defaultValue,onSubmitEditing,onChangeText,placeholder,keyboardType})=>{
 
     return(
         <View style={{display:'flex'}}>
@@ -12,6 +12,7 @@ const Field = ({label,value,onSubmitEditing,onChangeText,placeholder,keyboardTyp
                 onChangeText={(text)=>onChangeText(text)}
                 keyboardType={keyboardType?keyboardType:'default'}
                 returnKeyType='search'
+                defaultValue={defaultValue}
                 placeholderTextColor={"#fffa"}
                 style={componentstyles.textbox} />
         </View>

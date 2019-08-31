@@ -1,15 +1,16 @@
 import React from 'react';
 import {
-    View, Text, Button,  FlatList,
+    View, Text, Button, FlatList,
     ImageBackground, StyleSheet, TouchableOpacity,
     ActivityIndicator, KeyboardAvoidingView,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import Field from '../components/Field';
+import { BusinessUnit } from '../components/BusinessUnit';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
-import { searchShipment, startConfirmation,shipmentConfirmation } from '../apicalls/pickup.operations';
-import { actionUpdateStack,  actionSetTransactionMode, actionSetArticlesMap,actionSetArticle } from '../store/actions/actions.creators';
+import { searchShipment, startConfirmation, shipmentConfirmation } from '../apicalls/pickup.operations';
+import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, actionSetArticle } from '../store/actions/actions.creators';
 import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
 import backgroundImage from '../assets/labmicroBg.jpg';
@@ -27,6 +28,8 @@ class InventoryTransfer extends React.Component {
             articles: null,
             orderNumber: "",
             isConfirming: true,
+            unidadOrigen: null,
+            unidadDestino: null,
         }
     }
 
@@ -121,11 +124,11 @@ class InventoryTransfer extends React.Component {
             //console.warn(rawRows);
             for (let i = 0; i < rawRows.length; i++) {
                 const key = rawRows[i].sItemNumber_35.value;
-                
+
                 const value = {
                     key,
                     serial: rawRows[i].sLotSerial_50.value,
-                    um:rawRows[i].sUnitofMeasure_178.value,
+                    um: rawRows[i].sUnitofMeasure_178.value,
                     location: rawRows[i].sDescription_44.value,
                     description: rawRows[i].sLocation_36.value,
                     qty: rawRows[i].mnQuantityShipped_71.value,
@@ -144,15 +147,15 @@ class InventoryTransfer extends React.Component {
 
         })
     }
-    confirmShipment=()=>{
-        shipmentConfirmation(this.props.token,this.props.stack,(response)=>{
+    confirmShipment = () => {
+        shipmentConfirmation(this.props.token, this.props.stack, (response) => {
 
         })
     }
-    handleSelectRow = (key)=>{
+    handleSelectRow = (key) => {
         const item = this.props.articles.get(key);
-        this.props.dispatch(actionSetArticle({...item,qty:0}));
-        
+        this.props.dispatch(actionSetArticle({ ...item, qty: 0 }));
+
     }
     render() {
         const { order, isConfirming } = this.state;
@@ -162,50 +165,59 @@ class InventoryTransfer extends React.Component {
             <ItemLabel text={"Fecha de pedido: " + order.fecha} />
             <Button onPress={this.startPickup} title="Comenzar Recolección" />
         </ItemView> : null;
-        const products  = this.props.articles ? this.props.articles.values():[];
-        const productsArray =(this.state.articles ?
-            Array.from(products) : []).filter((item)=>item.qty);
+        const products = this.props.articles ? this.props.articles.values() : [];
+        const productsArray = (this.state.articles ?
+            Array.from(products) : []).filter((item) => item.qty);
 
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
-                <KeyboardAvoidingView
-                    style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
-                    <View style={componentstyles.containerView}>
-                    <ItemView index={1} >
-                        <Field label="Explicación del Movimiento"
-                            onChangeText={(text) => this.setState({ orderNumber: text })}
-                            onSubmitEditing={this.searchOrder} placeholder="Ejem:Urgencia en sucursal" />
-                        <Field label="Origen - Numero de Sucursal"
-                            keyboardType={"numberic"}
-                            onChangeText={(text) => this.setState({ orderNumber: text })}
-                            onSubmitEditing={this.searchOrder} placeholder={"####"} />
-                        <Field label="Destino - Numero de Sucursal"
-                            keyboardType={"numberic"}
-                            onChangeText={(text) => this.setState({ orderNumber: text })}
-                            onSubmitEditing={this.searchOrder} placeholder={"####"} />
 
-                         <ActivityIndicator color="#ffffff"
-                            animating={this.state.isLoading} size={"large"} />
-                        
-                        {
-                           this.state.articles?
-                           <Button disabled={productsArray.length?true:false} title="Guardar Transferencia"  onPress ={this.confirmShipment}/>
-                           :null
-                        }
-                        <FlatList data={productsArray}
-                            renderItem={({ item, index }) =>
-                                <TouchableOpacity key={item.key} index={index} onPress={() => this.handleSelectRow(item.key)}>
-                                    <ItemView index={index} >
-                                        <ItemLabel text={"Numero: " + item.serial} />
-                                        <ItemHightLight text={"Descripcion: " + item.description} />
-                                        <ItemHightLight text={"Ubicación: " + item.location} />
-                                        <ItemHightLight text={"Cantidad: " + item.qty} />
-                                    </ItemView>
-                                </TouchableOpacity>
+                <View style={componentstyles.containerView}>
+                    <KeyboardAvoidingView
+                        style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
+                        <ItemView index={2} >
+                            <Field label="Explicación del Movimiento"
+                                onChangeText={(text) => this.setState({ orderNumber: text })}
+                                onSubmitEditing={this.searchOrder} placeholder="Ejem:Urgencia en sucursal" />
+                            <BusinessUnit label="Origen - Numero de Sucursal"
+                                token={this.props.token}
+                                unidad={(unidad) => {
+                                    this.setState({
+                                        unidadOrigen: unidad,
+                                    });
+                                }} placeholder={"####"} />
+                            <BusinessUnit label="Destino - Numero de Sucursal"
+                                token={this.props.token}
+                                unidad={(unidad) => {
+                                    this.setState({
+                                        unidadDestino: unidad,
+                                    });
+                                }}
+                                placeholder={"####"} />
+                        </ItemView>
+                    </KeyboardAvoidingView>
+                    <ActivityIndicator color="#ffffff"
+                        animating={this.state.isLoading} size={"large"} />
 
-                            } />
-                    </View>
-                </KeyboardAvoidingView>
+                    {
+                        this.state.articles ?
+                            <Button disabled={productsArray.length ? true : false} title="Guardar Transferencia" onPress={this.confirmShipment} />
+                            : null
+                    }
+                    <FlatList data={productsArray}
+                        renderItem={({ item, index }) =>
+                            <TouchableOpacity key={item.key} index={index} onPress={() => this.handleSelectRow(item.key)}>
+                                <ItemView index={index} >
+                                    <ItemLabel text={"Numero: " + item.serial} />
+                                    <ItemHightLight text={"Descripcion: " + item.description} />
+                                    <ItemHightLight text={"Ubicación: " + item.location} />
+                                    <ItemHightLight text={"Cantidad: " + item.qty} />
+                                </ItemView>
+                            </TouchableOpacity>
+
+                        } />
+                </View>
+
 
             </ImageBackground>
 
