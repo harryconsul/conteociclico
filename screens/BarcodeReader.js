@@ -27,7 +27,7 @@ class BarcodeReader extends React.Component {
   }
   handleAccept = () => {
     const { editingItem, qty } = this.state;
-    const item = { ...editingItem.qty, qty };
+    const item = { ...editingItem, qty };
 
 
 
@@ -45,37 +45,52 @@ class BarcodeReader extends React.Component {
   }
   barCodeHandler = event => {
     //Get the item
-    const item = this.props.list[event.data];
+    if (this.props.transactionMode === transactionModes.READ_RETURN) {
+      const item = {
+        key: "search",
+        value: event.data,
+      }
+      this.props.dispatch(actionSetArticle(item));
+      Navigation.dismissModal(this.props.componentId);
 
-    if (item) {
+    } else {//busqueda del elemento en la lista
+      const item = this.props.list.get(event.data);
 
-      const editingItem = { ...item };
+      if (item) {
 
-      if (this.props.transactionMode === transactionModes.READ_RETURN) {
-          this.props.dispatch(actionSetArticle(editingItem));
-          Navigation.pop(this.props.componentId);
-      } else { // en los demas modos debo mostrar algo
+        const editingItem = { ...item };
+
+
+
         if (!editingItem.qty) {
           editingItem.qty = 0;
         }
-        editingItem.qty += this.props.transactionMode === transactionModes.READ_ADD ? 1 : -1;
+        if (this.props.transactionMode === transactionModes.READ_ADD) {
+          editingItem.qty++;
+        } else {
+          if (editingItem.qty) {
+            editingItem.qty--;
+          }
+        }
+
+
 
         this.setState({
           editingItem,
           qty: editingItem.qty,
           isEditing: true,
         });
+
+
+      } else {
+        this.setState({ isEditing: true });
+        Alert.alert("No encontrado ", "No hemos podido encontrar " + event.data,
+          [{
+            text: "Continuar",
+            onPress: () => this.setState({ isEditing: false }),
+          }]);
       }
-
-    } else {
-      this.setState({ isEditing: true });
-      Alert.alert("No encontrado ", "No hemos podido encontrar " + event.data,
-        [{
-          text: "Continuar",
-          onPress: () => this.setState({ isEditing: false }),
-        }]);
     }
-
 
   }
   render() {

@@ -9,7 +9,7 @@ const actionSearchShipment = (orderNumber) => {
             {
                 command: "SetControlValue",
                 value: orderNumber,
-                "controlID": "19"
+                "controlID": "71"
             },
             {
                 command: "DoAction",
@@ -18,37 +18,7 @@ const actionSearchShipment = (orderNumber) => {
         ]
     }
 }
-const actionEnterCyclicCount=(rows)=>{
-    return{
-        formOID:"W4141A",
-        formActions:[
-            {
-               
-                "gridAction":{
-                    "gridID":"1",
-                    "gridRowUpdateEvents":rows.map(row=>(
-                        {
-                            "rowNumber": Number(row.rowId),
-                            "gridColumnEvents": [
-                                {
-                                    "value":row.qty,
-                                    "command": "SetGridCellValue",
-                                    "columnID": "29"
-                                },                                
-                            ]
-                        })
-                    ),  
-                }
 
-            },
-            {   ".type": "com.oracle.e1.jdemf.FormAction",
-                command: "DoAction",
-                controlID: "4"
-                
-            }
-        ]
-    }
-}
 const actionStartConfirmation=(rowId)=>{
     return{
             formOID: "W554205D",
@@ -61,6 +31,23 @@ const actionStartConfirmation=(rowId)=>{
             ]        
     }
 }
+const actionShipmentConfirmation=()=>(
+    {
+        formOID: "W554205E",
+            formActions: [
+                {
+                    ".type": "com.oracle.e1.jdemf.FormAction",
+                    command: "DoAction",
+                    controlID: "12"
+                }
+            ]   
+    }
+)
+
+export const shipmentConfirmation=(token,stack,callback)=>{
+    const action = pushStack(token,actionShipmentConfirmation(),stack);
+    callStackService(action,callback,(reason)=>console.warn(reason));
+}
 export const searchShipment=(orderNumber,token,callback,errorHandler)=>{
     
     callStackService(createStack(token,actionSearchShipment(orderNumber)),callback,errorHandler);
@@ -72,13 +59,7 @@ export const startConfirmation =(token,stack,callback)=>{
         
     
 }
-export const enterCyclicCount =(token,stack,rows,callback)=>{
-    const action = pushStack(token,actionEnterCyclicCount(rows),stack);
-    
-    callStackService(action,callback,(reason)=>console.warn(reason));
-        
-    
-}
+
 
 
 const createStack = (token,formRequest) => {

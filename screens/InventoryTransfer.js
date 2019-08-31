@@ -14,7 +14,7 @@ import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
 import backgroundImage from '../assets/labmicroBg.jpg';
 
-class ProductsPickup extends React.Component {
+class InventoryTransfer extends React.Component {
 
 
     constructor(props) {
@@ -32,58 +32,47 @@ class ProductsPickup extends React.Component {
 
 
     navigationButtonPressed = ({ buttonId }) => {
-         switch(buttonId){
-                case 'sideMenu':
-                    this.openSideBar();
-                    break;
-                case 'barCode':
-                    this.openBarcode('BarcodeReader');
-                    break;
-                default:
-                    this.openBarcode('BarcodeInput');
-         } 
-    }
-    openSideBar=()=>{
-        Navigation.mergeOptions('SideMenu', {
-            sideMenu: {
-                left: {
-                    visible: true
+        if (buttonId === 'sideMenu') {
+            Navigation.mergeOptions('SideMenu', {
+                sideMenu: {
+                    left: {
+                        visible: true
+                    }
                 }
-            }
-        });
-    }
-    
-    openBarcode=(screen)=>{
-        if (this.state.articles) {
-            this.props.dispatch(actionSetTransactionMode(transactionModes.READ_SUBTRACT));
+            });
         } else {
-            this.props.dispatch(actionSetTransactionMode(transactionModes.READ_RETURN));
-        }
-        Navigation.showModal({
-            stack: {
-                children: [
-                    {
-                        component: {
-                            name: screen,
-                        },
-                        options: {
-                            topBar: {
-                                title: {
-                                    text: 'Captura Codigo de Barras'
-                                },
-                                drawBehind: true,
-                                background: {
-                                    color: '#8c30f1c7',
-                                    translucent: true,
-                                    blur: false
-                                },
+            if (this.state.articles) {
+                this.props.dispatch(actionSetTransactionMode(transactionModes.READ_SUBTRACT));
+            } else {
+                this.props.dispatch(actionSetTransactionMode(transactionModes.READ_RETURN));
+            }
+            Navigation.showModal({
+                stack: {
+                    children: [
+                        {
+                            component: {
+                                name: 'BarcodeReader',
+                            },
+                            options: {
+                                topBar: {
+                                    title: {
+                                        text: 'Captura Codigo de Barras'
+                                    },
+                                    drawBehind: true,
+                                    background: {
+                                        color: '#8c30f1c7',
+                                        translucent: true,
+                                        blur: false
+                                    },
 
+                                }
                             }
                         }
-                    }
-                ]
-            }
-        });
+                    ]
+                }
+            });
+
+        }
     }
     componentDidAppear() {
         if (this.props.articles) {
@@ -182,16 +171,25 @@ class ProductsPickup extends React.Component {
                 <KeyboardAvoidingView
                     style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
                     <View style={componentstyles.containerView}>
-                        <Field label="Numero de Recolección"
+                    <ItemView index={1} >
+                        <Field label="Explicación del Movimiento"
+                            onChangeText={(text) => this.setState({ orderNumber: text })}
+                            onSubmitEditing={this.searchOrder} placeholder="Ejem:Urgencia en sucursal" />
+                        <Field label="Origen - Numero de Sucursal"
+                            keyboardType={"numberic"}
+                            onChangeText={(text) => this.setState({ orderNumber: text })}
+                            onSubmitEditing={this.searchOrder} placeholder={"####"} />
+                        <Field label="Destino - Numero de Sucursal"
+                            keyboardType={"numberic"}
                             onChangeText={(text) => this.setState({ orderNumber: text })}
                             onSubmitEditing={this.searchOrder} placeholder={"####"} />
 
-                        <ActivityIndicator color="#ffffff"
+                         <ActivityIndicator color="#ffffff"
                             animating={this.state.isLoading} size={"large"} />
-                        {orderView}
+                        
                         {
                            this.state.articles?
-                           <Button disabled={productsArray.length?true:false} title="Confirmar Recolección"  onPress ={this.confirmShipment}/>
+                           <Button disabled={productsArray.length?true:false} title="Guardar Transferencia"  onPress ={this.confirmShipment}/>
                            :null
                         }
                         <FlatList data={productsArray}
@@ -236,4 +234,4 @@ const styles = StyleSheet.create({
         fontSize: 20,
     }
 });
-export default connect(mapStateToProps)(ProductsPickup);
+export default connect(mapStateToProps)(InventoryTransfer);

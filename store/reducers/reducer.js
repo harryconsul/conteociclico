@@ -7,15 +7,15 @@ const initialState = {
         token: null,
         profile: "",
     },
-    articlesMap: {},
+    articles: new Map(),
     currentScreen: null,
     products: null,
     transactionMode: transactionModes.READ_ADD,
 
 }
 const updateArticle = (articles, article) => {
-    const articlesMap = { ...articles };
-    articlesMap[article.key] = { ...article };
+    const articlesMap = new Map( [...articles ]);
+    articlesMap.set(article.key,{ ...article });
     return articlesMap;
 }
 const reducer = (state = initialState, action) => {
@@ -34,7 +34,7 @@ const reducer = (state = initialState, action) => {
         case actionTypes.SET_ARTICLES_MAP:
             return {
                 ...state,
-                articlesMap: action.articlesMap,
+                articles: action.articles,
             }
         case actionTypes.SET_TRANSMODE:
             return {
@@ -44,7 +44,7 @@ const reducer = (state = initialState, action) => {
         case actionTypes.SET_ARTICLE:
             return {
                 ...state,
-                articlesMap: updateArticle(state.articlesMap,action.article),
+                articles: updateArticle(state.articles,action.article),
             }
         case actionTypes.SET_CURRENT_SCREEN:
             return {

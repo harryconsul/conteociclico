@@ -11,6 +11,7 @@ import Auth from './screens/Auth';
 import CountList from './screens/CountList/CountList';
 import EnterCycleCount from './screens/CountList/EnterCycleCount';
 import BarcodeReader from './screens/BarcodeReader';
+import BarcodeInput from './screens/BarcodeInput';
 import SideMenu from './screens/SideMenu';
 import QueryArticles from './screens/QueryArticles';
 import ProductsPickup from './screens/ProductsPickup';
@@ -39,6 +40,12 @@ Navigation.registerComponent("EnterCycleCount", () => (props) => (
 Navigation.registerComponent("BarcodeReader", () => (props) => (
   <Provider store={store}>
     <BarcodeReader  {...props} />
+  </Provider>
+));
+
+Navigation.registerComponent("BarcodeInput", () => (props) => (
+  <Provider store={store}>
+    <BarcodeInput  {...props} />
   </Provider>
 ));
 

@@ -13,6 +13,7 @@ import {transactionModes} from '../../constants'
 import { actionUpdateStack, actionSetArticlesMap ,actionSetTransactionMode} from '../../store/actions/actions.creators';
 import { componentstyles } from '../../styles';
 import backgroundImage from '../../assets/labmicroBg.jpg';
+import barCodeIcon from '../../assets/iconbarcode.png'
 class CountList extends React.Component {
 
     constructor(props) {
@@ -62,16 +63,17 @@ class CountList extends React.Component {
 
             const articlesMap = rowsData.reduce((previous, current, index) => {
                 const key = current.sLotSerial_27.value;
-                previous[key] = {
+                previous.set(key,{
                     key,
                     serial: current.sLotSerial_27.value,
                     description: current.sDescription_30.value,
                     location: current.sLocation_82.value,
                     um: current.sUM_32.value,
                     rowId: current.rowIndex,
-                }
+                });
+                
                 return previous;
-            }, {});
+            }, new Map());
 
             this.setState({ isLoading: false });
             this.props.dispatch(actionSetArticlesMap(articlesMap));
@@ -92,7 +94,13 @@ class CountList extends React.Component {
                             title: {
                                 text: 'Registra entradas conteo',
                                 color: '#ffffff'
-                            }
+                            },
+                            rightButtons:[
+                                {
+                                    id:"barCode",
+                                    icon:barCodeIcon,
+                                }
+                            ]
                         }
                     }
                 },

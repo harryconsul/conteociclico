@@ -5,7 +5,7 @@ import {Navigation} from 'react-native-navigation'
 import {connect} from 'react-redux';
 import barCodeIcon from '../assets/iconbarcode.png'
 class SideMenu extends React.Component {
-    optionClickHandle=(option)=>{
+    optionClickHandle=(option,title)=>{
         Navigation.push(this.props.currentScreen, {
             component: {
                 id:option,
@@ -13,12 +13,16 @@ class SideMenu extends React.Component {
                 options: {
                     topBar: {
                         title: {
-                            text: 'Consulta de Existencias',
+                            text: title,
                             color:'#ffffff'
                         },
                         rightButtons:[
                             {
                                 id:"barCode",
+                                icon:barCodeIcon,
+                            },
+                            {
+                                id:"inputCode",
                                 icon:barCodeIcon,
                             }
                         ]
@@ -39,13 +43,13 @@ class SideMenu extends React.Component {
     render() {
         return (
             <View style={{ paddingTop:50,height:"100%",backgroundColor: '#8c30f1' }} >
-               <SideMenuItem optionClickHandle={()=>this.optionClickHandle("QueryArticles")}
+               <SideMenuItem optionClickHandle={()=>this.optionClickHandle("CyclicCountList","Conteo Ciclico")}
                     optionName="Conteo Ciclico" />
-               <SideMenuItem optionClickHandle={()=>this.optionClickHandle("QueryArticles")} 
+               <SideMenuItem optionClickHandle={()=>this.optionClickHandle("QueryArticles","Consulta de Existensias")} 
                     optionName="Consulta de Existensias"/>
-                <SideMenuItem optionClickHandle={()=>this.optionClickHandle("PlaceSign")} 
+                <SideMenuItem optionClickHandle={()=>this.optionClickHandle("PlaceSign","Firma")} 
                     optionName="Firma Algo"/>
-                <SideMenuItem optionClickHandle={()=>this.optionClickHandle("ProductsPickup")} 
+                <SideMenuItem optionClickHandle={()=>this.optionClickHandle("ProductsPickup","Recoleccion de Producto")} 
                     optionName="Recoleccion de Producto"/>
                <SideMenuItem optionName="Salidas por Caducidad" />
                

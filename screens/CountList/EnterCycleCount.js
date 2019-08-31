@@ -7,6 +7,8 @@ import { enterCyclicCount } from '../../apicalls/count.operations';
 import Field from '../../components/Field';
 import { componentstyles } from '../../styles';
 import backgroundImage from '../../assets/labmicroBg.jpg';
+import { actionSetTransactionMode } from '../../store/actions/actions.creators';
+import { transactionModes } from '../../constants/';
 
 class EnterCycleCount extends React.Component {
     state = {
@@ -53,16 +55,30 @@ class EnterCycleCount extends React.Component {
         }
     }
     showBarcodeReader = () => {
-        Navigation.push(this.props.componentId, {
-            component: {
-                name: 'BarcodeReader',
-            },
-            options: {
-                topBar: {
-                    title: {
-                        text: 'Captura Codigo de Barras'
+        this.props.dispatch(actionSetTransactionMode(transactionModes.READ_ADD));
+        Navigation.showModal({
+            stack: {
+                children: [
+                    {
+                        component: {
+                            name: 'BarcodeReader',
+                        },
+                        options: {
+                            topBar: {
+                                title: {
+                                    text: 'Captura Codigo de Barras'
+                                },
+                                drawBehind: true,
+                                background: {
+                                    color: '#8c30f1c7',
+                                    translucent: true,
+                                    blur: false
+                                },
+
+                            }
+                        }
                     }
-                }
+                ]
             }
         });
 
@@ -73,6 +89,15 @@ class EnterCycleCount extends React.Component {
             (response) => console.warn(response));
     }
     render() {
+        const list = [];
+
+        for (let article of this.props.articles.values()) {
+            //const article = this.props.articles[key]
+            if (article.qty) {
+                list.push(article);
+            }
+        }
+
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background} >
                 <View style={componentstyles.containerView} >
@@ -83,14 +108,14 @@ class EnterCycleCount extends React.Component {
                         <Button color="#ccb82e" onPress={this.saveEntry} title="Guardar" />
                     </View>
 
-                    <Field  value={this.state.search} placeholder={"ejemplo: 7465"} 
-                         label={"Buscar por numero de Serie"}
+                    <Field value={this.state.search} placeholder={"ejemplo: 7465"}
+                        label={"Buscar por numero de Serie"}
                         onChangeText={(text) => this.setState({ search: text })} />
                     <Button style={styles.buttonSearch} onPress={this.searchItem} title="Buscar" />
 
-                    <FlatList data={this.props.list}
+                    <FlatList data={list}
                         renderItem={({ item, index }) => {
-                            return <ItemView index={index}>
+                            return <ItemView key={index} index={index}>
                                 <View style={{ flex: 1, justifyContent: "space-between" }}>
                                     <ItemLabel text={item.serial} />
                                     <ItemLabel text={item.location} />
@@ -128,8 +153,7 @@ const styles = StyleSheet.create({
 })
 const mapStateToProps = state => {
     return {
-        articles: state.articlesMap,
-        list: state.articlesArray,
+        articles: state.articles,
         stack: state.stack,
         user: state.user,
     };
