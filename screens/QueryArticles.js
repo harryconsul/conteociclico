@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     View, FlatList, ImageBackground,
-    StyleSheet, ActivityIndicator,
+    StyleSheet, ActivityIndicator, Text,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
@@ -10,7 +10,7 @@ import { componentstyles } from '../styles';
 import Field from '../components/Field';
 import backgroundImage from '../assets/labmicroBg.jpg';
 import { queryArticle } from '../apicalls/query.operation';
-import {BusinessUnit} from '../components/BusinessUnit';
+import { BusinessUnit } from '../components/BusinessUnit';
 
 
 class QueryArticles extends React.Component {
@@ -19,7 +19,7 @@ class QueryArticles extends React.Component {
         super(props);
         Navigation.events().bindComponent(this);
         this.state = {
-            item: "",
+            producto: "",
             unidad: "",
             unidadNombre: "",
             rows: [],
@@ -37,46 +37,55 @@ class QueryArticles extends React.Component {
         });
     }
 
-    unidadNegocio = (_unidad, _nombre) =>{
+    unidadNegocio = (_unidad, _nombre) => {
+        //Los datos de esta función, se alimentan desde BusinessUnit
         this.setState({
             unidad: _unidad,
             unidadNombre: _nombre,
         });
-        console.warn(this.state.unidad);
-        console.warn(this.state.unidadNombre);
     }
 
     search = () => {
         this.setState({ isLoading: true });
-        queryArticle(this.state.item, this.props.user.token, (data) => {
+        queryArticle(this.state.unidad, this.state.producto, this.props.user.token, (data) => {
             const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
             
             const rows = rawRows.map((item, index) => ({
                 key: index,
-                number: item.mnNmeronico_24.value, 
+                etiqueta: item.mnNmeronico_24.value,
+                producto: item.sDescription_38.value,
+                unidadNegocio: item.sBusinessUnit_48.value,
+                ubicacion: item.sLocation_55.value,
+                lote: item.sLotSerialNumber_37.value,
+                cantidad: item.mnQuantityOnHand_46.value,
+                caducidad: item.dtExpirationDateMonth_53.value,
+                unidadMedida: item.sUM_54.value,
                 shortNumber: item.mnShortItemNo_25.value,
-                description: item.sDescription_38.value,
-                bussinessUnit: item.sBusinessUnit_48.value,
-                location: item.sLocation_55.value,
-                lotNumber: item.sLotSerialNumber_37.value,
-                quantity: item.mnQuantityOnHand_46.value,
-                expirationDate: item.dtExpirationDateMonth_53.value,
             }));
 
             this.setState({ rows, isLoading: false });
-            
+
 
         }, (reason) => console.warn("error", reason));
     }
-    
+
     render() {
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
                 <View style={componentstyles.containerView}>
-                    <Field onChangeText={(text) => this.setState({ item: text })}
-                        onSubmitEditing={this.search}
-                        placeholder="#####" label="No. de artículo" />
-                    <BusinessUnit token={this.props.user.token} unidad={this.unidadNegocio} />
+                    <View style={styles.linea} >
+                        <View style={{ width: "40%" }}>
+                            <BusinessUnit token={this.props.user.token} unidad={this.unidadNegocio} />
+                        </View>
+                        <View style={{ width: "60%" }}>
+                            <Field onChangeText={(text) => this.setState({ producto: text })}
+                                onSubmitEditing={this.search}
+                                placeholder="#####" label="Número único" />
+                        </View>
+                    </View>
+                    <View style={{ alignItems: 'center' }} >
+                        <Text style={styles.titulo} >{this.state.unidadNombre} </Text>
+                    </View>
                     {
                         this.state.isLoading ?
                             <ActivityIndicator color="#ffffff"
@@ -88,18 +97,31 @@ class QueryArticles extends React.Component {
                     <FlatList data={this.state.rows}
                         renderItem={({ item, index }) =>
                             <ItemView index={index} >
-                                <ItemHightLight text={item.description} />
-                                <View style={styles.enLinea}>
-                                    <ItemLabel text={"Lote: " + item.lotNumber} />
-                                    <ItemLabel text={"Caducidad: " + item.expirationDate} />
-                                    <ItemLabel style={{ fontWeight: 'bold', }} text={"Cantidad: " + item.quantity} />
+                                <View style={styles.linea}>
+                                    <View style={{ width: "35%" }}>
+                                        <ItemLabel text={"No. " + item.etiqueta} />
+                                    </View>
+                                    <View style={{ width: "65%" }}>
+                                        <ItemLabel text={item.producto} />
+                                    </View>
+                                </View>
+                                <View style={styles.linea}>
+                                    <View style={{ width: "35%" }}>
+                                        <ItemLabel style={{ fontWeight: 'bold', }} text={"Cantidad: " + item.cantidad + " " + item.unidadMedida} />
+                                    </View>
+                                    <View style={{ width: "65%" }}>
+                                        <ItemLabel text={"Ubicación: " + item.ubicacion} />
+                                    </View>
+                                </View>
+                                <View style={styles.linea}>
+                                    <View style={{ width: "50%" }}>
+                                        <ItemLabel text={"Lote: " + item.lote} />
+                                    </View>
+                                    <View style={{ width: "65%" }}>
+                                        <ItemLabel text={"Caducidad: " + item.caducidad} />
+                                    </View>
+
                                 </View >
-                                <View style={styles.enLinea}>
-                                    <ItemLabel text={"Ubicación: " + item.location} />
-                                </View>
-                                <View style={styles.enLinea}>
-                                    <ItemLabel text={"Unidad de Negocio: " + item.bussinessUnit} />
-                                </View>
 
                             </ItemView>
 
@@ -129,9 +151,17 @@ const styles = StyleSheet.create({
         color: "#000000",
         fontSize: 20,
     },
-    enLinea: {
+    linea: {
         flexDirection: 'row',
         justifyContent: "space-between",
+        marginLeft: 7,
+        marginRight: 7,
+    },
+    titulo: {
+        color: "#ffffff",
+        fontSize: 16,
+        fontWeight: 'bold',
     }
+
 });
 export default connect(mapStateToProps)(QueryArticles);

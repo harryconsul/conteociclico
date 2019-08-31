@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-export const queryArticle=(item,token,callback)=>{
-    const _formAction =formAction(token,item); 
+export const queryArticle=(unidad,producto,token,callback)=>{
+    const _formAction =formAction(unidad , producto , token); 
     formServiceRequest(_formAction,callback);
 }
 
@@ -13,7 +13,7 @@ const formServiceRequest=(formAction,callback)=>{
 
 ///payload -- cuerpo de la peticion
 
-const formAction = (token,item) => (
+const formAction = (unidad, producto , token) => (
     {
         token,
         version: "",
@@ -21,12 +21,12 @@ const formAction = (token,item) => (
             
             {
                 "command": "SetControlValue",
-                "value": item,
+                "value": producto,
                 "controlID": "40"
             }, 
             {
                 "command": "SetControlValue",
-                "value": item,
+                "value": unidad,
                 "controlID": "49"
             },         
             {
