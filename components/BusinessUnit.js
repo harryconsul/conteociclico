@@ -7,17 +7,14 @@ import {businessUnit} from '../apicalls/business_unit.operations';
 
 export const BusinessUnit = (props) => {
     const [unidad, setUnidad] = useState("");
-    const [nombre , setNombre] = useState("");
 
     search = () => {
         //Buscar la unidad de negocio por número
         businessUnit(unidad, props.token , (data) => {
             const rawRows = data.fs_P0006S_W0006SA.data.gridData.rowset;
             if(rawRows.length > 0){
-                //setNombre(rawRows[0].sDescription_41.value);
                 props.unidad(unidad , rawRows[0].sDescription_41.value);
             }else{
-                //setNombre(""); setUnidad(0);
                 props.unidad(0 , "");
             }
 
