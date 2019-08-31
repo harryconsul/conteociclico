@@ -1,4 +1,3 @@
-//Pendiente codigo JFRA
 import axios from 'axios'
 
 export const queryArticle=(item,token,callback)=>{
@@ -9,7 +8,7 @@ export const queryArticle=(item,token,callback)=>{
 const formServiceRequest=(formAction,callback)=>{
     axios.post("formservice",formAction).then((response)=>{
         callback(response.data);
-    }).catch((error)=>console.warn("Error al buscar articulos",error));
+    }).catch((error)=>console.warn("Error al buscar artículos",error));
 }
 
 ///payload -- cuerpo de la peticion
@@ -23,14 +22,19 @@ const formAction = (token,item) => (
             {
                 "command": "SetControlValue",
                 "value": item,
-                "controlID": "27"
-            },          
+                "controlID": "40"
+            }, 
+            {
+                "command": "SetControlValue",
+                "value": item,
+                "controlID": "49"
+            },         
             {
                 "command": "DoAction",
                 "controlID": "15"
             }
         ],
         "deviceName": "RESTclient",
-        "formName": "P574102E_W574102EA"
+        "formName": "P5541001_W5541001A"
     }
 )

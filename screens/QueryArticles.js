@@ -36,24 +36,26 @@ class QueryArticles extends React.Component {
     search = () => {
         this.setState({ isLoading: true });
         queryArticle(this.state.item, this.props.user.token, (data) => {
-            const rawRows = data.fs_P574102E_W574102EA.data.gridData.rowset;
-
+            const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
+            
             const rows = rawRows.map((item, index) => ({
                 key: index,
-                description: item.sDescripcin_55.value,
-                bussinessUnit: item.sBusinessUnit_17.value,
-                location: item.sLocation_18.value,
-                lotNumber: item.sLotSerialNumber_19.value,
-                quantity: item.mnQuantityOnHand_22.value,
-                customerNumber: item.mnNoCliente_24.value,
-                projectNumber: item.sProyecto_25.value,
-                expirationDate: item.dtExpirationDateMonth_56.value,
+                number: item.mnNmeronico_24.value, 
+                shortNumber: item.mnShortItemNo_25.value,
+                description: item.sDescription_38.value,
+                bussinessUnit: item.sBusinessUnit_48.value,
+                location: item.sLocation_55.value,
+                lotNumber: item.sLotSerialNumber_37.value,
+                quantity: item.mnQuantityOnHand_46.value,
+                expirationDate: item.dtExpirationDateMonth_53.value,
             }));
 
             this.setState({ rows, isLoading: false });
+            
 
         }, (reason) => console.warn("error", reason));
     }
+    
     render() {
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
@@ -61,10 +63,14 @@ class QueryArticles extends React.Component {
                     <Field onChangeText={(text) => this.setState({ item: text })}
                         onSubmitEditing={this.search}
                         placeholder="#####" label="No. de artículo" />
+                    {
+                        this.state.isLoading ?
+                            <ActivityIndicator color="#ffffff"
+                                animating={this.state.isLoading} size={"large"} />
+                            :
+                            null
+                    }
 
-                    <ActivityIndicator color="#ffffff"
-                        animating={this.state.isLoading} size={"large"} />
-                        
                     <FlatList data={this.state.rows}
                         renderItem={({ item, index }) =>
                             <ItemView index={index} >
@@ -75,12 +81,10 @@ class QueryArticles extends React.Component {
                                     <ItemLabel style={{ fontWeight: 'bold', }} text={"Cantidad: " + item.quantity} />
                                 </View >
                                 <View style={styles.enLinea}>
-                                    <ItemLabel text={"Cliente: " + item.customerNumber} />
                                     <ItemLabel text={"Ubicación: " + item.location} />
                                 </View>
                                 <View style={styles.enLinea}>
                                     <ItemLabel text={"Unidad de Negocio: " + item.bussinessUnit} />
-                                    <ItemLabel text={"Proyecto: " + item.projectNumber} />
                                 </View>
 
                             </ItemView>
