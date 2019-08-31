@@ -10,6 +10,7 @@ import { componentstyles } from '../styles';
 import Field from '../components/Field';
 import backgroundImage from '../assets/labmicroBg.jpg';
 import { queryArticle } from '../apicalls/query.operation';
+import {BusinessUnit} from '../components/BusinessUnit';
 
 
 class QueryArticles extends React.Component {
@@ -19,6 +20,8 @@ class QueryArticles extends React.Component {
         Navigation.events().bindComponent(this);
         this.state = {
             item: "",
+            unidad: "",
+            unidadNombre: "",
             rows: [],
             isLoading: false,
         }
@@ -33,6 +36,16 @@ class QueryArticles extends React.Component {
             }
         });
     }
+
+    unidadNegocio = (_unidad, _nombre) =>{
+        this.setState({
+            unidad: _unidad,
+            unidadNombre: _nombre,
+        });
+        console.warn(this.state.unidad);
+        console.warn(this.state.unidadNombre);
+    }
+
     search = () => {
         this.setState({ isLoading: true });
         queryArticle(this.state.item, this.props.user.token, (data) => {
@@ -63,6 +76,7 @@ class QueryArticles extends React.Component {
                     <Field onChangeText={(text) => this.setState({ item: text })}
                         onSubmitEditing={this.search}
                         placeholder="#####" label="No. de artículo" />
+                    <BusinessUnit token={this.props.user.token} unidad={this.unidadNegocio} />
                     {
                         this.state.isLoading ?
                             <ActivityIndicator color="#ffffff"

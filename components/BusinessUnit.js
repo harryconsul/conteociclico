@@ -1,15 +1,45 @@
-import React from 'react';
-import {Text} from 'react-native';
+import React, { useState } from 'react';
+import {
+    View, StyleSheet,
+} from 'react-native';
+import Field from './Field';
+import {businessUnit} from '../apicalls/business_unit.operations';
 
 export const BusinessUnit = (props) => {
-    if(props.numero > 0){
-        businessUnit(props.number , props.token , (data) => {
-            const rawRows = data.fs_P0006S_W0006SA.data.gridData.rowset;
-            return <Text>{rawRows.item(0).sDescription_41.value}</Text>
+    const [unidad, setUnidad] = useState("");
+    const [nombre , setNombre] = useState("");
 
-        },(reason) => console.warn("ERROR", reason));
+    search = () => {
+        //Buscar la unidad de negocio por número
+        businessUnit(unidad, props.token , (data) => {
+            const rawRows = data.fs_P0006S_W0006SA.data.gridData.rowset;
+            if(rawRows.length > 0){
+                //setNombre(rawRows[0].sDescription_41.value);
+                props.unidad(unidad , rawRows[0].sDescription_41.value);
+            }else{
+                //setNombre(""); setUnidad(0);
+                props.unidad(0 , "");
+            }
+
+        }, (reason) => console.warn("ERROR", reason));
     }
 
-    return <Text></Text>
-    
+    return (
+        <View style={styles.inline} >
+            <Field
+                label="Unidad de Negocio"
+                placeholder=""
+                onChangeText={(text) => setUnidad(text)}
+                onSubmitEditing={search}
+            />
+        </View>
+    )
+
 }
+
+const styles = StyleSheet.create({
+    inline: {
+        flexDirection: 'row',
+        justifyContent: "space-between",
+    }
+});
