@@ -20,6 +20,22 @@ class ArticleSetup extends React.Component {
             isSettingUp: false,
         }
     }
+    componentDidMount=()=>{
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                title: {
+                    text: 'Configurar Articulos'
+                },
+                drawBehind: true,
+                background: {
+                    color: '#8c30f1c7',
+                    translucent: true,
+                    blur: false
+                },
+                visible: true,
+            },
+        });
+    }
     handleClickRow = (itemQ) => {
         
         const item = {

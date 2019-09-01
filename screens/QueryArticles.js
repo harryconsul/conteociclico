@@ -96,7 +96,7 @@ class QueryArticles extends React.Component {
 
                     <FlatList data={this.state.rows}
                         renderItem={({ item, index }) =>
-                            <TouchableOpacity 
+                            <TouchableOpacity key={item.key}
                             onPress={this.props.handleClickRow?()=>this.props.handleClickRow(item):null} >
                                 <ItemView index={index} >
                                     <View style={styles.linea}>

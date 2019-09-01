@@ -31,6 +31,8 @@ export const componentstyles=StyleSheet.create({
     containerView:{
         flex: 1,
         paddingTop:"17%",
+        paddingLeft:10,
+        paddingRight:10,
         width:"100%",
         height:"100%"
     },
