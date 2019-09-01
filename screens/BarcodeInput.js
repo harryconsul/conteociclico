@@ -79,7 +79,7 @@ class BarcodeInput extends React.Component {
 
             } else {
                 this.setState({ isEditing: true });
-                Alert.alert("No encontrado ", "No hemos podido encontrar " + event.data,
+                Alert.alert("No encontrado ", "No hemos podido encontrar " + this.state.searchCode,
                     [{
                         text: "Continuar",
                         onPress: () => this.setState({ isEditing: false }),
@@ -98,6 +98,7 @@ class BarcodeInput extends React.Component {
                     <View style={componentstyles.containerView}>
                         <Field onChangeText={(text) => this.setState({ searchCode: text })}
                             onSubmitEditing={this.barCodeHandler}
+                            autoFocus={true}
                             placeholder="#####" label="Busqueda por Handheld" />
                         {
 

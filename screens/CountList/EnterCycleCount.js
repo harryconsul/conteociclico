@@ -11,11 +11,15 @@ import { actionSetTransactionMode } from '../../store/actions/actions.creators';
 import { transactionModes } from '../../constants/';
 
 class EnterCycleCount extends React.Component {
-    state = {
-        search: "",
-        articles: [],
-        mapIndex: {},
+    constructor(props) {
+        super(props);
+        Navigation.events().bindComponent(this);
+        state = {
+            search: "",
+            articles: [],
+            mapIndex: {},
 
+        }
     }
     searchItem = () => {
         const item = this.props.listMap[event.data];
@@ -54,14 +58,38 @@ class EnterCycleCount extends React.Component {
                 }]);
         }
     }
-    showBarcodeReader = () => {
+    navigationButtonPressed = ({ buttonId }) => {
+        switch (buttonId) {
+            case 'sideMenu':
+                this.openSideBar();
+                break;
+            case 'barCode':
+                this.openBarcode('BarcodeReader');
+                break;
+            default:
+                this.openBarcode('BarcodeInput');
+        }
+    }
+    openSideBar = () => {
+        Navigation.mergeOptions('SideMenu', {
+            sideMenu: {
+                left: {
+                    visible: true
+                }
+            }
+        });
+    }
+
+    openBarcode = (screen) => {
+
         this.props.dispatch(actionSetTransactionMode(transactionModes.READ_ADD));
+
         Navigation.showModal({
             stack: {
                 children: [
                     {
                         component: {
-                            name: 'BarcodeReader',
+                            name: screen,
                         },
                         options: {
                             topBar: {
@@ -81,9 +109,7 @@ class EnterCycleCount extends React.Component {
                 ]
             }
         });
-
     }
-
     saveEntry = () => {
         enterCyclicCount(this.props.user.token, this.props.stack, this.state.articles,
             (response) => console.warn(response));
@@ -101,17 +127,11 @@ class EnterCycleCount extends React.Component {
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background} >
                 <View style={componentstyles.containerView} >
-                    <View style={styles.buttonSave}>
-                        <Button color="#ccb82e" onPress={this.showBarcodeReader} title="Leer CB" />
-                    </View>
+                    
                     <View style={styles.buttonSave}>
                         <Button color="#ccb82e" onPress={this.saveEntry} title="Guardar" />
-                    </View>
-
-                    <Field value={this.state.search} placeholder={"ejemplo: 7465"}
-                        label={"Buscar por numero de Serie"}
-                        onChangeText={(text) => this.setState({ search: text })} />
-                    <Button style={styles.buttonSearch} onPress={this.searchItem} title="Buscar" />
+                    </View>                 
+                   
 
                     <FlatList data={list}
                         renderItem={({ item, index }) => {

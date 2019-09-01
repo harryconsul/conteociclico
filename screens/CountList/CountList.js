@@ -99,6 +99,10 @@ class CountList extends React.Component {
                                 {
                                     id:"barCode",
                                     icon:barCodeIcon,
+                                },
+                                {
+                                    id:"inputCode",
+                                    icon:barCodeIcon,
                                 }
                             ]
                         }
