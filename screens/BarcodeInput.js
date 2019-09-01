@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-    View, Button,  StyleSheet, Alert,KeyboardAvoidingView
-     ,TextInput,ImageBackground
+    View,  StyleSheet, Alert, KeyboardAvoidingView
+    ,  ImageBackground
 } from 'react-native';
 import Field from '../components/Field';
-import { ItemView, ItemHightLight, ItemLabel } from '../components'
+import { ArticleCard } from '../components'
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import { actionSetArticle } from '../store/actions/actions.creators';
@@ -103,19 +103,9 @@ class BarcodeInput extends React.Component {
                         {
 
                             item ?
-                                <ItemView index={0}>
-                                    <View style={{ flex: 1, justifyContent: "space-between" }}>
-                                        <ItemLabel text={item.serial} />
-                                        <ItemLabel text={item.location} />
-                                        <ItemLabel text={"Unidad de Medida: " + item.um} />
-                                    </View>
-                                    <ItemHightLight text={item.description} />
-                                    <View style={{ flex: 1, justifyContent: "space-between" }}>
-                                        <TextInput value={String(qty)} onChangeText={(text) => this.setState({ qty: text })} />
-                                    </View>
-                                    <Button title="Aceptar" onPress={this.handleAccept} />
-
-                                </ItemView>
+                                <ArticleCard handleAccept={this.handleAccept}
+                                    item={item} qty={qty}
+                                    setQty={(qty) => this.setState({ qty })} />
                                 : null
                         }
 

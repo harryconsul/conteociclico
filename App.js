@@ -17,6 +17,7 @@ import SideMenu from './screens/SideMenu';
 import QueryArticles from './screens/QueryArticles';
 import ProductsPickup from './screens/ProductsPickup';
 import PlaceSign from './screens/PlaceSign';
+import ArticleSetup from './screens/ArticleSetup';
 import store from './store/store';
 import { actionSetCurrentScreen } from './store/actions/actions.creators';
 import { Provider } from 'react-redux';
@@ -61,6 +62,13 @@ Navigation.registerComponent("QueryArticles", () => (props) => (
     <QueryArticles  {...props} />
   </Provider>
 ));
+
+Navigation.registerComponent("ArticleSetup", () => (props) => (
+  <Provider store={store}>
+    <ArticleSetup  {...props} />
+  </Provider>
+));
+
 
 
 Navigation.registerComponent("PlaceSign", () => (props) => (

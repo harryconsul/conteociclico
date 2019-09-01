@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     View, FlatList, ImageBackground,
-    StyleSheet, ActivityIndicator, Text,
+    StyleSheet, ActivityIndicator, TouchableOpacity,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
@@ -17,10 +17,12 @@ class QueryArticles extends React.Component {
 
     constructor(props) {
         super(props);
-        Navigation.events().bindComponent(this);
+        if (!props.notScreen) {
+            Navigation.events().bindComponent(this);
+        }
         this.state = {
             producto: "",
-            unidad: "",
+            unidad: props.businessUnit?props.businessUnit:"",
             unidadNombre: "",
             rows: [],
             isLoading: false,
@@ -46,7 +48,7 @@ class QueryArticles extends React.Component {
         this.setState({ isLoading: true });
         queryArticle(this.state.unidad, this.state.producto, this.props.user.token, (data) => {
             const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
-            
+
             const rows = rawRows.map((item, index) => ({
                 key: index,
                 etiqueta: item.mnNmeronico_24.value,
@@ -65,16 +67,17 @@ class QueryArticles extends React.Component {
 
         }, (reason) => console.warn("error", reason));
     }
-
+    
     render() {
         return (
-            <ImageBackground source={backgroundImage} style={componentstyles.background}>
+            <ImageBackground source={this.props.notScreen ? null : backgroundImage} style={componentstyles.background}>
                 <View style={componentstyles.containerView}>
                     <View style={styles.linea} >
                         <View style={{ width: "40%" }}>
-                            <BusinessUnit token={this.props.user.token} 
+                            <BusinessUnit token={this.props.user.token}
                                 label={"Unidad de Negocio"} placeholder={"####"}
-                            unidad={this.unidadNegocio} />
+                                defaultValue={this.props.businessUnit}
+                                unidad={this.unidadNegocio} />
                         </View>
                         <View style={{ width: "60%" }}>
                             <Field onChangeText={(text) => this.setState({ producto: text })}
@@ -82,7 +85,7 @@ class QueryArticles extends React.Component {
                                 placeholder="#####" label="Número único" />
                         </View>
                     </View>
-                   
+
                     {
                         this.state.isLoading ?
                             <ActivityIndicator color="#ffffff"
@@ -93,35 +96,37 @@ class QueryArticles extends React.Component {
 
                     <FlatList data={this.state.rows}
                         renderItem={({ item, index }) =>
-                            <ItemView index={index} >
-                                <View style={styles.linea}>
-                                    <View style={{ width: "35%" }}>
-                                        <ItemLabel text={"No. " + item.etiqueta} />
+                            <TouchableOpacity 
+                            onPress={this.props.handleClickRow?()=>this.props.handleClickRow(item):null} >
+                                <ItemView index={index} >
+                                    <View style={styles.linea}>
+                                        <View style={{ width: "35%" }}>
+                                            <ItemLabel text={"No. " + item.etiqueta} />
+                                        </View>
+                                        <View style={{ width: "65%" }}>
+                                            <ItemLabel text={item.producto} />
+                                        </View>
                                     </View>
-                                    <View style={{ width: "65%" }}>
-                                        <ItemLabel text={item.producto} />
+                                    <View style={styles.linea}>
+                                        <View style={{ width: "35%" }}>
+                                            <ItemLabel style={{ fontWeight: 'bold', }} text={"Cantidad: " + item.cantidad + " " + item.unidadMedida} />
+                                        </View>
+                                        <View style={{ width: "65%" }}>
+                                            <ItemLabel text={"Ubicación: " + item.ubicacion?item.ubicacion:""} />
+                                        </View>
                                     </View>
-                                </View>
-                                <View style={styles.linea}>
-                                    <View style={{ width: "35%" }}>
-                                        <ItemLabel style={{ fontWeight: 'bold', }} text={"Cantidad: " + item.cantidad + " " + item.unidadMedida} />
-                                    </View>
-                                    <View style={{ width: "65%" }}>
-                                        <ItemLabel text={"Ubicación: " + item.ubicacion} />
-                                    </View>
-                                </View>
-                                <View style={styles.linea}>
-                                    <View style={{ width: "50%" }}>
-                                        <ItemLabel text={"Lote: " + item.lote} />
-                                    </View>
-                                    <View style={{ width: "65%" }}>
-                                        <ItemLabel text={"Caducidad: " + item.caducidad} />
-                                    </View>
+                                    <View style={styles.linea}>
+                                        <View style={{ width: "50%" }}>
+                                            <ItemLabel text={"Lote: " + item.lote} />
+                                        </View>
+                                        <View style={{ width: "65%" }}>
+                                            <ItemLabel text={"Caducidad: " + item.caducidad} />
+                                        </View>
 
-                                </View >
+                                    </View >
 
-                            </ItemView>
-
+                                </ItemView>
+                            </TouchableOpacity>
                         } />
                 </View>
             </ImageBackground>

@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, Button, FlatList, StyleSheet, Alert, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text,  StyleSheet, Alert } from 'react-native';
 import { RNCamera } from 'react-native-camera';
-import { ItemView, ItemHightLight, ItemLabel } from '../components'
+import { ArticleCard } from '../components'
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import { actionSetArticle } from '../store/actions/actions.creators';
@@ -120,21 +120,10 @@ class BarcodeReader extends React.Component {
             if (status !== 'READY') return <PendingView />;
             return (
               <View style={{ height: "100%", flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                {item ? <View style={{ height: "80%" }}><ItemView index={0}>
-                  <View style={{ flex: 1, justifyContent: "space-between" }}>
-                    <ItemLabel text={item.serial} />
-                    <ItemLabel text={item.location} />
-                    <ItemLabel text={"Unidad de Medida: " + item.um} />
-                  </View>
-                  <ItemHightLight text={item.description} />
-                  <View style={{ flex: 1, justifyContent: "space-between" }}>
-                    <TextInput value={String(qty)} onChangeText={(text) => this.setState({ qty: text })} />
-                  </View>
-                  <TouchableOpacity onPress={this.handleAccept} >
-                    <Text style={{ fontSize: 14 }}> Aceptar </Text>
-                  </TouchableOpacity>
-                </ItemView>
-
+                {item ? <View style={{ height: "80%" }}>
+                  <ArticleCard handleAccept={this.handleAccept} 
+                    item={item} qty={qty}
+                    setQty={(qty)=>this.setState({qty})} />
                 </View>
                   :
                   <View style={styles.barcodeGuide}></View>
