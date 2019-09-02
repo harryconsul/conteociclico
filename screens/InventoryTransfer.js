@@ -9,10 +9,11 @@ import { Navigation } from 'react-native-navigation';
 import Field from '../components/Field';
 import { BusinessUnit } from '../components/BusinessUnit';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
-import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, actionSetArticle } from '../store/actions/actions.creators';
-import { transactionModes } from '../constants'
+import { actionUpdateStack } from '../store/actions/actions.creators';
 import { componentstyles } from '../styles';
+import {startTransfer,fillTransfer} from '../apicalls/transfer.operations'
 import backgroundImage from '../assets/labmicroBg.jpg';
+
 
 class InventoryTransfer extends React.Component {
 
@@ -23,12 +24,11 @@ class InventoryTransfer extends React.Component {
 
         this.state = {
             isLoading: false,
-            order: null,
-            articles: null,
-            orderNumber: "",
+            articles: null,            
             isConfirming: true,
             unidadOrigen: null,
             unidadDestino: null,
+            explicacion:"",
         }
     }
 
@@ -43,53 +43,25 @@ class InventoryTransfer extends React.Component {
                 }
             });
         } else {
-            if (this.state.articles) {
-                this.props.dispatch(actionSetTransactionMode(transactionModes.READ_SUBTRACT));
-            } else {
-                this.props.dispatch(actionSetTransactionMode(transactionModes.READ_RETURN));
-            }
-            Navigation.showModal({
-                stack: {
-                    children: [
-                        {
-                            component: {
-                                name: 'BarcodeReader',
-                            },
-                            options: {
-                                topBar: {
-                                    title: {
-                                        text: 'Captura Codigo de Barras'
-                                    },
-                                    drawBehind: true,
-                                    background: {
-                                        color: '#8c30f1c7',
-                                        translucent: true,
-                                        blur: false
-                                    },
-
-                                }
-                            }
-                        }
-                    ]
-                }
-            });
+            
 
         }
     }
-    componentDidAppear() {
-        if (this.props.articles) {
-
-            const search = this.props.articles.get("search");
-            if (search) {
-                this.setState({ orderNumber: search.value }, this.searchOrder);
-            }
-
-
-        }
-    }
+    
 
     componentDidMount() {
+        startTransfer(this.props.token,(response)=>{
+            const stack = {
+                stackId: response.data.stackId,
+                stateId: response.data.stateId,
+                rid: response.data.rid,
+                currentApplication: "P564113_W564113B_DICIPA003",
+    
+            }
+            console.warn(response.data)   ;    
+            actionUpdateStack(stack);
 
+        })
     }
     setupArticles = () => {
         Navigation.showModal({
@@ -108,16 +80,35 @@ class InventoryTransfer extends React.Component {
             }
         });
     }
+    confirmTransfer=()=>{
+        const {unidadDestino,unidadOrigen,explicacion} = this.state;
+        const rows = [];
 
+        for (let article of this.props.articles.values()) {
+            
+            if (article.qty) {
+                rows.push(article);
+            }
+        }
+        const form={
+            explicacion,
+            unidadOrigen,
+            unidadDestino,
+            rows,
+
+        }
+        const {token,stack}= this.props;
+        fillTransfer(token,stack,form,(response)=>{
+            console.warn("response 2", response);
+        });
+    }
 
     handleSelectRow = (key) => {
-        const item = this.props.articles.get(key);
-        this.props.dispatch(actionSetArticle({ ...item, qty: 0 }));
+        
 
     }
     render() {
-        const { order, isConfirming } = this.state;
-
+        
         const list = [];
 
         for (let article of this.props.articles.values()) {
@@ -137,7 +128,7 @@ class InventoryTransfer extends React.Component {
                         <ItemView index={2} >
 
                             <Field label="Explicación del Movimiento"
-                                onChangeText={(text) => this.setState({ orderNumber: text })}
+                                onChangeText={(text) => this.setState({ explicacion: text })}
                                 onSubmitEditing={this.searchOrder} placeholder="Ejem:Urgencia en sucursal" />
                             <View style={{ display: "flex", flexDirection: "row",justifyContent:"space-between" }}>
                                 <BusinessUnit label="Origen - MCU"
@@ -163,6 +154,7 @@ class InventoryTransfer extends React.Component {
 
                         </View>
                         <Button title="Configurar Articulos" onPress={this.setupArticles} />
+                        <Button title="Confirmar Movimiento" onPress={this.confirmTransfer} />
                         <ActivityIndicator color="#ffffff"
                             animating={this.state.isLoading} size={"large"} />
 

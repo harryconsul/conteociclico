@@ -39,7 +39,8 @@ class ArticleSetup extends React.Component {
     handleClickRow = (itemQ) => {
         
         const item = {
-            key: itemQ.shortNumber,            
+            key: itemQ.etiqueta,  
+            itemNumber:itemQ.itemNumber,          
             description: itemQ.producto,            
             location: itemQ.ubicacion,
             serial: itemQ.lote,                        

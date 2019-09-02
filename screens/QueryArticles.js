@@ -60,6 +60,7 @@ class QueryArticles extends React.Component {
                 caducidad: item.dtExpirationDateMonth_53.value,
                 unidadMedida: item.sUM_54.value,
                 shortNumber: item.mnShortItemNo_25.value,
+                itemNumber: item.s2ndItemNumber_33.value,
             }));
 
             this.setState({ rows, isLoading: false });
