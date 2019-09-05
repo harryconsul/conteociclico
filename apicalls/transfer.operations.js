@@ -94,9 +94,10 @@ export const startTransfer = (token, callback) => {
 
 }
 export const fillTransfer = (token, stack, form, callback) => {
+    
     const action = pushStack(token, actionFillForm(form), stack);
     callStackService(action, (response)=>{
-        console.warn("first Call",response.data);
+        
         const stackConfirm = {
             stackId: response.data.stackId,
             stateId: response.data.stateId,

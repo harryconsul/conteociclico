@@ -11,6 +11,9 @@ const initialState = {
     currentScreen: null,
     products: null,
     transactionMode: transactionModes.READ_ADD,
+    stack:{
+
+    },
 
 }
 const updateArticle = (articles, article) => {

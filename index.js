@@ -1,13 +1,137 @@
 /**
  * @format
  */
-
+/*
 import {AppRegistry} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
+*/
 import  axios from 'axios';
+import React from 'react';
+import { Navigation } from 'react-native-navigation';
+import Auth from './screens/Auth';
+import CountList from './screens/CountList/CountList';
+import EnterCycleCount from './screens/CountList/EnterCycleCount';
+import BarcodeReader from './screens/BarcodeReader';
+import BarcodeInput from './screens/BarcodeInput';
+import InventoryTransfer from './screens/InventoryTransfer';
+import SideMenu from './screens/SideMenu';
+import QueryArticles from './screens/QueryArticles';
+import ProductsPickup from './screens/ProductsPickup';
+import PlaceSign from './screens/PlaceSign';
+import ArticleSetup from './screens/ArticleSetup';
+import store from './store/store';
+import { actionSetCurrentScreen } from './store/actions/actions.creators';
+import { Provider } from 'react-redux';
 
 axios.defaults.baseURL="http://207.249.158.84:91/jderest/";
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 
-AppRegistry.registerComponent(appName, () => App);
+Navigation.registerComponent("Auth", () => (props) => (
+  <Provider store={store}>
+    <Auth  {...props} />
+  </Provider>
+));
+Navigation.registerComponent("CyclicCountList", () => (props) => (
+  <Provider store={store}>
+    <CountList  {...props} />
+  </Provider>
+));
+Navigation.registerComponent("EnterCycleCount", () => (props) => (
+  <Provider store={store}>
+    <EnterCycleCount  {...props} />
+  </Provider>
+));
+
+Navigation.registerComponent("BarcodeReader", () => (props) => (
+  <Provider store={store}>
+    <BarcodeReader  {...props} />
+  </Provider>
+));
+
+Navigation.registerComponent("BarcodeInput", () => (props) => (
+  <Provider store={store}>
+    <BarcodeInput  {...props} />
+  </Provider>
+));
+
+Navigation.registerComponent("SideMenu", () => (props) => (
+  <Provider store={store}>
+    <SideMenu  {...props} />
+  </Provider>
+));
+
+Navigation.registerComponent("QueryArticles", () => (props) => (
+  <Provider store={store}>
+    <QueryArticles  {...props} />
+  </Provider>
+));
+
+Navigation.registerComponent("ArticleSetup", () => (props) => (
+  <Provider store={store}>
+    <ArticleSetup  {...props} />
+  </Provider>
+));
+
+
+
+Navigation.registerComponent("PlaceSign", () => (props) => (
+  <Provider store={store}>
+    <PlaceSign  {...props} />
+  </Provider>
+));
+
+Navigation.registerComponent("ProductsPickup", () => (props) => (
+  <Provider store={store}>
+    <ProductsPickup  {...props} />
+  </Provider>
+));
+Navigation.registerComponent("InventoryTransfer", () => (props) => (
+  <Provider store={store}>
+    <InventoryTransfer  {...props} />
+  </Provider>
+));
+
+
+
+// Subscribe
+const screenEventListener = Navigation.events().registerComponentDidAppearListener(({ componentId, componentName, passProps }) => {
+  
+  if (componentId !== "SideMenu") {
+    store.dispatch(actionSetCurrentScreen(componentId))
+  }
+});
+
+Navigation.events().registerAppLaunchedListener(() => {
+
+  Navigation.setRoot({
+    root: {
+      stack: {
+
+        children: [
+          {
+            component: {
+              name: 'Auth',
+
+            },
+
+
+          }
+        ],
+        options: {
+          topBar: {
+            visible: false,
+            height: 0,
+          }
+        }
+
+      }
+    }
+
+
+  });
+});
+
+
+
+//AppRegistry.registerComponent(appName, () => App);

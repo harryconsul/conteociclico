@@ -60,7 +60,7 @@ class CountList extends React.Component {
         this.setState({ isLoading: true });
         selectCyclicCount(this.props.user.token, this.props.stack, rowId, (response) => {
             const rowsData = response.data.fs_P4141_W4141A.data.gridData.rowset;
-
+            console.warn(rowsData);
             const articlesMap = rowsData.reduce((previous, current, index) => {
                 const key = current.sLotSerial_27.value;
                 previous.set(key,{

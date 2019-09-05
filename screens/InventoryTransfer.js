@@ -58,8 +58,8 @@ class InventoryTransfer extends React.Component {
                 currentApplication: "P564113_W564113B_DICIPA003",
     
             }
-            console.warn(response.data)   ;    
-            actionUpdateStack(stack);
+            console.warn(stack)   ;    
+            this.props.dispatch(actionUpdateStack(stack));
 
         })
     }
@@ -98,6 +98,7 @@ class InventoryTransfer extends React.Component {
 
         }
         const {token,stack}= this.props;
+        
         fillTransfer(token,stack,form,(response)=>{
             console.warn("response 2", response);
         });
