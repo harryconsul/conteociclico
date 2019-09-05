@@ -30,8 +30,9 @@ export const BusinessUnit = (props) => {
                 placeholder={props.placeholder}
                 onChangeText={(text) => setUnidad({valor:text,nombre:""})}
                 onSubmitEditing={search}
+                onBlur={search}
             />
-            <Text>{unidad.nombre}</Text>
+            <Text style={{color:'white'}}>{unidad.nombre}</Text>
         </View>
     )
 
