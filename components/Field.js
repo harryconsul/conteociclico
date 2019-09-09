@@ -6,7 +6,7 @@ const Field = ({label,defaultValue,autoFocus,onSubmitEditing,onChangeText,placeh
 
     return(
         <View style={{display:'flex'}}>
-            <Text style={{marginBottom:5,color:'#f1bb57'}}>{label}</Text>
+            <Text style={componentstyles.label}>{label}</Text>
             <TextInput placeholder={placeholder} 
                 autoFocus={autoFocus?true:false}
                 onSubmitEditing={onSubmitEditing?onSubmitEditing:null}

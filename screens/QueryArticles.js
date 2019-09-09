@@ -48,7 +48,7 @@ class QueryArticles extends React.Component {
         this.setState({ isLoading: true });
         queryArticle(this.state.unidad, this.state.producto, this.props.user.token, (data) => {
             const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
-
+            
             const rows = rawRows.map((item, index) => ({
                 key: index,
                 etiqueta: item.mnNmeronico_24.value,

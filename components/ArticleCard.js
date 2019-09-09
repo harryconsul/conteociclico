@@ -1,24 +1,38 @@
 import React from 'react';
-import { Button, View, TextInput,KeyboardAvoidingView } from 'react-native';
+import { Button, View, TextInput, KeyboardAvoidingView } from 'react-native';
 import { ItemView, ItemHightLight, ItemLabel } from '../components';
+import Field from './Field';
 
-export const ArticleCard = ({ item, handleAccept, qty, setQty }) => (
-    <ItemView index={0}>
-        <KeyboardAvoidingView
-            style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
-            <View style={{ flex: 1, justifyContent: "space-between" }}>
-                <ItemLabel text={item.serial} />
-                <ItemLabel text={item.location} />
-                <ItemLabel text={"Unidad de Medida: " + item.um} />
-            </View>
-            <ItemHightLight text={item.description} />
-            <View style={{ flex: 1, justifyContent: "space-between" }}>
-                <TextInput value={String(qty)} onChangeText={(text) => setQty(text)} />
-            </View>
-            <Button onPress={handleAccept}
-                title="Aceptar" />
-        </KeyboardAvoidingView>
-    </ItemView>
-)
+export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price }) => {
+    const size=setPrice?150:100;
+    return (
+        
+        <ItemView index={0}>
+            <KeyboardAvoidingView
+                style={{ height: "100%", width: "100%" }} enabled behavior="padding">
+                
+                <ItemLabel text={"Serie Lote: " + item.serial} />
+                <View style={{ display:"flex",flexDirection:"row",
+                    justifyContent: "space-between" }}>
+                    <ItemLabel text={"Unidad de Medida: " + item.um} />
+                    <ItemLabel text={"Ubicacion : " + item.location} />
+                    
+                </View>
+                <ItemHightLight text={item.description} />                
+                <View style={{height:size,marginTop:15,marginBottom:10}}>
+                    <Field label="Cantidad" placeholder="#" defaultValue={String(qty)}
+                        onChangeText={(text) => setQty(text)} keyboardType="numeric" />
+                    {setPrice ?
+                        <Field label="Precio" placeholder="$$" defaultValue={price}
+                            onChangeText={(text) => setPrice(text)} keyboardType="numeric" />
+                        : null
+                    }
+                </View>
+                <Button onPress={handleAccept}
+                    title="Aceptar" />
+            </KeyboardAvoidingView>
+        </ItemView>
+    )
+}
 
 

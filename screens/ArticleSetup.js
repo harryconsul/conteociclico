@@ -17,6 +17,7 @@ class ArticleSetup extends React.Component {
             isLoading: false,
             item: null,
             qty: 0,
+            price:"",
             isSettingUp: false,
         }
     }
@@ -49,15 +50,15 @@ class ArticleSetup extends React.Component {
         this.setState({ item, qty: 1, isSettingUp: true });
     }
     handleAccept=()=>{
-        const { item, qty } = this.state;
-        const updateItem = { ...item, qty };
+        const { item, qty,price } = this.state;
+        const updateItem = { ...item, qty,price };
 
         this.props.dispatch(actionSetArticle(updateItem));
-        this.setState({item:null,qty:0,isSettingUp:false});
+        this.setState({item:null,qty:0,price:"",isSettingUp:false});
 
     }
     render() {
-        const { qty, item, isSettingUp, isLoading } = this.state;
+        const { qty, item, isSettingUp, isLoading ,price,} = this.state;
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
                 <View style={componentstyles.containerView}>
@@ -65,7 +66,8 @@ class ArticleSetup extends React.Component {
                         isSettingUp ?
                             <ArticleCard item={item} qty={qty}
                                 setQty={(qty) => this.setState({ qty })}
-
+                                setPrice={(price)=>this.setState({price})}
+                                price={price}
                                 handleAccept={this.handleAccept} />
                             :
                             <QueryArticles businessUnit={this.props.businessUnit}                                

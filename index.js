@@ -14,6 +14,7 @@ import CountList from './screens/CountList/CountList';
 import EnterCycleCount from './screens/CountList/EnterCycleCount';
 import BarcodeReader from './screens/BarcodeReader';
 import BarcodeInput from './screens/BarcodeInput';
+import SaleOrder from './screens/SaleOrder'
 import InventoryTransfer from './screens/InventoryTransfer';
 import SideMenu from './screens/SideMenu';
 import QueryArticles from './screens/QueryArticles';
@@ -91,6 +92,12 @@ Navigation.registerComponent("InventoryTransfer", () => (props) => (
     <InventoryTransfer  {...props} />
   </Provider>
 ));
+Navigation.registerComponent("SaleOrder", () => (props) => (
+  <Provider store={store}>
+    <SaleOrder  {...props} />
+  </Provider>
+));
+
 
 
 
@@ -134,4 +141,4 @@ Navigation.events().registerAppLaunchedListener(() => {
 
 
 
-//AppRegistry.registerComponent(appName, () => App);
+

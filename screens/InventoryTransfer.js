@@ -58,7 +58,7 @@ class InventoryTransfer extends React.Component {
                 currentApplication: "P564113_W564113B_DICIPA003",
     
             }
-            console.warn(stack)   ;    
+               
             this.props.dispatch(actionUpdateStack(stack));
 
         })

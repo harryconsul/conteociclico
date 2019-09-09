@@ -36,6 +36,10 @@ export const componentstyles=StyleSheet.create({
         width:"100%",
         height:"100%"
     },
+    label:{
+        marginBottom:5,
+        color:'#f1bb57',
+    }
    
 
 
