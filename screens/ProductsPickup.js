@@ -180,7 +180,7 @@ class ProductsPickup extends React.Component {
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
                 <KeyboardAvoidingView
-                    style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
+                    style={{ height: "100%", width: "100%" }} enabled behavior="padding">
                     <View style={componentstyles.containerView}>
                         <Field label="Numero de Recolección"
                             onChangeText={(text) => this.setState({ orderNumber: text })}

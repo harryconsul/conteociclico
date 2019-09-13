@@ -72,8 +72,7 @@ class ArticleSetup extends React.Component {
                                 price={price}
                                 handleAccept={this.handleAccept} />
                             :
-                            <QueryArticles businessUnit={this.props.businessUnit}   
-                                                           
+                            <QueryArticles businessUnit={this.props.businessUnit}                                                           
                                 notScreen handleClickRow={this.handleClickRow} />
 
 

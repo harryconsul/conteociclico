@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-    View,  StyleSheet, Alert, KeyboardAvoidingView
-    ,  ImageBackground
+    View, StyleSheet, Alert, KeyboardAvoidingView
+    , ImageBackground
 } from 'react-native';
 import Field from '../components/Field';
 import { ArticleCard } from '../components'
@@ -14,10 +14,34 @@ import { componentstyles } from '../styles';
 
 
 class BarcodeInput extends React.Component {
-    state = {
-        editingItem: null,
-        isEditing: false,
-        qty: 0,
+    constructor(props) {
+        super(props);
+        Navigation.events().bindComponent(this);
+        this.state = {
+            editingItem: null,
+            isEditing: false,
+            qty: 0,
+            articleRef: React.createRef(),
+            searchCode: "",
+        }
+
+    }
+
+    componentDidMount = () => {
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                title: {
+                    text: 'Lectura de Codigo de Barras'
+                },
+                drawBehind: true,
+                background: {
+                    color: '#8c30f1c7',
+                    translucent: true,
+                    blur: false
+                },
+                visible: true,
+            },
+        });
     }
     handleAccept = () => {
         const { editingItem, qty } = this.state;
@@ -37,6 +61,8 @@ class BarcodeInput extends React.Component {
 
             }
         )
+
+        this.state.articleRef.current.focus();
     }
     barCodeHandler = () => {
         //Get the item
@@ -82,7 +108,10 @@ class BarcodeInput extends React.Component {
                 Alert.alert("No encontrado ", "No hemos podido encontrar " + this.state.searchCode,
                     [{
                         text: "Continuar",
-                        onPress: () => this.setState({ isEditing: false }),
+                        onPress: () => {
+                            this.setState({ isEditing: false,searchCode:"" });
+                            this.state.articleRef.current.focus();
+                        },
                     }]);
             }
         }
@@ -99,6 +128,8 @@ class BarcodeInput extends React.Component {
                         <Field onChangeText={(text) => this.setState({ searchCode: text })}
                             onSubmitEditing={this.barCodeHandler}
                             autoFocus={true}
+                            value={this.state.searchCode}
+                            inputRef={this.state.articleRef}
                             placeholder="#####" label="Busqueda por Handheld" />
                         {
 
