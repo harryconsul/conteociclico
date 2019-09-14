@@ -26,6 +26,7 @@ class QueryArticles extends React.Component {
             unidadNombre: "",
             rows: [],
             isLoading: false,
+            articleRef:React.createRef(),
         }
     }
 
@@ -69,6 +70,11 @@ class QueryArticles extends React.Component {
 
         }, (reason) => console.warn("error", reason));
     }
+    componentDidMount(){
+        if(this.props.notScreen){
+            this.state.articleRef.current.focus();
+        }
+    }
     
     render() {
         return (
@@ -84,6 +90,7 @@ class QueryArticles extends React.Component {
                         <View style={{ width: "60%" }}>
                             <Field onChangeText={(text) => this.setState({ producto: text })}
                                 onSubmitEditing={this.search}
+                                inputRef={this.state.articleRef}
                                 placeholder="#####" label="Número único" />
                         </View>
                     </View>

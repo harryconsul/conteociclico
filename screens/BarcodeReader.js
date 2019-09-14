@@ -20,11 +20,16 @@ const PendingView = () => (
 );
 
 class BarcodeReader extends React.Component {
-  state = {
-    editingItem: null,
-    isEditing: false,
-    qty: 0,
+  constructor(props){
+    super(props);
+    Navigation.events().bindComponent(this);
+    this.state = {
+      editingItem: null,
+      isEditing: false,
+      qty: 0,
+    }
   }
+  
   handleAccept = () => {
     const { editingItem, qty } = this.state;
     const item = { ...editingItem, qty };
@@ -43,6 +48,22 @@ class BarcodeReader extends React.Component {
       }
     )
   }
+  componentDidMount=()=>{
+    Navigation.mergeOptions(this.props.componentId, {
+        topBar: {
+            title: {
+                text: 'Lectura de Codigo de Barras'
+            },
+            drawBehind: true,
+            background: {
+                color: '#8c30f1c7',
+                translucent: true,
+                blur: false
+            },
+            visible: true,
+        },
+    });
+}
   barCodeHandler = event => {
     //Get the item
     if (this.props.transactionMode === transactionModes.READ_RETURN) {

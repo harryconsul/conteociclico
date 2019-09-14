@@ -19,6 +19,7 @@ class ArticleSetup extends React.Component {
             qty: 0,
             price:"",
             isSettingUp: false,
+            
         }
     }
     componentDidMount=()=>{
@@ -55,6 +56,7 @@ class ArticleSetup extends React.Component {
 
         this.props.dispatch(actionSetArticle(updateItem));
         this.setState({item:null,qty:0,price:"",isSettingUp:false});
+        
 
     }
     render() {
@@ -70,7 +72,7 @@ class ArticleSetup extends React.Component {
                                 price={price}
                                 handleAccept={this.handleAccept} />
                             :
-                            <QueryArticles businessUnit={this.props.businessUnit}                                
+                            <QueryArticles businessUnit={this.props.businessUnit}                                                           
                                 notScreen handleClickRow={this.handleClickRow} />
 
 
