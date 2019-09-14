@@ -46,6 +46,7 @@ class QueryArticles extends React.Component {
 
     search = () => {
         this.setState({ isLoading: true });
+        
         queryArticle(this.state.unidad, this.state.producto, this.props.user.token, (data) => {
             const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
             
@@ -62,7 +63,7 @@ class QueryArticles extends React.Component {
                 shortNumber: item.mnShortItemNo_25.value,
                 itemNumber: item.s2ndItemNumber_33.value,
             }));
-
+            
             this.setState({ rows, isLoading: false });
 
 
@@ -101,10 +102,10 @@ class QueryArticles extends React.Component {
                             onPress={this.props.handleClickRow?()=>this.props.handleClickRow(item):null} >
                                 <ItemView index={index} >
                                     <View style={styles.linea}>
-                                        <View style={{ width: "35%" }}>
+                                        <View style={{ width: "30%" }}>
                                             <ItemLabel text={"No. " + item.etiqueta} />
                                         </View>
-                                        <View style={{ width: "65%" }}>
+                                        <View style={{ width: "70%" }}>
                                             <ItemLabel text={item.producto} />
                                         </View>
                                     </View>
@@ -113,7 +114,7 @@ class QueryArticles extends React.Component {
                                             <ItemLabel style={{ fontWeight: 'bold', }} text={"Cantidad: " + item.cantidad + " " + item.unidadMedida} />
                                         </View>
                                         <View style={{ width: "65%" }}>
-                                            <ItemLabel text={"Ubicación: " + item.ubicacion?item.ubicacion:""} />
+                                            <ItemLabel text={"Ubicación: " + (item.ubicacion?item.ubicacion:"")} />
                                         </View>
                                     </View>
                                     <View style={styles.linea}>
