@@ -13,13 +13,15 @@ export const BusinessUnit = (props) => {
         if (unidad.valor != 0) {
             businessUnit(unidad.valor, props.token, (data) => {
                 const rawRows = data.fs_P0006S_W0006SA.data.gridData.rowset;
-
+                
                 if (rawRows.length > 0) {
-                    setUnidad({ valor: unidad.valor, nombre: rawRows[0].sDescription_41.value });
+                    setUnidad({ valor: rawRows[0].sBusinessUnit_5.value ,
+                        nombre: rawRows[0].sDescription_41.value });
+                        props.unidad(rawRows[0].sBusinessUnit_5.value ,
+                            rawRows[0].sDescription_41.value );
                 }
 
             }, (reason) => console.warn("ERROR", reason));
-            props.unidad(unidad.valor);
         }
 
     }
@@ -35,7 +37,13 @@ export const BusinessUnit = (props) => {
                 onSubmitEditing={search}
                 onBlur={search}
             />
-            <Text style={{ color: 'white' }}>{unidad.nombre}</Text>
+            <Text style={{ color: 'white' }}>
+            {
+                props.defaultValueNombre?
+                props.defaultValueNombre
+                :
+                unidad.nombre
+            }</Text>
         </View>
     )
 

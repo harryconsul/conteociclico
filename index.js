@@ -16,6 +16,7 @@ import BarcodeReader from './screens/BarcodeReader';
 import BarcodeInput from './screens/BarcodeInput';
 import SaleOrder from './screens/SaleOrder'
 import InventoryTransfer from './screens/InventoryTransfer';
+import InventoryExpire from './screens/InventoryExpire';
 import SideMenu from './screens/SideMenu';
 import QueryArticles from './screens/QueryArticles';
 import ProductsPickup from './screens/ProductsPickup';
@@ -24,6 +25,7 @@ import ArticleSetup from './screens/ArticleSetup';
 import store from './store/store';
 import { actionSetCurrentScreen } from './store/actions/actions.creators';
 import { Provider } from 'react-redux';
+import AddProduct from './screens/AddProduct';
 
 axios.defaults.baseURL="http://207.249.158.84:91/jderest/";
 axios.defaults.headers.post['Content-Type'] = 'application/json';
@@ -98,7 +100,17 @@ Navigation.registerComponent("SaleOrder", () => (props) => (
   </Provider>
 ));
 
+Navigation.registerComponent("InventoryExpire", () => (props) => (
+  <Provider store={store}>
+    <InventoryExpire  {...props} />
+  </Provider>
+));
 
+Navigation.registerComponent("AddProduct", () => (props) => (
+  <Provider store={store}>
+    <AddProduct  {...props} />
+  </Provider>
+));
 
 
 // Subscribe

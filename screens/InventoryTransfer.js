@@ -11,7 +11,7 @@ import { BusinessUnit } from '../components/BusinessUnit';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
 import { actionUpdateStack } from '../store/actions/actions.creators';
 import { componentstyles } from '../styles';
-import {startTransfer,fillTransfer} from '../apicalls/transfer.operations'
+import { startTransfer, fillTransfer } from '../apicalls/transfer.operations'
 import backgroundImage from '../assets/labmicroBg.jpg';
 
 
@@ -24,11 +24,13 @@ class InventoryTransfer extends React.Component {
 
         this.state = {
             isLoading: false,
-            articles: null,            
+            articles: null,
             isConfirming: true,
             unidadOrigen: null,
+            unidadOrigenNombre: null,
             unidadDestino: null,
-            explicacion:"",
+            unidadDestinoNombre: null,
+            explicacion: "",
         }
     }
 
@@ -43,22 +45,22 @@ class InventoryTransfer extends React.Component {
                 }
             });
         } else {
-            
+
 
         }
     }
-    
+
 
     componentDidMount() {
-        startTransfer(this.props.token,(response)=>{
+        startTransfer(this.props.token, (response) => {
             const stack = {
                 stackId: response.data.stackId,
                 stateId: response.data.stateId,
                 rid: response.data.rid,
                 currentApplication: "P564113_W564113B_DICIPA003",
-    
+
             }
-               
+
             this.props.dispatch(actionUpdateStack(stack));
 
         })
@@ -72,44 +74,45 @@ class InventoryTransfer extends React.Component {
                             name: 'ArticleSetup',
                             passProps: {
                                 businessUnit: this.state.unidadOrigen,
+                                businessUnitNombre: this.state.unidadOrigenNombre,
                             }
                         },
-                        
+
                     }
                 ]
             }
         });
     }
-    confirmTransfer=()=>{
-        const {unidadDestino,unidadOrigen,explicacion} = this.state;
+    confirmTransfer = () => {
+        const { unidadDestino, unidadOrigen, explicacion } = this.state;
         const rows = [];
 
         for (let article of this.props.articles.values()) {
-            
+
             if (article.qty) {
                 rows.push(article);
             }
         }
-        const form={
+        const form = {
             explicacion,
             unidadOrigen,
             unidadDestino,
             rows,
 
         }
-        const {token,stack}= this.props;
-        
-        fillTransfer(token,stack,form,(response)=>{
+        const { token, stack } = this.props;
+
+        fillTransfer(token, stack, form, (response) => {
             console.warn("response 2", response);
         });
     }
 
     handleSelectRow = (key) => {
-        
+
 
     }
     render() {
-        
+
         const list = [];
 
         for (let article of this.props.articles.values()) {
@@ -122,40 +125,45 @@ class InventoryTransfer extends React.Component {
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
                 <KeyboardAvoidingView style={{ height: "100%", width: "100%" }}
-                     behavior="padding" enabled>
+                    behavior="padding" enabled>
                     <View style={componentstyles.containerView}>
 
-                        <View style={{height:200}}>
-                        <ItemView index={2} >
+                        <View style={{ height: 200 }}>
+                            <ItemView index={2} >
 
-                            <Field label="Explicación del Movimiento"
-                                onChangeText={(text) => this.setState({ explicacion: text })}
-                                onSubmitEditing={this.searchOrder} placeholder="Ejem:Urgencia en sucursal" />
-                            <View style={{ display: "flex", flexDirection: "row",justifyContent:"space-between" }}>
-                                <BusinessUnit label="Origen - MCU"
-                                    token={this.props.token}
-                                    unidad={(unidad) => {
-                                        this.setState({
-                                            unidadOrigen: unidad,
-                                        });
-                                    }} placeholder={"####"} />
-                                <BusinessUnit label="Destino - MCU"
-                                    token={this.props.token}
-                                    unidad={(unidad) => {
-                                        this.setState({
-                                            unidadDestino: unidad,
-                                        });
-                                    }}
-                                    placeholder={"####"} />
+                                <Field label="Explicación del Movimiento"
+                                    onChangeText={(text) => this.setState({ explicacion: text })}
+                                    onSubmitEditing={this.searchOrder} placeholder="Ejem:Urgencia en sucursal" />
+                                <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                                    <BusinessUnit label="Origen - MCU"
+                                        token={this.props.token}
+                                        unidad={(unidad, nombre) => {
+                                            this.setState({
+                                                unidadOrigen: unidad,
+                                                unidadOrigenNombre: nombre,
+                                            });
+                                        }}
+                                        placeholder={"####"} />
+                                    <BusinessUnit label="Destino - MCU"
+                                        token={this.props.token}
+                                        unidad={(unidad, nombre) => {
+                                            this.setState({
+                                                unidadDestino: unidad,
+                                                unidadDestinoNombre: nombre,
+                                            });
+                                        }}
+                                        placeholder={"####"} />
 
-                            </View>
+                                </View>
 
 
-                        </ItemView>
+                            </ItemView>
 
                         </View>
-                        <Button title="Configurar Articulos" onPress={this.setupArticles} />
-                        <Button title="Confirmar Movimiento" onPress={this.confirmTransfer} />
+                        <View style={{ flexDirection: 'row', justifyContent: "space-between" }}>
+                            <Button title="AGREGAR ARTICULOS" onPress={this.setupArticles} />
+                            <Button title="CONFIRMAR" onPress={this.confirmTransfer} />
+                        </View>
                         <ActivityIndicator color="#ffffff"
                             animating={this.state.isLoading} size={"large"} />
 

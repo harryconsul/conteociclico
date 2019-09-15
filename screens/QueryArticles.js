@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-    View, FlatList, ImageBackground,
+    View, FlatList, ImageBackground, Text,
     StyleSheet, ActivityIndicator, TouchableOpacity,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -22,11 +22,11 @@ class QueryArticles extends React.Component {
         }
         this.state = {
             producto: "",
-            unidad: props.businessUnit?props.businessUnit:"",
+            unidad: props.businessUnit ? props.businessUnit : "",
             unidadNombre: "",
             rows: [],
             isLoading: false,
-            articleRef:React.createRef(),
+            articleRef: React.createRef(),
         }
     }
 
@@ -47,10 +47,10 @@ class QueryArticles extends React.Component {
 
     search = () => {
         this.setState({ isLoading: true });
-        
+
         queryArticle(this.state.unidad, this.state.producto, this.props.user.token, (data) => {
             const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
-            
+
             const rows = rawRows.map((item, index) => ({
                 key: index,
                 etiqueta: item.mnNmeronico_24.value,
@@ -64,36 +64,51 @@ class QueryArticles extends React.Component {
                 shortNumber: item.mnShortItemNo_25.value,
                 itemNumber: item.s2ndItemNumber_33.value,
             }));
-            
+
             this.setState({ rows, isLoading: false });
 
 
         }, (reason) => console.warn("error", reason));
     }
-    componentDidMount(){
-        if(this.props.notScreen){
+    componentDidMount() {
+        /*if (this.props.notScreen) {
             this.state.articleRef.current.focus();
-        }
+        }*/
     }
-    
+
     render() {
         return (
             <ImageBackground source={this.props.notScreen ? null : backgroundImage} style={componentstyles.background}>
-                <View style={componentstyles.containerView}>
-                    <View style={styles.linea} >
-                        <View style={{ width: "40%" }}>
-                            <BusinessUnit token={this.props.user.token}
-                                label={"Unidad de Negocio"} placeholder={"####"}
-                                defaultValue={this.props.businessUnit}
-                                unidad={this.unidadNegocio} />
-                        </View>
-                        <View style={{ width: "60%" }}>
-                            <Field onChangeText={(text) => this.setState({ producto: text })}
-                                onSubmitEditing={this.search}
-                                inputRef={this.state.articleRef}
-                                placeholder="#####" label="Número único" />
-                        </View>
-                    </View>
+                <View style={{ width: '100%', margin: 5 }}>
+                    {
+                        this.props.businessUnitNombre ?
+                            <View style={styles.shadow}>
+                                <View style={styles.header}>
+                                    <Text style={styles.headerTitle}>{this.props.businessUnitNombre}</Text>
+                                </View>
+                                <Field onChangeText={(text) => this.setState({ producto: text })}
+                                    onSubmitEditing={this.search}
+                                    inputRef={this.state.articleRef}
+                                    placeholder="#####" label="Número único" />
+                            </View>
+                            :
+                            <View style={styles.linea} >
+                                <View style={{ width: "40%" }}>
+                                    <BusinessUnit token={this.props.user.token}
+                                        label={"Unidad de Negocio"} placeholder={"####"}
+                                        defaultValue={this.props.businessUnit}
+                                        defaultValueNombre={this.props.businessUnitNombre}
+                                        unidad={this.unidadNegocio} />
+
+                                </View>
+                                <View style={{ width: "60%" }}>
+                                    <Field onChangeText={(text) => this.setState({ producto: text })}
+                                        onSubmitEditing={this.search}
+                                        inputRef={this.state.articleRef}
+                                        placeholder="#####" label="Número único" />
+                                </View>
+                            </View>
+                    }
 
                     {
                         this.state.isLoading ?
@@ -106,7 +121,7 @@ class QueryArticles extends React.Component {
                     <FlatList data={this.state.rows}
                         renderItem={({ item, index }) =>
                             <TouchableOpacity key={item.key}
-                            onPress={this.props.handleClickRow?()=>this.props.handleClickRow(item):null} >
+                                onPress={this.props.handleClickRow ? () => this.props.handleClickRow(item) : null} >
                                 <ItemView index={index} >
                                     <View style={styles.linea}>
                                         <View style={{ width: "30%" }}>
@@ -121,7 +136,7 @@ class QueryArticles extends React.Component {
                                             <ItemLabel style={{ fontWeight: 'bold', }} text={"Cantidad: " + item.cantidad + " " + item.unidadMedida} />
                                         </View>
                                         <View style={{ width: "65%" }}>
-                                            <ItemLabel text={"Ubicación: " + (item.ubicacion?item.ubicacion:"")} />
+                                            <ItemLabel text={"Ubicación: " + (item.ubicacion ? item.ubicacion : "")} />
                                         </View>
                                     </View>
                                     <View style={styles.linea}>
@@ -172,6 +187,29 @@ const styles = StyleSheet.create({
         color: "#ffffff",
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    shadow: {
+        shadowColor: 'black',
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 6,
+        shadowOpacity: 0.40,
+        backgroundColor: 'transparent',
+        elevation: 5,
+        padding: 5,
+        borderRadius: 10,
+    },
+    header: {
+        width: '100%',
+        height: 45,
+        paddingTop: 1,
+        backgroundColor: 'transparent',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    headerTitle: {
+        color: 'white',
+        fontSize: 20,
+
     }
 
 });

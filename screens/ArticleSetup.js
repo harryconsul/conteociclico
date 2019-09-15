@@ -4,7 +4,7 @@ import { ArticleCard } from '../components/';
 import QueryArticles from './QueryArticles';
 import { componentstyles } from '../styles';
 import backgroundImage from '../assets/labmicroBg.jpg';
-import {actionSetArticle} from '../store/actions/actions.creators'
+import { actionSetArticle } from '../store/actions/actions.creators'
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 class ArticleSetup extends React.Component {
@@ -17,12 +17,12 @@ class ArticleSetup extends React.Component {
             isLoading: false,
             item: null,
             qty: 0,
-            price:"",
+            price: "",
             isSettingUp: false,
-            
+
         }
     }
-    componentDidMount=()=>{
+    componentDidMount = () => {
         Navigation.mergeOptions(this.props.componentId, {
             topBar: {
                 title: {
@@ -39,28 +39,28 @@ class ArticleSetup extends React.Component {
         });
     }
     handleClickRow = (itemQ) => {
-        
+
         const item = {
-            key: itemQ.etiqueta,  
-            itemNumber:itemQ.itemNumber,          
-            description: itemQ.producto,            
+            key: itemQ.etiqueta,
+            itemNumber: itemQ.itemNumber,
+            description: itemQ.producto,
             location: itemQ.ubicacion,
-            serial: itemQ.lote,                        
-            um:itemQ.unidadMedida,            
+            serial: itemQ.lote,
+            um: itemQ.unidadMedida,
         }
         this.setState({ item, qty: 1, isSettingUp: true });
     }
-    handleAccept=()=>{
-        const { item, qty,price } = this.state;
-        const updateItem = { ...item, qty,price };
+    handleAccept = () => {
+        const { item, qty, price } = this.state;
+        const updateItem = { ...item, qty, price };
 
         this.props.dispatch(actionSetArticle(updateItem));
-        this.setState({item:null,qty:0,price:"",isSettingUp:false});
-        
+        this.setState({ item: null, qty: 0, price: "", isSettingUp: false });
+
 
     }
     render() {
-        const { qty, item, isSettingUp, isLoading ,price,} = this.state;
+        const { qty, item, isSettingUp, isLoading, price, } = this.state;
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
                 <View style={componentstyles.containerView}>
@@ -68,11 +68,13 @@ class ArticleSetup extends React.Component {
                         isSettingUp ?
                             <ArticleCard item={item} qty={qty}
                                 setQty={(qty) => this.setState({ qty })}
-                                setPrice={(price)=>this.setState({price})}
+                                setPrice={(price) => this.setState({ price })}
                                 price={price}
                                 handleAccept={this.handleAccept} />
                             :
-                            <QueryArticles businessUnit={this.props.businessUnit}                                                           
+                            <QueryArticles
+                                businessUnit={this.props.businessUnit}
+                                businessUnitNombre={this.props.businessUnitNombre}
                                 notScreen handleClickRow={this.handleClickRow} />
 
 
