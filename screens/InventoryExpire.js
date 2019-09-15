@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {
     View, Text, ImageBackground,
-    Button
+    Button, KeyboardAvoidingView
 } from 'react-native';
 import { Navigation } from 'react-native-navigation';
 import backgroundImage from '../assets/labmicroBg.jpg';
@@ -25,7 +25,7 @@ class InventoryExpire extends Component {
         }
     }
 
-    setUpProduct = () =>{
+    setUpProduct = () => {
         Navigation.showModal({
             stack: {
                 children: [
@@ -36,7 +36,7 @@ class InventoryExpire extends Component {
                                 businessUnit: this.state.sucursal,
                             }
                         },
-                        
+
                     }
                 ]
             }
@@ -46,34 +46,36 @@ class InventoryExpire extends Component {
     render() {
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
-                <View style={componentstyles.containerView}>
-                    <View style={{ height: 200 }}>
-                        <ItemView item={2}>
-                            <BusinessUnit
-                                label="Sucursal"
-                                placeholder="###"
-                                token={this.props.token}
-                                unidad={(unidad) => {
-                                    this.setState({
-                                        sucursal: unidad,
-                                    });
-                                }}
-                            />
-                            <Field
-                                label="Explicación"
-                                placeholder="Ejem: caducidad"
-                                onChangeText={(text) => { this.setState({ motivo: text }) }}
-                            />
-                            <Text style={{ color: 'white' }}>HOLA COMO ESTAS</Text>
-                        </ItemView>
+                <KeyboardAvoidingView style={{ height: "100%", width: "100%" }} >
+                    <View style={componentstyles.containerView}>
+                        <View style={{ height: 200 }}>
+                            <ItemView item={2}>
+                                <BusinessUnit
+                                    label="Sucursal"
+                                    placeholder="###"
+                                    token={this.props.token}
+                                    unidad={(unidad) => {
+                                        this.setState({
+                                            sucursal: unidad,
+                                        });
+                                    }}
+                                />
+                                <Field
+                                    label="Explicación"
+                                    placeholder="Ejem: caducidad"
+                                    onChangeText={(text) => { this.setState({ motivo: text }) }}
+                                />
+                                <Text style={{ color: 'white' }}>HOLA COMO ESTAS</Text>
+                            </ItemView>
+                        </View>
+                        <View style={{ flexDirection: 'row', justifyContent: "space-between" }}>
+                            <Button title="AGREGAR PRODUCTOS"
+                                onPress={this.setUpProduct} disabled={this.state.sucursal ? false : true} />
+                            <Button title="CONFIRMAR SALIDA" />
+                        </View>
                     </View>
-                    <View style={{ flexDirection:'row' , justifyContent: "space-between" }}>
-                        <Button title="AGREGAR PRODUCTOS" 
-                            onPress={this.setUpProduct} disabled={this.state.sucursal?false:true}/>
-                        <Button title="CONFIRMAR SALIDA" />
-                    </View>
-                </View>
-            </ImageBackground>
+                </KeyboardAvoidingView >
+            </ImageBackground >
         )
     }
 }

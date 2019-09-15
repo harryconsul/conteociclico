@@ -92,20 +92,22 @@ class QueryArticles extends React.Component {
                                     placeholder="#####" label="Número único" />
                             </View>
                             :
-                            <View style={styles.linea} >
-                                <View style={{ width: "40%" }}>
-                                    <BusinessUnit token={this.props.user.token}
-                                        label={"Unidad de Negocio"} placeholder={"####"}
-                                        defaultValue={this.props.businessUnit}
-                                        defaultValueNombre={this.props.businessUnitNombre}
-                                        unidad={this.unidadNegocio} />
+                            <View style={componentstyles.containerView}>
+                                <View style={styles.linea} >
+                                    <View style={{ width: "40%" }}>
+                                        <BusinessUnit token={this.props.user.token}
+                                            label={"Unidad de Negocio"} placeholder={"####"}
+                                            defaultValue={this.props.businessUnit}
+                                            defaultValueNombre={this.props.businessUnitNombre}
+                                            unidad={this.unidadNegocio} />
 
-                                </View>
-                                <View style={{ width: "60%" }}>
-                                    <Field onChangeText={(text) => this.setState({ producto: text })}
-                                        onSubmitEditing={this.search}
-                                        inputRef={this.state.articleRef}
-                                        placeholder="#####" label="Número único" />
+                                    </View>
+                                    <View style={{ width: "60%" }}>
+                                        <Field onChangeText={(text) => this.setState({ producto: text })}
+                                            onSubmitEditing={this.search}
+                                            inputRef={this.state.articleRef}
+                                            placeholder="#####" label="Número único" />
+                                    </View>
                                 </View>
                             </View>
                     }
