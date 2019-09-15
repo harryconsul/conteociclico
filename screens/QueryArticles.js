@@ -79,7 +79,7 @@ class QueryArticles extends React.Component {
     render() {
         return (
             <ImageBackground source={this.props.notScreen ? null : backgroundImage} style={componentstyles.background}>
-                <View style={componentstyles.containerView}>
+                <View style={{...componentstyles.containerView, width: '100%', margin: 5 }}>
                     {
                         this.props.businessUnitNombre ?
                             <View style={styles.shadow}>
