@@ -1,9 +1,11 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View , Button} from 'react-native';
 import SideMenuItem from '../components/SideMenuItem'
 import { Navigation } from 'react-native-navigation'
 import { connect } from 'react-redux';
 import barCodeIcon from '../assets/iconbarcode.png'
+import {logOut} from '../apicalls/user.logout';
+
 class SideMenu extends React.Component {
     optionClickHandle = (option, title) => {
         Navigation.push(this.props.currentScreen, {
@@ -40,6 +42,10 @@ class SideMenu extends React.Component {
             }
         });
     }
+
+    logOut = () => {
+        logOut();
+    }
     render() {
         return (
             <View style={{ paddingTop: 50, height: "100%", backgroundColor: '#8c30f1' }} >
@@ -64,6 +70,8 @@ class SideMenu extends React.Component {
                     optionClickHandle={() =>
                         this.optionClickHandle("SaleOrder", "Orden de Venta")}
                 />
+
+                <Button title="SALIR" onPress={logOut} />
 
             </View>
         )
