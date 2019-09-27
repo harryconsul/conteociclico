@@ -149,6 +149,16 @@ class QueryArticles extends React.Component {
 
                                     </View >
 
+                                    <View style={styles.linea}>
+                                        <View style={{ width: "50%" }}>
+                                            <ItemLabel text={"Item: " + item.itemNumber} />
+                                        </View>
+                                        <View style={{ width: "65%" }}>
+                                            <ItemLabel text={"No. Corto: " + item.shortNumber} />
+                                        </View>
+
+                                    </View >
+
                                 </ItemView>
                             </TouchableOpacity>
                         } />

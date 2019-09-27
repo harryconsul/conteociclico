@@ -1,5 +1,8 @@
 import React from 'react';
-import { ImageBackground, View, KeyboardAvoidingView } from 'react-native';
+import {
+    ImageBackground, View,
+    KeyboardAvoidingView, Alert,
+} from 'react-native';
 import { ArticleCard } from '../components/';
 import QueryArticles from './QueryArticles';
 import { componentstyles } from '../styles';
@@ -26,7 +29,7 @@ class ArticleSetup extends React.Component {
         Navigation.mergeOptions(this.props.componentId, {
             topBar: {
                 title: {
-                    text: 'Configurar Articulos'
+                    text: 'Configurar Artículos'
                 },
                 drawBehind: true,
                 background: {
@@ -44,19 +47,31 @@ class ArticleSetup extends React.Component {
             key: itemQ.etiqueta,
             itemNumber: itemQ.itemNumber,
             description: itemQ.producto,
+            stock: itemQ.cantidad,
             location: itemQ.ubicacion,
             serial: itemQ.lote,
             um: itemQ.unidadMedida,
         }
         this.setState({ item, qty: 1, isSettingUp: true });
     }
+
     handleAccept = () => {
         const { item, qty, price } = this.state;
-        const updateItem = { ...item, qty, price };
+        
+        //la cantidad ingresada debe ser, menor o igual a su stock.
+        if (qty <= item.stock) {
+            const updateItem = { ...item, qty, price };
 
-        this.props.dispatch(actionSetArticle(updateItem));
-        this.setState({ item: null, qty: 0, price: "", isSettingUp: false });
+            this.props.dispatch(actionSetArticle(updateItem));
+            this.setState({ item: null, qty: 0, price: "", isSettingUp: false });
 
+        } else {
+            Alert.alert(
+                'La cantidad supera su stock!',
+                'Debe ser menor o igual a ' + item.stock,
+                [{ text: 'Aceptar', style: "destructive" }]
+            );
+        }
 
     }
     render() {
@@ -66,7 +81,9 @@ class ArticleSetup extends React.Component {
                 <View style={componentstyles.containerView}>
                     {
                         isSettingUp ?
-                            <ArticleCard item={item} qty={qty}
+                            <ArticleCard
+                                item={item}
+                                qty={qty}
                                 setQty={(qty) => this.setState({ qty })}
                                 setPrice={(price) => this.setState({ price })}
                                 price={price}
@@ -75,7 +92,9 @@ class ArticleSetup extends React.Component {
                             <QueryArticles
                                 businessUnit={this.props.businessUnit}
                                 businessUnitNombre={this.props.businessUnitNombre}
-                                notScreen handleClickRow={this.handleClickRow} />
+                                notScreen
+                                handleClickRow={this.handleClickRow}
+                            />
 
 
                     }

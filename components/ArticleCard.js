@@ -14,8 +14,8 @@ export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price }
                 <ItemLabel text={"Serie Lote: " + item.serial} />
                 <View style={{ display:"flex",flexDirection:"row",
                     justifyContent: "space-between" }}>
-                    <ItemLabel text={"Unidad de Medida: " + item.um} />
-                    <ItemLabel text={"Ubicacion : " + item.location} />
+                    <ItemLabel text={"Stock: " + item.stock + " " +  item.um} />
+                    <ItemLabel text={"Ubicación : " + item.location} />
                     
                 </View>
                 <ItemHightLight text={item.description} />                
