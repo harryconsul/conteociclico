@@ -12,8 +12,7 @@ class SignCanvas extends React.Component {
     render() {
         return (
             <View style={componentstyles.containerView}>
-                <Button onPress={this.handleSave} title="Guardar" />
-                <SketchCanvas style={{ flex: 1 }}                    
+                 <SketchCanvas style={{ marginBottom:30,borderColor:"#8c30f1c7",borderWidth:5,borderStyle:"solid",height:240}}                    
                     permissionDialogTitle="Permiso Requerido"
                     permissionDialogMessage="Permiso para guardar firmas en tu telefono"
                     onSketchSaved={(success, path) => {
@@ -24,9 +23,11 @@ class SignCanvas extends React.Component {
                         }
 
                         }}
-                    strokeColor={'red'}
+                    strokeColor={'black'}
                     ref={ref => this.canvas = ref}
                     strokeWidth={7} />
+                <Button onPress={this.handleSave} title="Guardar" />
+               
             </View>
         )
     }

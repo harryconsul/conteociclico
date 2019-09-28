@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     View, StyleSheet, Alert, KeyboardAvoidingView
-    , ImageBackground
+    , ImageBackground ,Switch,Text
 } from 'react-native';
 import Field from '../components/Field';
 import { ArticleCard } from '../components'
@@ -23,6 +23,7 @@ class BarcodeInput extends React.Component {
             qty: 0,
             articleRef: React.createRef(),
             searchCode: "",
+            confirmMode:false,
         }
 
     }
@@ -100,6 +101,10 @@ class BarcodeInput extends React.Component {
                     editingItem,
                     qty: editingItem.qty,
                     isEditing: true,
+                },()=>{
+                    if(!this.state.confirmMode){
+                        this.handleAccept();
+                    }
                 });
 
 
@@ -125,6 +130,11 @@ class BarcodeInput extends React.Component {
                 <KeyboardAvoidingView
                     style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
                     <View style={componentstyles.containerView}>
+                        <View style={{display:"flex",flexDirection:"row"}}>
+                            <Text style={componentstyles.label}> Capturar cantidades al leer producto </Text>
+                            <Switch style={{marginRight:20}}  onValueChange={(value)=>this.setState({confirmMode:value})}
+                                value={this.state.confirmMode} />
+                        </View>
                         <Field onChangeText={(text) => this.setState({ searchCode: text })}
                             onSubmitEditing={this.barCodeHandler}
                             autoFocus={true}

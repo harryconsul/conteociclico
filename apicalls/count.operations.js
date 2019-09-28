@@ -1,15 +1,25 @@
 import axios from 'axios';
 
 
-const searchCyclicCount = () => {
+const searchCyclicCount = (businessUnit) => {
     return {
-        formName: "P41240_W41240A",
-        version: "ZJDE0001",
+        formName: "P5541240_W5541240A",
+        version: "",
         formActions: [
             {
-                command: "SetQBEValue",
+                command: "SetComboValue",
                 value: "20",
-                "controlID": "1[26]"
+                "controlID": "70"
+            },
+            {
+                command: "SetComboValue",
+                value: "30",
+                "controlID": "66"
+            },
+            {
+                command: "SetControlValue",
+                value: businessUnit,
+                "controlID": "75"
             },
             {
                 command: "DoAction",
@@ -51,7 +61,7 @@ const actionEnterCyclicCount=(rows)=>{
 }
 const actionSelectCyclicCount=(rowId)=>{
     return{
-            formOID: "W41240A",
+            formOID: "W5541240A",
             formActions: [
                 {
                     ".type": "com.oracle.e1.jdemf.FormAction",
@@ -66,9 +76,9 @@ const actionSelectCyclicCount=(rowId)=>{
             ]        
     }
 }
-export const listCyclicCount=(token,callback,errorHandler)=>{
+export const listCyclicCount=(token,businessUnit,callback,errorHandler)=>{
     
-    callStackService(createStack(token,searchCyclicCount()),callback,errorHandler)
+    callStackService(createStack(token,searchCyclicCount(businessUnit)),callback,errorHandler)
     
 }
 export const selectCyclicCount =(token,stack,rowId,callback)=>{

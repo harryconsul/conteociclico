@@ -1,19 +1,19 @@
 import React from 'react';
 import {
-    View, Text, Button, TextInput, FlatList,
+    View,  Button, FlatList,
     ImageBackground, StyleSheet, TouchableOpacity,
     ActivityIndicator, KeyboardAvoidingView,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
-import Field from '../../components/Field';
+import {BusinessUnit} from '../../components/BusinessUnit';
 import { ItemView, ItemHightLight, ItemLabel } from '../../components'
 import { listCyclicCount, selectCyclicCount } from '../../apicalls/count.operations';
 import {transactionModes} from '../../constants'
 import { actionUpdateStack, actionSetArticlesMap ,actionSetTransactionMode} from '../../store/actions/actions.creators';
 import { componentstyles } from '../../styles';
 import backgroundImage from '../../assets/labmicroBg.jpg';
-import barCodeIcon from '../../assets/iconbarcode.png'
+import { topBarButtons} from '../../constants'
 class CountList extends React.Component {
 
     constructor(props) {
@@ -21,6 +21,7 @@ class CountList extends React.Component {
         Navigation.events().bindComponent(this);
         this.state = {
             rows: [],
+            businessUnit:"",
             isLoading: false,
         }
     }
@@ -36,11 +37,13 @@ class CountList extends React.Component {
     }
 
 
-    componentDidMount() {
+    searchCyclicCount=()=> {
         this.setState({ isLoading: true });
-        listCyclicCount(this.props.user.token, (response) => {
+        
+        listCyclicCount(this.props.user.token,this.state.businessUnit, (response) => {
 
-            const rawRows = response.data.fs_P41240_W41240A.data.gridData.rowset;
+            const rawRows = response.data.fs_P5541240_W5541240A.data.gridData.rowset;
+            
             const rows = rawRows.map(item => ({
                 key: item.mnCycleNumber_25.value,
                 number: item.mnCycleNumber_25.value,
@@ -51,7 +54,7 @@ class CountList extends React.Component {
                 stackId: response.data.stackId,
                 stateId: response.data.stateId,
                 rid: response.data.rid,
-                currentApplication: "P41240_W41240A",
+                currentApplication: "P5541240_W5541240A",
             }
             this.props.dispatch(actionUpdateStack(stack));
         }, (reason) => console.warn("error", reason));
@@ -60,9 +63,9 @@ class CountList extends React.Component {
         this.setState({ isLoading: true });
         selectCyclicCount(this.props.user.token, this.props.stack, rowId, (response) => {
             const rowsData = response.data.fs_P4141_W4141A.data.gridData.rowset;
-            console.warn(rowsData);
+        
             const articlesMap = rowsData.reduce((previous, current, index) => {
-                const key = current.sLotSerial_27.value;
+                const key = current.mnNmeroEtiqueta_182.value;
                 previous.set(key,{
                     key,
                     serial: current.sLotSerial_27.value,
@@ -95,16 +98,7 @@ class CountList extends React.Component {
                                 text: 'Registra entradas conteo',
                                 color: '#ffffff'
                             },
-                            rightButtons:[
-                                {
-                                    id:"barCode",
-                                    icon:barCodeIcon,
-                                },
-                                {
-                                    id:"inputCode",
-                                    icon:barCodeIcon,
-                                }
-                            ]
+                            ...topBarButtons.rightButtons
                         }
                     }
                 },
@@ -119,7 +113,10 @@ class CountList extends React.Component {
                 <KeyboardAvoidingView
                     style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
                     <View style={componentstyles.containerView}>
-                        <Field label="Numero de conteo ciclico" placeholder={"####"} />
+                        <BusinessUnit label="Unidad de Negocio" placeholder="#####"
+                        token={this.props.user.token}
+                        unidad={(businessUnit)=>this.setState({businessUnit})}  />
+                        <Button title="Buscar Conteo" onPress={this.searchCyclicCount} />
                         <ActivityIndicator color="#ffffff"
                             animating={this.state.isLoading} size={"large"} />
                         <FlatList data={this.state.rows}
