@@ -1,21 +1,23 @@
 import React from 'react';
 import {
     View, Button, StyleSheet,
-    Alert
+    Alert,ActivityIndicator,
 } from 'react-native';
 import SideMenuItem from '../components/SideMenuItem'
 import { Navigation } from 'react-native-navigation'
 import { connect } from 'react-redux';
-import {topBarButtons} from '../constants'
+import { topBarButtons } from '../constants'
 import logOut from '../apicalls/user.logout';
-
-import Auth from './Auth';
+import { navigationHelpers } from '../helpers'
 
 class SideMenu extends React.Component {
-    optionClickHandle = (option, title,showBarcodeButtons) => {
-        let rightButtons=null;
-        if(showBarcodeButtons){
-            rightButtons={...topBarButtons.rightButtons}
+    state={
+        isLoading:false,
+    }
+    optionClickHandle = (option, title, showBarcodeButtons) => {
+        let rightButtons = null;
+        if (showBarcodeButtons) {
+            rightButtons = { ...topBarButtons.rightButtons }
         }
         Navigation.push(this.props.currentScreen, {
             component: {
@@ -44,9 +46,11 @@ class SideMenu extends React.Component {
     }
 
     userLogOut = () => {
+        this.setState({isLoading:true});
         logOut(this.props.token, (response) => {
             try {
-                Alert.alert("Queda pendiente llamar login");
+                this.setState({isLoading:false});
+                navigationHelpers.callLogin();
             } catch (reason) {
                 Alert("Error al cerrar sesión ");
             }
@@ -56,31 +60,36 @@ class SideMenu extends React.Component {
         return (
             <View style={{ paddingTop: 50, height: "100%", backgroundColor: '#8c30f1' }} >
                 <View style={{ height: '80%' }}>
-                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico",false)}
+                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false)}
                         optionName="Conteo Ciclico" />
-                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("QueryArticles", "Consulta de Existensias",false)}
+                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("QueryArticles", "Consulta de Existensias", false)}
                         optionName="Consulta de Existensias" />
-                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("PlaceSign", "Firma",false)}
+                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("PlaceSign", "Firma", false)}
                         optionName="Firma Algo" />
-                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("ProductsPickup", "Recolección de Producto",true)}
+                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("ProductsPickup", "Recolección de Producto", true)}
                         optionName="Recoleccion de Producto" />
                     <SideMenuItem
                         optionName="Salidas por Caducidad"
                         optionClickHandle={() =>
-                            this.optionClickHandle("InventoryExpire", "Salidas por Caducidad",false)}
+                            this.optionClickHandle("InventoryExpire", "Salidas por Caducidad", false)}
                     />
                     <SideMenuItem optionName="Salidas por Transferencia"
                         optionClickHandle={() =>
-                            this.optionClickHandle("InventoryTransfer", "Salidas por Transferencia",false)}
+                            this.optionClickHandle("InventoryTransfer", "Salidas por Transferencia", false)}
                     />
                     <SideMenuItem optionName="Orden de Venta"
                         optionClickHandle={() =>
-                            this.optionClickHandle("SaleOrder", "Orden de Venta",false)}
+                            this.optionClickHandle("SaleOrder", "Orden de Venta", false)}
                     />
                 </View>
                 <View style={{ height: '20%' }}>
                     <View style={styles.logout} >
                         <View style={{ width: 200 }} >
+                            {
+                                this.state.isLoading ?
+                                    <ActivityIndicator color="#ffffff" animating={true} size={"large"} />
+                                    : null
+                            }
                             <Button title="SALIR" onPress={this.userLogOut} />
                         </View>
                     </View>

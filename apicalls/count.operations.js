@@ -76,6 +76,23 @@ const actionSelectCyclicCount=(rowId)=>{
             ]        
     }
 }
+const actionReviewCyclicCount=(rowId)=>{
+    return{
+            formOID: "W5541240A",
+            formActions: [
+                {
+                    ".type": "com.oracle.e1.jdemf.FormAction",
+                    command: "SelectRow",
+                    controlID: "1." + rowId
+                },
+                {
+                    ".type": "com.oracle.e1.jdemf.FormAction",
+                    command: "DoAction",
+                    controlID: "4"
+                }
+            ]        
+    }
+}
 export const listCyclicCount=(token,businessUnit,callback,errorHandler)=>{
     
     callStackService(createStack(token,searchCyclicCount(businessUnit)),callback,errorHandler)
@@ -83,6 +100,12 @@ export const listCyclicCount=(token,businessUnit,callback,errorHandler)=>{
 }
 export const selectCyclicCount =(token,stack,rowId,callback)=>{
     const action = pushStack(token,actionSelectCyclicCount(rowId),stack);
+    callStackService(action,callback,(reason)=>console.warn(reason));
+        
+    
+}
+export const reviewCyclicCount =(token,stack,rowId,callback)=>{
+    const action = pushStack(token,actionReviewCyclicCount(rowId),stack);
     callStackService(action,callback,(reason)=>console.warn(reason));
         
     

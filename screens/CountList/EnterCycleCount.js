@@ -1,63 +1,28 @@
 import React from 'react';
-import { View, TextInput, Text, Button, FlatList, StyleSheet, Alert, ImageBackground } from 'react-native';
+import { View, TextInput, Text, Button, FlatList, StyleSheet, Alert, ImageBackground, ActivityIndicator } from 'react-native';
 import { connect } from 'react-redux';
 import { ItemView, ItemHightLight, ItemLabel } from '../../components'
 import { Navigation } from 'react-native-navigation'
-import { enterCyclicCount } from '../../apicalls/count.operations';
-import Field from '../../components/Field';
+import { enterCyclicCount, reviewCyclicCount } from '../../apicalls/count.operations'
 import { componentstyles } from '../../styles';
 import backgroundImage from '../../assets/labmicroBg.jpg';
-import { actionSetTransactionMode } from '../../store/actions/actions.creators';
+import { actionSetTransactionMode, actionUpdateStack } from '../../store/actions/actions.creators';
 import { transactionModes } from '../../constants/';
 
 class EnterCycleCount extends React.Component {
     constructor(props) {
         super(props);
         Navigation.events().bindComponent(this);
-        state = {
+        this.state = {
             search: "",
             articles: [],
             mapIndex: {},
+            review: null,
+            isLoading: false,
 
         }
     }
-    searchItem = () => {
-        const item = this.props.listMap[event.data];
 
-        if (item) {
-
-            const editingItem = { ...item };
-            const indexOfItem = editingItem.indexOfItem;
-
-            if (indexOfItem) {
-                editingItem.qty++;
-
-
-            } else {
-
-                editingItem.qty = 1;
-
-                editingItem.key = item.serial;
-
-
-
-            }
-            this.setState({
-                editingItem,
-                qty: editingItem.qty,
-                isEditing: true,
-            });
-            //this.setState({ articles, mapIndex });
-
-        } else {
-            this.setState({ isEditing: true });
-            Alert.alert("No encontrado ", "No hemos podido encontrar " + event.data,
-                [{
-                    text: "Continuar",
-                    onPress: () => this.setState({ isEditing: false }),
-                }]);
-        }
-    }
     navigationButtonPressed = ({ buttonId }) => {
         switch (buttonId) {
             case 'sideMenu':
@@ -111,10 +76,7 @@ class EnterCycleCount extends React.Component {
         });
     }
     saveEntry = () => {
-        enterCyclicCount(this.props.user.token, this.props.stack, this.state.articles,
-            (response) => console.warn(response));
-    }
-    render() {
+
         const list = [];
 
         for (let article of this.props.articles.values()) {
@@ -123,32 +85,81 @@ class EnterCycleCount extends React.Component {
                 list.push(article);
             }
         }
+        this.setState({ isLoading: true });
 
+        enterCyclicCount(this.props.user.token, this.props.stack, list,
+            (response) => {
+                const stack = {
+                    stackId: response.data.stackId,
+                    stateId: response.data.stateId,
+                    rid: response.data.rid,
+                    currentApplication: response.data.currentApp,
+                }
+                this.props.dispatch(actionUpdateStack(stack));
+
+                if (response.data.currentApp === 'P5541240_W5541240A') {
+                    const rows = response.data.fs_P5541240_W5541240A.data.gridData.rowset;
+                    const cyclicCount = rows.filter(item => item.mnCycleNumber_25.value === this.props.cycleCountNumber)
+                    if (cyclicCount) {
+                        reviewCyclicCount(this.props.user.token, this.props.stack, cyclicCount.rowIndex, (response) => {
+
+                            const rawRows = response.data.fs_P41241_W41241A.data.gridData.rowset;
+
+                            const review = rawRows.map(item => (
+                                {
+                                    serial: item.sLotSerial_21.value,
+                                    description: item.sDescription_28.value,
+                                    location: item.sLocation_61.value,
+                                    rowId: item.rowIndex,
+                                    qtyCounted: item.mnQuantityCounted_25.value,
+                                    qtyOnHand: item.mnQuantityOnHand_23.value,
+                                    qtyVariance: item.mnQuantityVariance_31.value,
+                                    isItem: item.sDescription_28.value === 'TOTALS' || item.sDescription_28.value === 'TOTALES' ? false : true,
+                                }
+                            ));
+
+                            this.setState({ review, isLoading: false });
+
+
+                        })
+                    }
+                }
+            });
+    }
+    render() {
+        const list = [];
+        const { review } = this.state;
+        if (!review) {
+            for (let article of this.props.articles.values()) {
+                //const article = this.props.articles[key]
+                if (article.qty) {
+                    list.push(article);
+                }
+            }
+        }
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background} >
                 <View style={componentstyles.containerView} >
-                    
-                    <View style={styles.buttonSave}>
-                        <Button color="#ccb82e" onPress={this.saveEntry} title="Guardar" />
-                    </View>                 
-                   
+                    {
+                        this.state.isLoading ?
+                            <ActivityIndicator color="#ffffff" animating={true} size={"large"} />
+                            : null
+                    }
+                    <Text style={componentstyles.title}> {"Numero de Conteo Ciclico: " + this.props.cycleCountNumber} </Text>
+                    <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                        <View style={styles.buttonSave}>
+                            <Button disabled={review ? true : false} color="#ccb82e" onPress={this.saveEntry} title="Guardar" />
+                        </View>
+                        <View style={styles.buttonSave}>
+                            <Button disabled={review ? false : true} onPress={this.authorizeCounting} title="Autorizar" />
+                        </View>
+                    </View>
 
-                    <FlatList data={list}
-                        renderItem={({ item, index }) => {
-                            return <ItemView key={index} index={index}>
-                                <View style={{ flex: 1, justifyContent: "space-between" }}>
-                                    <ItemLabel text={item.serial} />
-                                    <ItemLabel text={item.location} />
-                                </View>
-                                <ItemHightLight text={item.description} />
-                                <View style={{ flex: 1, justifyContent: "space-between" }}>
-                                    <ItemLabel text={item.um} />
-                                    <ItemLabel text={item.qty} />
-                                </View>
+                    {review ?
+                        <Review list={review} /> :
+                        <Articles list={list} />
+                    }
 
-                            </ItemView>
-                        }}
-                    />
                 </View >
             </ImageBackground>
 
@@ -180,3 +191,56 @@ const mapStateToProps = state => {
 }
 export default connect(mapStateToProps)(EnterCycleCount);
 
+const Articles = ({ list }) => (
+    <View style={{ marginTop: 15 }} >
+        <Text style={componentstyles.title}> Conteo de Articulos </Text>
+        <FlatList data={list}
+            renderItem={({ item, index }) => {
+                return <ItemView key={index} index={index}>
+                    <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                        <ItemLabel text={"Lote/Serie: " + item.serial} />
+                        <ItemLabel text={"Ubicación: " + item.location} />
+                    </View>
+                    <ItemHightLight text={item.description} />
+                    <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                        <ItemLabel text={"UM: " + item.um} />
+                        <ItemLabel text={"Cantidad Contada: " + item.qty} />
+                    </View>
+
+                </ItemView>
+            }}
+        />
+    </View>
+
+);
+const Review = ({ list }) => (
+    <View style={{ marginTop: 15 }}>
+        <Text style={componentstyles.title}> Diferencias </Text>
+
+        <FlatList data={list}
+            renderItem={({ item, index }) => {
+                const itemClass = item.isItem ? 1 : 2;
+                return <ItemView key={index} index={itemClass}>
+                    {item.isItem ?
+                        <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                            <ItemLabel text={"Lote/Serie : " + item.serial} />
+                            <ItemLabel text={"Ubicación: " + item.location} />
+
+                        </View> : null
+                    }
+                    <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                        <ItemHightLight text={item.description} />
+                        <ItemLabel text={"Cantidad Esperada: " + item.qtyOnHand} />
+                    </View>
+
+                    <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                        <ItemLabel text={"Cantidad Contada: " + item.qtyCounted} />
+                        <ItemHightLight text={"Variación: " + item.qtyVariance} />
+
+                    </View>
+
+                </ItemView>
+            }}
+        />
+    </View>
+);

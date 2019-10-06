@@ -150,6 +150,11 @@ class Auth extends Component {
                  style={{height:"100%",width:"100%"}} keyboardVerticalOffset={20}  behavior="padding">
                     <View style={styles.container}>
                         <Text style={styles.welcome}>Inventario DICIPA</Text>
+                        {
+                            this.state.isLoading?
+                                <ActivityIndicator color="#ffffff" animating={true} size={"large"} />
+                            :null
+                        }
                         <TextInput autoFocus placeholder={"Usuario"} returnKeyType="next"
                             onSubmitEditing={this.handleUserSet}
                             placeholderTextColor={"#fffa"}
@@ -171,7 +176,7 @@ class Auth extends Component {
                                 onValueChange={(value) => this.setState({ rememberMe: value })}
                             />
                         </View>
-                        <ActivityIndicator color="#ffffff" animating={this.state.isLoading} size={"large"} />
+                       
                     </View>
                 </KeyboardAvoidingView>
 

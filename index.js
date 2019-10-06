@@ -26,6 +26,7 @@ import store from './store/store';
 import { actionSetCurrentScreen } from './store/actions/actions.creators';
 import { Provider } from 'react-redux';
 import AddProduct from './screens/AddProduct';
+import {navigationHelpers} from './helpers'
 
 axios.defaults.baseURL="http://207.249.158.84:91/jderest/";
 axios.defaults.headers.post['Content-Type'] = 'application/json';
@@ -122,33 +123,8 @@ const screenEventListener = Navigation.events().registerComponentDidAppearListen
 });
 
 Navigation.events().registerAppLaunchedListener(() => {
-
-  Navigation.setRoot({
-    root: {
-      stack: {
-
-        children: [
-          {
-            component: {
-              name: 'Auth',
-
-            },
-
-
-          }
-        ],
-        options: {
-          topBar: {
-            visible: false,
-            height: 0,
-          }
-        }
-
-      }
-    }
-
-
-  });
+  navigationHelpers.callLogin();
+ 
 });
 
 

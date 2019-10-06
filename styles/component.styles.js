@@ -39,6 +39,13 @@ export const componentstyles=StyleSheet.create({
     label:{
         marginBottom:5,
         color:'#f1bb57',
+    },
+    title:{
+        marginBottom:5,
+        color:'#f1bb57',
+        fontSize:22,
+        fontWeight:"bold",
+        
     }
    
 
