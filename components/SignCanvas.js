@@ -7,7 +7,7 @@ import {uploadSignature} from '../apicalls/signature.uploads';
 
 class SignCanvas extends React.Component {
     handleSave = () => {
-        this.canvas.save("png",false,"firmas","test",false,false,false);
+        this.canvas.save("png",false,"firmas",this.props.fileName,false,false,false);
     }
     render() {
         return (
@@ -17,7 +17,7 @@ class SignCanvas extends React.Component {
                     permissionDialogMessage="Permiso para guardar firmas en tu telefono"
                     onSketchSaved={(success, path) => {
                         if(success){
-                            uploadSignature(22471,path,this.props.token);
+                            uploadSignature(this.props.itemKey,path,this.props.token,this.props.fileName,this.props.close);
                         }else{
                             Alert.alert("Error al guardar la firma");
                         }

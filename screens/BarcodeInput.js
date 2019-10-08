@@ -10,6 +10,7 @@ import { Navigation } from 'react-native-navigation';
 import { actionSetArticle } from '../store/actions/actions.creators';
 import { transactionModes } from '../constants';
 import backgroundImage from '../assets/labmicroBg.jpg';
+import closeIcon from '../assets/iconclose.png';
 import { componentstyles } from '../styles';
 
 
@@ -41,6 +42,14 @@ class BarcodeInput extends React.Component {
                     blur: false
                 },
                 visible: true,
+                rightButtons:[
+                    {
+                        id:'close',
+                        icon:closeIcon,
+                    }
+                ]
+
+                
             },
         });
     }
@@ -122,6 +131,18 @@ class BarcodeInput extends React.Component {
         }
 
     }
+    close=()=>{
+        Navigation.dismissModal(this.props.componentId);
+    }
+    navigationButtonPressed = ({ buttonId }) => {
+        switch(buttonId){
+               case 'close':
+                   this.close();
+                   break;              
+               default:
+                    this.close();
+        } 
+   }
     render() {
         const item = this.state.editingItem;
         const qty = this.state.qty;

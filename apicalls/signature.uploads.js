@@ -1,8 +1,8 @@
 import axios from 'axios';
 import RNFS from 'react-native-fs';
-export const uploadSignature=(key,path,token)=>{
+export const uploadSignature=(key,path,token,fileName,callback)=>{
     const formData = new FormData();
-    const pathJson = RNFS.DocumentDirectoryPath + '/test1.txt';
+    const pathJson = RNFS.DocumentDirectoryPath + '/' + fileName + '.txt';
     
     const finalPath = 'file://' + path;
     
@@ -24,7 +24,7 @@ export const uploadSignature=(key,path,token)=>{
         }
     }
     const json = JSON.stringify(data);
-    console.warn("token",json);
+    
     RNFS.writeFile(pathJson,json,'utf8').then(()=>{
         formData.append('file',{
             uri:finalPath,
@@ -45,7 +45,7 @@ export const uploadSignature=(key,path,token)=>{
             }
         }
     
-        axios.post("file/upload",formData,config).then((response)=>console.warn(response))
+        axios.post("file/upload",formData,config).then((response)=>callback())
         .catch(error=>console.warn(error));
     })
    

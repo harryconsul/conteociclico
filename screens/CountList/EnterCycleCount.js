@@ -19,6 +19,7 @@ class EnterCycleCount extends React.Component {
             mapIndex: {},
             review: null,
             isLoading: false,
+            waitingForSign:0,
 
         }
     }
@@ -125,6 +126,62 @@ class EnterCycleCount extends React.Component {
                     }
                 }
             });
+    }
+    showPlaceSign=(signType)=>{
+
+        Navigation.showModal({
+            stack: {
+                children: [
+                    {
+                        component: {
+                            name: "PlaceSign",
+                            passProps:{
+                                itemKey:this.props.cycleCountNumber,
+                                fileName:"firma-"+signType+"-"+this.props.cycleCountNumber,
+                                title: 'Firma de quien ' + signType,
+                                closeOnSave:true,
+                            }
+                        },
+                        options: {
+                            topBar: {
+                                title: {
+                                    text: 'Firma de quien ' + signType
+                                },
+                                drawBehind: true,
+                                background: {
+                                    color: '#8c30f1c7',
+                                    translucent: true,
+                                    blur: false
+                                },
+
+                            }
+                        }
+                    }
+                ]
+            }
+        });
+    }
+    componentDidAppear(){
+        switch (this.state.waitingForSign) {
+            case 1:
+                this.setState({waitingForSign:2});
+                this.showPlaceSign("cuenta");
+                break;
+            case 2:
+                this.setState({waitingForSign:3});
+                this.registerAutorization();
+            default:
+                break;
+        }
+    }
+    registerAutorization=()=>{
+        Alert.alert("Conteo Autorizado");
+
+    }
+    authorizeCounting=()=>{
+        this.setState({waitingForSign:1});
+        this.showPlaceSign("autoriza");
+
     }
     render() {
         const list = [];
