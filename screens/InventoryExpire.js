@@ -102,7 +102,12 @@ class InventoryExpire extends Component {
             const { token, stack } = this.props;
     
             fillTransfer(token, stack, form, (response) => {
-                console.warn("Respuesta a la salida ", response);
+                const document = response.data.fs_P4112_W4112A.data.txtPrevDocumentNo_151.value;
+                Alert.alert(
+                    'Salida confirmada',
+                    "Número del Documento " + document,
+                    [{ text: 'Aceptar', style: "destructive" }]
+                );
             });
             
         } else {

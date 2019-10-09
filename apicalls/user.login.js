@@ -8,7 +8,7 @@ const userLogin=(username,password,callback)=>{
         "deviceName": "RESTclient",
         "role": "*ALL"
     }).then(callback).catch(()=>{
-        Alert.alert("Error en la peticion");
+        Alert.alert("Error en la petición " + error);
     })
     
 
