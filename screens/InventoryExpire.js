@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {
-    View, Text, ImageBackground, FlatList, Alert,
+    View, ImageBackground, FlatList, Alert,
     Button, KeyboardAvoidingView, TouchableOpacity,
 } from 'react-native';
 import { Navigation } from 'react-native-navigation';
@@ -102,7 +102,12 @@ class InventoryExpire extends Component {
             const { token, stack } = this.props;
     
             fillTransfer(token, stack, form, (response) => {
-                console.warn("Respuesta a la salida ", response);
+                const document = response.data.fs_P4112_W4112A.data.txtPrevDocumentNo_151.value;
+                Alert.alert(
+                    'Salida confirmada',
+                    "Número de Documento " + document,
+                    [{ text: 'Aceptar', style: "destructive" }]
+                );
             });
             
         } else {
@@ -126,8 +131,10 @@ class InventoryExpire extends Component {
 
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
-                <KeyboardAvoidingView style={{ height: "100%", width: "100%" }} >
+                <KeyboardAvoidingView style={{ height: "100%", width: "100%" }}
+                    behavior="padding" enabled>
                     <View style={componentstyles.containerView}>
+
                         <View style={{ height: 200 }}>
                             <ItemView item={2}>
                                 <BusinessUnit
@@ -142,12 +149,13 @@ class InventoryExpire extends Component {
                                     }}
                                 />
                                 <Field
-                                    label="Explicación"
+                                    label="Motivo"
                                     placeholder="Ejem: caducidad"
                                     onChangeText={(text) => { this.setState({ motivo: text }) }}
                                 />
                             </ItemView>
                         </View>
+
                         <View style={{ flexDirection: 'row', justifyContent: "space-between" }}>
                             <Button title="AGREGAR PRODUCTOS"
                                 onPress={this.setUpProduct}
@@ -164,7 +172,7 @@ class InventoryExpire extends Component {
                             renderItem={({ item, index }) =>
                                 <TouchableOpacity key={item.key} index={index} onPress={() => this.handleSelectRow(item.key)}>
                                     <ItemView index={index} >
-                                        <ItemLabel text={"Numero: " + item.itemNumber} />
+                                        <ItemLabel text={"Número: " + item.itemNumber} />
                                         <ItemHightLight text={"Descripción: " + item.description} />
                                         <ItemHightLight text={"Ubicación: " + item.location} />
                                         <View style={{
@@ -190,6 +198,7 @@ class InventoryExpire extends Component {
         )
     }
 }
+
 const mapStateToProps = (state) => {
     return {
         user: state.user,
