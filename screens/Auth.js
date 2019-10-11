@@ -104,26 +104,55 @@ class Auth extends Component {
         this.setState({ isLoading: true });
         userLogin(this.state.username, this.state.password, (response) => {
             this.setState({ isLoading: false });
-            try {
-                const { realm, username, password, rememberMe, userInDB } = this.state;
-                if (!userInDB) {
-                    realm.write(() => {
-                        realm.create('user', { username, password, rememberMe });
-                    });
-                }
-                const responseInfo = response.data.userInfo;
+            const saveUser = new Promise((resolve, reject) => {
+                const { realm, username, password, rememberMe } = this.state;
+                try {
+                    if (!this.userInDB) {
+                        const users = realm.objects('user');
+                        const user = users.filtered("username=$0", username);
+                       
+                        if (user.length) {
+                           
+                            realm.write(() => {
+                                realm.create('user', { username, password, rememberMe }, true);
+                            });
+                        } else {
+                            
+                            realm.write(() => {
+                                realm.create('user', { username, password, rememberMe });
+                            });
+                        }
 
+                    } else {
+
+                        realm.write(() => {
+                            realm.create('user', { username, password, rememberMe }, true);
+                        });
+                       
+                    }
+                    const responseInfo = response.data.userInfo;
+                    
+                    resolve({ username, responseInfo });
+                   
+                }catch(error){
+                    reject(error);
+                }
+            });
+
+            saveUser.then(({ username, responseInfo }) => {
                 this.props.login({
                     username,
                     name: responseInfo.alphaName,
                     token: responseInfo.token,
                 });
                 callMainApp();
-            } catch (reason) {
-
+            }).catch((error) => {
                 Alert("Error al registrar al usuario ");
-                console.warn(reason);
-            }
+            
+            })
+
+
+
 
 
 
@@ -134,9 +163,13 @@ class Auth extends Component {
         const users = realm.objects('user');
         const user = users.filtered("username=$0", username);
         if (user.length) {
-            this.setState({ password: user[0].password, userInDB: user[0], });
+            const rememberMe =  user[0].rememberMe
+            const password = rememberMe ? user[0].password : "";
+            
+            this.userInDB = user[0];
+            this.setState({ password,rememberMe });
         } else {
-            this.setState({ userInDB: null, })
+            this.userInDB = null
         }
 
         this.state.passwordRef.current.focus()
@@ -144,16 +177,16 @@ class Auth extends Component {
     render() {
         return (
 
-            <ImageBackground source={backgroundImage}                 
+            <ImageBackground source={backgroundImage}
                 style={componentstyles.background}>
                 <KeyboardAvoidingView
-                 style={{height:"100%",width:"100%"}} keyboardVerticalOffset={20}  behavior="padding">
+                    style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
                     <View style={styles.container}>
                         <Text style={styles.welcome}>Inventario DICIPA</Text>
                         {
-                            this.state.isLoading?
+                            this.state.isLoading ?
                                 <ActivityIndicator color="#ffffff" animating={true} size={"large"} />
-                            :null
+                                : null
                         }
                         <TextInput autoFocus placeholder={"Usuario"} returnKeyType="next"
                             onSubmitEditing={this.handleUserSet}
@@ -176,7 +209,7 @@ class Auth extends Component {
                                 onValueChange={(value) => this.setState({ rememberMe: value })}
                             />
                         </View>
-                       
+
                     </View>
                 </KeyboardAvoidingView>
 
@@ -191,7 +224,7 @@ class Auth extends Component {
 const styles = StyleSheet.create({
     container: {
         height: "100%",
-        width: "100%",        
+        width: "100%",
         justifyContent: 'flex-start',
         alignItems: 'center',
         flexDirection: "column",
