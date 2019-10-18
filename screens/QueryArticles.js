@@ -58,7 +58,9 @@ class QueryArticles extends React.Component {
                 unidadNegocio: item.sBusinessUnit_48.value,
                 ubicacion: item.sLocation_55.value,
                 lote: item.sLotSerialNumber_37.value,
-                cantidad: item.mnQuantityOnHand_46.value,
+                disponible: item.mnQuantityOnHand_46.value,
+                existencia: item.mnQuantitySinCalcular_57.value,
+                comprometido: item.mnQuantityHardCommitted_58.value,
                 caducidad: item.dtExpirationDateMonth_53.value,
                 unidadMedida: item.sUM_54.value,
                 shortNumber: item.mnShortItemNo_25.value,
@@ -79,7 +81,7 @@ class QueryArticles extends React.Component {
     render() {
         return (
             <ImageBackground source={this.props.notScreen ? null : backgroundImage} style={componentstyles.background}>
-                <View style={{...componentstyles.containerView, width: '100%', margin: 5 }}>
+                <View style={{ ...componentstyles.containerView, width: '100%', margin: 5 }}>
                     {
                         this.props.businessUnitNombre ?
                             <View style={styles.shadow}>
@@ -124,17 +126,25 @@ class QueryArticles extends React.Component {
                                 onPress={this.props.handleClickRow ? () => this.props.handleClickRow(item) : null} >
                                 <ItemView index={index} >
                                     <View style={styles.linea}>
-                                        <View style={{ width: "30%" }}>
+                                        <View style={{ width: "33%" }}>
                                             <ItemLabel text={"No. " + item.etiqueta} />
                                         </View>
-                                        <View style={{ width: "70%" }}>
-                                            <ItemLabel text={item.producto} />
+                                        <View style={{ width: "67%" }}>
+                                            <ItemLabel style={{ fontWeight: 'bold', }} text={item.producto} />
                                         </View>
                                     </View>
                                     <View style={styles.linea}>
-                                        <View style={{ width: "35%" }}>
-                                            <ItemLabel style={{ fontWeight: 'bold', }} text={"Cantidad: " + item.cantidad + " " + item.unidadMedida} />
+                                        <View style={{ width: "33%" }}>
+                                            <ItemLabel style={{ fontWeight: 'bold', }} text={"Disp.: " + item.disponible + " " + item.unidadMedida} />
                                         </View>
+                                        <View style={{ width: "33%" }}>
+                                            <ItemLabel style={{ fontWeight: 'bold', }} text={"Exis.: " + item.existencia + " " + item.unidadMedida} />
+                                        </View>
+                                        <View style={{ width: "34%" }}>
+                                            <ItemLabel style={{ fontWeight: 'bold', }} text={"Comp.: " + item.comprometido + " " + item.unidadMedida} />
+                                        </View>
+                                    </View>
+                                    <View style={styles.linea}>
                                         <View style={{ width: "65%" }}>
                                             <ItemLabel text={"Ubicación: " + (item.ubicacion ? item.ubicacion : "")} />
                                         </View>

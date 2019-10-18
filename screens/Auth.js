@@ -198,7 +198,10 @@ class Auth extends Component {
                             style={componentstyles.textboxLogin}
                             placeholderTextColor={"#fffa"}
                             secureTextEntry
-                            onChangeText={(text) => this.setState({ password: text })} autoCompleteType="password" />
+                            onChangeText={(text) => this.setState({ password: text })} 
+                            autoCompleteType="password" 
+                            onSubmitEditing={this.login}    
+                        />
                         <Button
                             onPress={this.login}
                             title="Iniciar Sesión"
