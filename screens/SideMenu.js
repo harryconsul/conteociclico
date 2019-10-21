@@ -73,9 +73,9 @@ class SideMenu extends React.Component {
                         optionClickHandle={() =>
                             this.optionClickHandle("InventoryExpire", "Salidas por Caducidad", false)}
                     />
-                    <SideMenuItem optionName="Salidas por Transferencia"
+                    <SideMenuItem optionName="Transferencias"
                         optionClickHandle={() =>
-                            this.optionClickHandle("InventoryTransfer", "Salidas por Transferencia", false)}
+                            this.optionClickHandle("InventoryTransfer", "Transferencias", false)}
                     />
                     <SideMenuItem optionName="Orden de Venta"
                         optionClickHandle={() =>
