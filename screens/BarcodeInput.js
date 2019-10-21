@@ -12,6 +12,7 @@ import { transactionModes } from '../constants';
 import backgroundImage from '../assets/labmicroBg.jpg';
 import closeIcon from '../assets/iconclose.png';
 import { componentstyles } from '../styles';
+import ArticleScanMode from '../components/ArticleScanMode';
 
 
 class BarcodeInput extends React.Component {
@@ -145,17 +146,13 @@ class BarcodeInput extends React.Component {
    }
     render() {
         const item = this.state.editingItem;
-        const qty = this.state.qty;
+        const {qty,confirmMode}=  this.state;
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
                 <KeyboardAvoidingView
                     style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
                     <View style={componentstyles.containerView}>
-                        <View style={{display:"flex",flexDirection:"row"}}>
-                            <Text style={componentstyles.label}> Capturar cantidades al leer producto </Text>
-                            <Switch style={{marginRight:20}}  onValueChange={(value)=>this.setState({confirmMode:value})}
-                                value={this.state.confirmMode} />
-                        </View>
+                       <ArticleScanMode confirmMode={confirmMode} changeMode={(confirmMode)=>this.setState({confirmMode})} />
                         <Field onChangeText={(text) => this.setState({ searchCode: text })}
                             onSubmitEditing={this.barCodeHandler}
                             autoFocus={true}

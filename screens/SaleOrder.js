@@ -77,6 +77,7 @@ class SaleOrder extends React.Component {
                             name: 'ArticleSetup',
                             passProps: {
                                 businessUnit: this.state.cabecera.sucursal,
+                                setupPrice:true,
                             }
                         },
 

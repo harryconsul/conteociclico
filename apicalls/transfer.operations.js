@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import { errorHelpers } from '../helpers'
 
 const actionStartTransfer = () => {
     return {
@@ -42,7 +42,7 @@ const actionFillForm = (form) => {
                                 {
                                     "value": row.itemNumber,
                                     "command": "SetGridCellValue",
-                                    "columnID": "29"
+                                    "columnID": "14"
                                 },
                                 {
                                     "value": row.qty,
@@ -53,6 +53,11 @@ const actionFillForm = (form) => {
                                     "value": row.location,
                                     "command": "SetGridCellValue",
                                     "columnID": "215"
+                                },
+                                {
+                                    "value": row.locationTo,
+                                    "command": "SetGridCellValue",
+                                    "columnID": "218"
                                 },
                                 {
                                     "value": row.serial,
@@ -94,19 +99,24 @@ export const startTransfer = (token, callback) => {
 
 }
 export const fillTransfer = (token, stack, form, callback) => {
+    const formPayload = actionFillForm(form);
     
-    const action = pushStack(token, actionFillForm(form), stack);
-    callStackService(action, (response)=>{
-        
-        const stackConfirm = {
-            stackId: response.data.stackId,
-            stateId: response.data.stateId,
-            rid: response.data.rid,
-            currentApplication: "P564113_W564113B_DICIPA003",
+    const action = pushStack(token,formPayload , stack);
+    callStackService(action, (response) => {
+        if (!errorHelpers.handleErrors(response.data.fs_P564113_W564113B)) {
+            const stackConfirm = {
+                stackId: response.data.stackId,
+                stateId: response.data.stateId,
+                rid: response.data.rid,
+                currentApplication: "P564113_W564113B_DICIPA003",
 
+            }
+            const documentNumber=response.data.fs_P564113_W564113B.data.txtPrevDocNo_37.value;
+            const actionConfirm = pushStack(token, actionConfirmTransfer(), stackConfirm);
+            callStackService(actionConfirm, (response)=>callback(documentNumber));
+        } else {
+            callback(null);
         }
-        const actionConfirm=pushStack(token, actionConfirmTransfer(), stackConfirm);
-        callStackService(actionConfirm,callback);        
 
     });
 

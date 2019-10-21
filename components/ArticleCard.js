@@ -3,8 +3,10 @@ import { Button, View, TextInput, KeyboardAvoidingView } from 'react-native';
 import { ItemView, ItemHightLight, ItemLabel } from '../components';
 import Field from './Field';
 
-export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price }) => {
-    const size=setPrice?150:100;
+export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price ,setLocation,location}) => {
+    let size=setPrice?150:100;
+    size+=setLocation?150:100;
+
     return (
         
         <ItemView index={0}>
@@ -25,6 +27,11 @@ export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price }
                     {setPrice ?
                         <Field label="Precio" placeholder="$$" defaultValue={price}
                             onChangeText={(text) => setPrice(text)} keyboardType="numeric" />
+                        : null
+                    }
+                     {setLocation ?
+                        <Field label="Ubicación" placeholder="" defaultValue={location}
+                            onChangeText={(text) => setLocation(text)}  />
                         : null
                     }
                 </View>

@@ -2,14 +2,14 @@ import React from 'react';
 import {
     View, Text, Button, FlatList,
     ImageBackground, StyleSheet, TouchableOpacity,
-    ActivityIndicator, KeyboardAvoidingView,
+    ActivityIndicator, KeyboardAvoidingView,Alert
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import Field from '../components/Field';
 import { BusinessUnit } from '../components/BusinessUnit';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
-import { actionUpdateStack } from '../store/actions/actions.creators';
+import { actionUpdateStack,actionSetArticlesMap } from '../store/actions/actions.creators';
 import { componentstyles } from '../styles';
 import { startTransfer, fillTransfer } from '../apicalls/transfer.operations'
 import backgroundImage from '../assets/labmicroBg.jpg';
@@ -75,6 +75,7 @@ class InventoryTransfer extends React.Component {
                             passProps: {
                                 businessUnit: this.state.unidadOrigen,
                                 businessUnitNombre: this.state.unidadOrigenNombre,
+                                setupLocation: true,
                             }
                         },
 
@@ -102,8 +103,26 @@ class InventoryTransfer extends React.Component {
         }
         const { token, stack } = this.props;
 
-        fillTransfer(token, stack, form, (response) => {
-            console.warn("response 2", response);
+        fillTransfer(token, stack, form, (documentNumber) => {
+            Alert.alert("Confirmacion","Se ha guardado la salida por transferencia " + documentNumber,[
+                {
+                    text:"Aceptar",
+                    onPress:()=>{
+                        this.setState( {
+                            isLoading: false,
+                            articles: null,
+                            isConfirming: true,
+                            unidadOrigen: null,
+                            unidadOrigenNombre: null,
+                            unidadDestino: null,
+                            unidadDestinoNombre: null,
+                            explicacion: "",
+                        });
+                        this.props.dispatch(actionSetArticlesMap(new Map()));
+
+                    }
+                }
+            ])
         });
     }
 
@@ -176,10 +195,17 @@ class InventoryTransfer extends React.Component {
                             renderItem={({ item, index }) =>
                                 <TouchableOpacity key={item.key} index={index} onPress={() => this.handleSelectRow(item.key)}>
                                     <ItemView index={index} >
-                                        <ItemLabel text={"Numero: " + item.serial} />
+                                        <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }} >
+                                            <ItemLabel text={"Numero: " + item.serial} />
+                                            <ItemHightLight text={"Cantidad: " + item.qty} />
+
+                                        </View>
                                         <ItemHightLight text={"Descripcion: " + item.description} />
-                                        <ItemHightLight text={"Ubicación: " + item.location} />
-                                        <ItemHightLight text={"Cantidad: " + item.qty} />
+                                        <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }} >
+                                            <ItemHightLight text={"Ubicación: " + item.location} />
+                                            <ItemHightLight text={"Ubicación Destino: " + item.locationTo} />
+                                        </View>
+
                                     </ItemView>
                                 </TouchableOpacity>
 

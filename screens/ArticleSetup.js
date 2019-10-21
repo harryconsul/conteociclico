@@ -10,6 +10,7 @@ import backgroundImage from '../assets/labmicroBg.jpg';
 import { actionSetArticle } from '../store/actions/actions.creators'
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
+import ArticleScanMode from '../components/ArticleScanMode';
 class ArticleSetup extends React.Component {
 
     constructor(props) {
@@ -20,8 +21,10 @@ class ArticleSetup extends React.Component {
             isLoading: false,
             item: null,
             qty: 0,
-            price: "",
+            price: 0,
             isSettingUp: false,
+            confirmMode:true,
+            location:"",
 
         }
     }
@@ -51,19 +54,38 @@ class ArticleSetup extends React.Component {
             location: itemQ.ubicacion,
             serial: itemQ.lote,
             um: itemQ.unidadMedida,
+            qty:1,
+            locationTo:"",
+            price:0,
+
         }
-        this.setState({ item, qty: 1, isSettingUp: true });
+        const processItem = this.props.articles.get(item.key)
+        if(processItem){
+            item.qty= processItem.qty;
+            item.locationTo=processItem.locationTo;
+            item.price = processItem.price;
+
+        }
+
+
+        this.setState({ 
+                item,
+                qty: item.qty,
+                price:item.price,
+                locationTo:item.locationTo , 
+                isSettingUp: true 
+        });
     }
 
     handleAccept = () => {
-        const { item, qty, price } = this.state;
+        const { item, qty, price, locationTo } = this.state;
         
         //la cantidad ingresada debe ser, menor o igual a su stock.
         if (qty <= item.stock) {
-            const updateItem = { ...item, qty, price };
+            const updateItem = { ...item, qty, price ,locationTo};
 
             this.props.dispatch(actionSetArticle(updateItem));
-            this.setState({ item: null, qty: 0, price: "", isSettingUp: false });
+            this.setState({ item: null, qty: 0, price: 0,locationTo:"", isSettingUp: false });
 
         } else {
             Alert.alert(
@@ -75,18 +97,21 @@ class ArticleSetup extends React.Component {
 
     }
     render() {
-        const { qty, item, isSettingUp, isLoading, price, } = this.state;
+        const { qty, item, isSettingUp, isLoading, price, confirmMode,locationTo} = this.state;
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
                 <View style={componentstyles.containerView}>
+                    <ArticleScanMode confirmMode = {confirmMode} changeMode={(confirmMode)=>this.setState({confirmMode})} />
                     {
-                        isSettingUp ?
+                        isSettingUp && confirmMode ?
                             <ArticleCard
                                 item={item}
                                 qty={qty}
                                 setQty={(qty) => this.setState({ qty })}
-                                setPrice={(price) => this.setState({ price })}
+                                setPrice={this.props.setupPrice?(price) => this.setState({ price }):null}
                                 price={price}
+                                setLocation={this.props.setupLocation?(locationTo)=>this.setState({locationTo}):null}
+                                location={locationTo}
                                 handleAccept={this.handleAccept} />
                             :
                             <QueryArticles
