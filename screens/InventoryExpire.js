@@ -12,6 +12,7 @@ import { connect } from 'react-redux';
 import { ItemView, ItemHightLight, ItemLabel } from '../components';
 import { startExit, fillTransfer } from '../apicalls/expire.operations';
 import { actionUpdateStack } from '../store/actions/actions.creators';
+import { actionSetArticle } from '../store/actions/actions.creators'
 
 class InventoryExpire extends Component {
     constructor(props) {
@@ -102,11 +103,13 @@ class InventoryExpire extends Component {
             const { token, stack } = this.props;
     
             fillTransfer(token, stack, form, (response) => {
+                
+                const doctipo = response.data.fs_P4112_W4112A.data.txtPrevDocType_192.value;
                 const document = response.data.fs_P4112_W4112A.data.txtPrevDocumentNo_151.value;
                 Alert.alert(
                     'Salida confirmada',
-                    "Número de Documento " + document,
-                    [{ text: 'Aceptar', style: "destructive" }]
+                    doctipo + ": " + document,
+                    [{ text: 'Aceptar', style: "destructive" , onPress: () => this.props.dispatch(actionSetArticle({})) }]
                 );
             });
             
@@ -132,11 +135,11 @@ class InventoryExpire extends Component {
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
                 <KeyboardAvoidingView style={{ height: "100%", width: "100%" }}
-                    behavior="padding" enabled>
+                    enabled behavior="padding">
                     <View style={componentstyles.containerView}>
 
                         <View style={{ height: 200 }}>
-                            <ItemView item={2}>
+                            <View>
                                 <BusinessUnit
                                     label="Sucursal"
                                     placeholder="###"
@@ -153,7 +156,7 @@ class InventoryExpire extends Component {
                                     placeholder="Ejem: caducidad"
                                     onChangeText={(text) => { this.setState({ motivo: text }) }}
                                 />
-                            </ItemView>
+                            </View>
                         </View>
 
                         <View style={{ flexDirection: 'row', justifyContent: "space-between" }}>
@@ -180,7 +183,7 @@ class InventoryExpire extends Component {
                                             justifyContent: "space-between",
                                         }}>
                                             <View style={{ width: "50%" }}>
-                                                <ItemHightLight text={"Stock: " + item.stock} />
+                                                <ItemHightLight text={"Disp.: " + item.stock} />
                                             </View>
 
                                             <View style={{ width: "50%" }}>

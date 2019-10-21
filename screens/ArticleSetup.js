@@ -45,12 +45,12 @@ class ArticleSetup extends React.Component {
         });
     }
     handleClickRow = (itemQ) => {
-
+        
         const item = {
             key: itemQ.etiqueta,
             itemNumber: itemQ.itemNumber,
             description: itemQ.producto,
-            stock: itemQ.cantidad,
+            stock: itemQ.disponible,
             location: itemQ.ubicacion,
             serial: itemQ.lote,
             um: itemQ.unidadMedida,
@@ -89,7 +89,7 @@ class ArticleSetup extends React.Component {
 
         } else {
             Alert.alert(
-                'La cantidad supera su stock!',
+                'La cantidad supera lo disponible!',
                 'Debe ser menor o igual a ' + item.stock,
                 [{ text: 'Aceptar', style: "destructive" }]
             );
