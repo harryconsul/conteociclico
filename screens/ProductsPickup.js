@@ -1,19 +1,25 @@
 import React from 'react';
 import {
-    View, Text, Button,  FlatList,
+    View, Text, Button, FlatList,
     ImageBackground, StyleSheet, TouchableOpacity,
-    ActivityIndicator, KeyboardAvoidingView,
+    ActivityIndicator, KeyboardAvoidingView, Alert,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import Field from '../components/Field';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
-import { searchShipment, startConfirmation,shipmentConfirmation } from '../apicalls/pickup.operations';
-import { actionUpdateStack,  actionSetTransactionMode, actionSetArticlesMap,actionSetArticle } from '../store/actions/actions.creators';
+import { searchShipment, startConfirmation, shipmentConfirmation } from '../apicalls/pickup.operations';
+import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, actionSetArticle } from '../store/actions/actions.creators';
 import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
 import backgroundImage from '../assets/labmicroBg.jpg';
-
+const initialState = {
+    isLoading: false,
+    order: null,
+    articles: null,
+    orderNumber: "",
+    isConfirming: true,
+};
 class ProductsPickup extends React.Component {
 
 
@@ -22,28 +28,24 @@ class ProductsPickup extends React.Component {
         Navigation.events().bindComponent(this);
 
         this.state = {
-            isLoading: false,
-            order: null,
-            articles: null,
-            orderNumber: "",
-            isConfirming: true,
+            ...initialState
         }
     }
 
 
     navigationButtonPressed = ({ buttonId }) => {
-         switch(buttonId){
-                case 'sideMenu':
-                    this.openSideBar();
-                    break;
-                case 'barCode':
-                    this.openBarcode('BarcodeReader');
-                    break;
-                default:
-                    this.openBarcode('BarcodeInput');
-         } 
+        switch (buttonId) {
+            case 'sideMenu':
+                this.openSideBar();
+                break;
+            case 'barCode':
+                this.openBarcode('BarcodeReader');
+                break;
+            default:
+                this.openBarcode('BarcodeInput');
+        }
     }
-    openSideBar=()=>{
+    openSideBar = () => {
         Navigation.mergeOptions('SideMenu', {
             sideMenu: {
                 left: {
@@ -52,8 +54,8 @@ class ProductsPickup extends React.Component {
             }
         });
     }
-    
-    openBarcode=(screen)=>{
+
+    openBarcode = (screen) => {
         if (this.state.articles) {
             this.props.dispatch(actionSetTransactionMode(transactionModes.READ_SUBTRACT));
         } else {
@@ -113,15 +115,19 @@ class ProductsPickup extends React.Component {
             let order = null;
             if (rows.length) {
                 order = rows[0];
+                this.setState({ order, isLoading: false, isConfirming: true, });
+                const stack = {
+                    stackId: response.data.stackId,
+                    stateId: response.data.stateId,
+                    rid: response.data.rid,
+                    currentApplication: "P554205_W554205D",
+                }
+                this.props.dispatch(actionUpdateStack(stack));
+            }else{
+                Alert.alert("El folio que busca ya fue procesado o no existe");
+                this.setState({isLoading:false});
             }
-            this.setState({ order, isLoading: false, isConfirming: true, });
-            const stack = {
-                stackId: response.data.stackId,
-                stateId: response.data.stateId,
-                rid: response.data.rid,
-                currentApplication: "P554205_W554205D",
-            }
-            this.props.dispatch(actionUpdateStack(stack));
+
         }, (error) => console.warn(error));
     }
     startPickup = () => {
@@ -132,11 +138,11 @@ class ProductsPickup extends React.Component {
             //console.warn(rawRows);
             for (let i = 0; i < rawRows.length; i++) {
                 const key = rawRows[i].sItemNumber_35.value;
-                
+
                 const value = {
                     key,
                     serial: rawRows[i].sLotSerial_50.value,
-                    um:rawRows[i].sUnitofMeasure_178.value,
+                    um: rawRows[i].sUnitofMeasure_178.value,
                     location: rawRows[i].sDescription_44.value,
                     description: rawRows[i].sLocation_36.value,
                     qty: rawRows[i].mnQuantityShipped_71.value,
@@ -155,15 +161,23 @@ class ProductsPickup extends React.Component {
 
         })
     }
-    confirmShipment=()=>{
-        shipmentConfirmation(this.props.token,this.props.stack,(response)=>{
-
+    confirmShipment = () => {
+        shipmentConfirmation(this.props.token, this.props.stack, (response) => {
+            Alert.alert("Aviso", "Recolección Confirmada", [
+                {
+                    text: "Aceptar",
+                    onPress: () => {
+                        this.setState({ ...initialState });
+                        this.props.dispatch(actionSetArticlesMap(new Map()));
+                    }
+                }
+            ])
         })
     }
-    handleSelectRow = (key)=>{
+    handleSelectRow = (key) => {
         const item = this.props.articles.get(key);
-        this.props.dispatch(actionSetArticle({...item,qty:0}));
-        
+        this.props.dispatch(actionSetArticle({ ...item, qty: 0 }));
+
     }
     render() {
         const { order, isConfirming } = this.state;
@@ -173,9 +187,9 @@ class ProductsPickup extends React.Component {
             <ItemLabel text={"Fecha de pedido: " + order.fecha} />
             <Button onPress={this.startPickup} title="Comenzar Recolección" />
         </ItemView> : null;
-        const products  = this.props.articles ? this.props.articles.values():[];
-        const productsArray =(this.state.articles ?
-            Array.from(products) : []).filter((item)=>item.qty);
+        const products = this.props.articles ? this.props.articles.values() : [];
+        const productsArray = (this.state.articles ?
+            Array.from(products) : []).filter((item) => item.qty);
 
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
@@ -190,9 +204,9 @@ class ProductsPickup extends React.Component {
                             animating={this.state.isLoading} size={"large"} />
                         {orderView}
                         {
-                           this.state.articles?
-                           <Button disabled={productsArray.length?true:false} title="Confirmar Recolección"  onPress ={this.confirmShipment}/>
-                           :null
+                            this.state.articles ?
+                                <Button disabled={productsArray.length ? true : false} title="Confirmar Recolección" onPress={this.confirmShipment} />
+                                : null
                         }
                         <FlatList data={productsArray}
                             renderItem={({ item, index }) =>
