@@ -124,7 +124,10 @@ class CountList extends React.Component {
                         <BusinessUnit label="Unidad de Negocio" placeholder="#####"
                             token={this.props.user.token}
                             unidad={(businessUnit) => this.setState({ businessUnit })} />
-                        <Button title="Buscar Conteo" onPress={this.searchCyclicCount} />
+                        <Button title="Buscar Conteo"
+                            onPress={this.searchCyclicCount}
+                            disabled={this.state.businessUnit ? false : true}
+                        />
 
                         <FlatList data={this.state.rows}
                             renderItem={({ item, index }) =>
