@@ -59,10 +59,12 @@ class ArticleSetup extends React.Component {
             price:0,
 
         }
+        //Si el item, ya existe agregarle los nuevos
         const processItem = this.props.articles.get(item.key)
+
         if(processItem){
-            item.qty= processItem.qty;
-            item.locationTo=processItem.locationTo;
+            item.qty += processItem.qty;
+            item.locationTo = processItem.locationTo;
             item.price = processItem.price;
 
         }

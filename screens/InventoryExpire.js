@@ -8,11 +8,23 @@ import backgroundImage from '../assets/labmicroBg.jpg';
 import { componentstyles } from '../styles';
 import Field from '../components/Field';
 import { BusinessUnit } from '../components/BusinessUnit';
+import { RazonMovimiento } from '../components/RazonMovimiento';
+
 import { connect } from 'react-redux';
 import { ItemView, ItemHightLight, ItemLabel } from '../components';
 import { startExit, fillTransfer } from '../apicalls/expire.operations';
-import { actionUpdateStack } from '../store/actions/actions.creators';
-import { actionSetArticle } from '../store/actions/actions.creators'
+import { actionUpdateStack, actionSetArticlesMap } from '../store/actions/actions.creators';
+
+const initialState = {
+    isLoading: false,
+    articles: null,
+    isConfirming: true,
+    unidadOrigen: null,
+    unidadOrigenNombre: null,
+    razonCodigo: null,
+    razonDescripcion: null,
+    motivo: null,
+}
 
 class InventoryExpire extends Component {
     constructor(props) {
@@ -20,13 +32,10 @@ class InventoryExpire extends Component {
         Navigation.events().bindComponent(this);
 
         this.state = {
-            isLoading: false,
-            articles: null,
-            isConfirming: true,
-            unidadOrigen: null,
-            unidadOrigenNombre: null,
-            motivo: "",
+            ...initialState
         }
+
+        this.props.dispatch(actionSetArticlesMap(new Map()));
     }
 
     navigationButtonPressed = ({ buttonId }) => {
@@ -82,42 +91,68 @@ class InventoryExpire extends Component {
 
     confirmarSalida = () => {
 
-        const { unidadOrigen, motivo } = this.state;
+        const { unidadOrigen , unidadOrigenNombre , motivo , razonCodigo , razonDescripcion } = this.state;
 
-        //Solo si ingreso un motivo
-        if (motivo != "") {
-            const rows = [];
-    
-            for (let article of this.props.articles.values()) {
-    
-                if (article.qty) {
-                    rows.push(article);
+
+        //Validaciones del encabezado
+        if (unidadOrigenNombre) {
+            if (razonDescripcion) {
+                if (motivo != "") {
+
+                    const rows = [];
+
+                    for (let article of this.props.articles.values()) {
+
+                        if (article.qty) {
+                            rows.push(article);
+                        }
+                    }
+                    const form = {
+                        motivo,
+                        razonCodigo,
+                        unidadOrigen,
+                        rows,
+
+                    }
+                    const { token, stack } = this.props;
+
+                    fillTransfer(token, stack, form, (response) => {
+
+                        const doctipo = response.data.fs_P4112_W4112A.data.txtPrevDocType_192.value;
+                        const document = response.data.fs_P4112_W4112A.data.txtPrevDocumentNo_151.value;
+                        Alert.alert(
+                            'Salida confirmada',
+                            doctipo + ": " + document,
+                            [{
+                                text: 'Aceptar',
+                                onPress: () => {
+                                    this.setState({ ...initialState });
+                                    this.setState({reiniciar: true});
+                                    this.props.dispatch(actionSetArticlesMap(new Map()));
+                                }
+                            }]
+                        );
+                    });
+                } else {
+                    Alert.alert(
+                        'Sin motivo de salida!',
+                        'Ingrese el motivo de salida',
+                        [{ text: 'Aceptar' }]
+                    );
                 }
-            }
-            const form = {
-                motivo,
-                unidadOrigen,
-                rows,
-    
-            }
-            const { token, stack } = this.props;
-    
-            fillTransfer(token, stack, form, (response) => {
-                
-                const doctipo = response.data.fs_P4112_W4112A.data.txtPrevDocType_192.value;
-                const document = response.data.fs_P4112_W4112A.data.txtPrevDocumentNo_151.value;
+
+            } else {
                 Alert.alert(
-                    'Salida confirmada',
-                    doctipo + ": " + document,
-                    [{ text: 'Aceptar', style: "destructive" , onPress: () => this.props.dispatch(actionSetArticle({})) }]
+                    'Sin razón de salida!',
+                    'Ingrese el código de razón',
+                    [{ text: 'Aceptar' }]
                 );
-            });
-            
-        } else {
+            }
+        }else{
             Alert.alert(
-                'Sin motivo de salida!',
-                'Ingrese el motivo de salida',
-                [{ text: 'Aceptar', style: "destructive" }]
+                'Sin Sucursal!',
+                'Ingrese el número de sucursal',
+                [{ text: 'Aceptar' }]
             );
         }
     }
@@ -138,7 +173,7 @@ class InventoryExpire extends Component {
                     enabled behavior="padding">
                     <View style={componentstyles.containerView}>
 
-                        <View style={{ height: 200 }}>
+                        <View style={{ height: 250 }}>
                             <View>
                                 <BusinessUnit
                                     label="Sucursal"
@@ -151,11 +186,25 @@ class InventoryExpire extends Component {
                                         });
                                     }}
                                 />
+                                <RazonMovimiento
+                                    label="Razón"
+                                    placeholder="Ejem: C03"
+                                    token={this.props.token}
+                                    razon={(codigo, descripcion) => {
+                                        this.setState({
+                                            razonCodigo: codigo,
+                                            razonDescripcion: descripcion,
+                                        });
+                                    }}
+                                    defaultValue={this.state.razonCodigo}
+                                />
                                 <Field
                                     label="Motivo"
-                                    placeholder="Ejem: caducidad"
+                                    defaultValue={this.state.motivo}
+                                    placeholder="Ejem: Caducidad del Producto"
                                     onChangeText={(text) => { this.setState({ motivo: text }) }}
                                 />
+
                             </View>
                         </View>
 

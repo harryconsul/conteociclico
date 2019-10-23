@@ -53,6 +53,11 @@ const actionFillForm = (form) => {
                                     "command": "SetGridCellValue",
                                     "columnID": "31"
                                 },
+                                {
+                                    "value": form.razonCodigo,
+                                    "command": "SetGridCellValue",
+                                    "columnID": "279"
+                                },
 
                             ]
                         })
