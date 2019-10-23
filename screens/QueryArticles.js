@@ -130,7 +130,12 @@ class QueryArticles extends React.Component {
                                             <ItemLabel text={"No. " + item.etiqueta} />
                                         </View>
                                         <View style={{ width: "67%" }}>
-                                            <ItemLabel style={{ fontWeight: 'bold', }} text={item.producto} />
+                                            <ItemLabel text={"Catálogo: " + item.itemNumber} />
+                                        </View>
+                                    </View>
+                                    <View style={styles.linea}>
+                                        <View style={{ width: "100%" }}>
+                                            <ItemLabel text={item.producto} />
                                         </View>
                                     </View>
                                     <View style={styles.linea}>
@@ -138,10 +143,10 @@ class QueryArticles extends React.Component {
                                             <ItemLabel style={{ fontWeight: 'bold', }} text={"Disp.: " + item.disponible + " " + item.unidadMedida} />
                                         </View>
                                         <View style={{ width: "33%" }}>
-                                            <ItemLabel style={{ fontWeight: 'bold', }} text={"Exis.: " + item.existencia + " " + item.unidadMedida} />
+                                            <ItemLabel text={"Exis.: " + item.existencia + " " + item.unidadMedida} />
                                         </View>
                                         <View style={{ width: "34%" }}>
-                                            <ItemLabel style={{ fontWeight: 'bold', }} text={"Comp.: " + item.comprometido + " " + item.unidadMedida} />
+                                            <ItemLabel text={"Comp.: " + item.comprometido + " " + item.unidadMedida} />
                                         </View>
                                     </View>
                                     <View style={styles.linea}>
@@ -155,16 +160,6 @@ class QueryArticles extends React.Component {
                                         </View>
                                         <View style={{ width: "65%" }}>
                                             <ItemLabel text={"Caducidad: " + item.caducidad} />
-                                        </View>
-
-                                    </View >
-
-                                    <View style={styles.linea}>
-                                        <View style={{ width: "50%" }}>
-                                            <ItemLabel text={"Item: " + item.itemNumber} />
-                                        </View>
-                                        <View style={{ width: "65%" }}>
-                                            <ItemLabel text={"No. Corto: " + item.shortNumber} />
                                         </View>
 
                                     </View >
