@@ -6,8 +6,9 @@ import { Navigation } from 'react-native-navigation'
 import { enterCyclicCount, reviewCyclicCount } from '../../apicalls/count.operations'
 import { componentstyles } from '../../styles';
 import backgroundImage from '../../assets/labmicroBg.jpg';
-import { actionSetTransactionMode, actionUpdateStack } from '../../store/actions/actions.creators';
-import { transactionModes } from '../../constants/';
+import { actionSetTransactionMode, actionUpdateStack, actionSetArticlesMap } from '../../store/actions/actions.creators';
+import { transactionModes,topBarButtons } from '../../constants/';
+import {mapHelpers} from '../../helpers'
 
 class EnterCycleCount extends React.Component {
     constructor(props) {
@@ -105,9 +106,10 @@ class EnterCycleCount extends React.Component {
                         reviewCyclicCount(this.props.user.token, this.props.stack, cyclicCount.rowIndex, (response) => {
 
                             const rawRows = response.data.fs_P41241_W41241A.data.gridData.rowset;
-
+                            
                             const review = rawRows.map(item => (
                                 {
+                                    key:item.mnNmeroEtiqueta_96.value,
                                     serial: item.sLotSerial_21.value,
                                     description: item.sDescription_28.value,
                                     location: item.sLocation_61.value,
@@ -175,7 +177,29 @@ class EnterCycleCount extends React.Component {
         }
     }
     registerAutorization=()=>{
-        Alert.alert("Conteo Autorizado");
+        
+        const articlesToOrder  =   mapHelpers.reviewToArticles(this.state.review);
+        this.props.dispatch(actionSetArticlesMap(articlesToOrder));
+        Navigation.push(this.props.componentId, {
+            component: {
+                name: 'SaleOrder',
+                id: 'SaleOrder',
+                passProps: {
+                    fromCyclicCount:true,
+                    clienteEntrega:this.props.businessUnit,
+                },
+                options: {
+                    topBar: {
+                        title: {
+                            text: 'Orden de Venta',
+                            color: '#ffffff'
+                        },
+                        ...topBarButtons.rightButtons
+                    }
+                }
+            },
+
+        });
 
     }
     authorizeCounting=()=>{

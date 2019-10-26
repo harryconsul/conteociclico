@@ -14,6 +14,7 @@ import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
 import backgroundImage from '../assets/labmicroBg.jpg';
 import { businessUnit } from '../apicalls/business_unit.operations';
+
 const initialState = {
     isLoading: false,
     order: null,
@@ -105,13 +106,14 @@ class ProductsPickup extends React.Component {
     }
 
     sucursal = (sucursal) => {
-        let descripcion = '';
-        businessUnit(sucursal, this.props.token, (data) => {
-            const rawRows = data.fs_P0006S_W0006SA.data.gridData.rowset;
-            descripcion = rawRows[0].sDescription_41.value;
-
-        }, (reason) => console.warn("ERROR", reason));
-        return descripcion;
+              
+        return new Promise((resolve,reject)=>{
+            businessUnit(sucursal, this.props.token, (data) => {
+                const rawRows = data.fs_P0006S_W0006SA.data.gridData.rowset;
+                 resolve(rawRows[0].sDescription_41.value);
+    
+            }, (reason) =>reject(reason));
+        });
     }
     searchOrder = () => {
         this.setState({ isLoading: true });
@@ -130,7 +132,11 @@ class ProductsPickup extends React.Component {
             let order = null;
             if (rows.length) {
                 order = rows[0];
-                this.setState({ order, isLoading: false, isConfirming: true, });
+                this.sucursal(order.sucursal).then((nombreSucursal)=>{
+                    order.nombreSucursal=nombreSucursal;
+                    this.setState({ order, isLoading: false, isConfirming: true, });
+                })
+               
                 const stack = {
                     stackId: response.data.stackId,
                     stateId: response.data.stateId,
@@ -207,7 +213,7 @@ class ProductsPickup extends React.Component {
             </View>
             <ItemLabel text={"Cliente: " + order.cliente} />
             <ItemLabel text={"Alias: " + order.alias} />
-            <ItemLabel text={"Sucursal: " + this.sucursal(order.sucursal)} />
+            <ItemLabel text={"Sucursal: " + order.nombreSucursal} />
             <Button onPress={this.startPickup} title="Comenzar Recolección" />
         </ItemView> : null;
         const products = this.props.articles ? this.props.articles.values() : [];

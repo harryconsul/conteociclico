@@ -28,7 +28,7 @@ class SaleOrder extends React.Component {
             articles: null,
             isOnDetail: false,
             clienteVenta: "",
-            clienteEntrega: "",
+            clienteEntrega: props.clienteEntrega?props.clienteEntrega:"",
             fechaEntrega: new Date(),
             contrato: "",
             cabecera: {
