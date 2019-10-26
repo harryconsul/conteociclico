@@ -13,6 +13,7 @@ import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, acti
 import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
 import backgroundImage from '../assets/labmicroBg.jpg';
+import { businessUnit } from '../apicalls/business_unit.operations';
 const initialState = {
     isLoading: false,
     order: null,
@@ -102,16 +103,30 @@ class ProductsPickup extends React.Component {
     componentDidMount() {
 
     }
+
+    sucursal = (sucursal) => {
+        let descripcion = '';
+        businessUnit(sucursal, this.props.token, (data) => {
+            const rawRows = data.fs_P0006S_W0006SA.data.gridData.rowset;
+            descripcion = rawRows[0].sDescription_41.value;
+
+        }, (reason) => console.warn("ERROR", reason));
+        return descripcion;
+    }
     searchOrder = () => {
         this.setState({ isLoading: true });
         searchShipment(this.state.orderNumber, this.props.token, (response) => {
             const rawRows = response.data.fs_P554205_W554205D.data.gridData.rowset;
+
             const rows = rawRows.map(item => ({
                 rowId: item.rowIndex,
-                numero: item.mnOrderNumber_27.value,
+                orden: item.mnOrderNumber_27.value,
                 cliente: item.sSoldToName_64.value,
+                alias: item.sShipToNumber_90.value,
                 fecha: item.dtOrderDate_36.value,
+                sucursal: item.sBusinessUnit_37.value,
             }));
+
             let order = null;
             if (rows.length) {
                 order = rows[0];
@@ -123,9 +138,9 @@ class ProductsPickup extends React.Component {
                     currentApplication: "P554205_W554205D",
                 }
                 this.props.dispatch(actionUpdateStack(stack));
-            }else{
+            } else {
                 Alert.alert("El folio que busca ya fue procesado o no existe");
-                this.setState({isLoading:false});
+                this.setState({ isLoading: false });
             }
 
         }, (error) => console.warn(error));
@@ -182,9 +197,17 @@ class ProductsPickup extends React.Component {
     render() {
         const { order, isConfirming } = this.state;
         const orderView = order && isConfirming ? <ItemView index={1} >
-            <ItemLabel text={"Numero: " + order.numero} />
-            <ItemHightLight text={"Cliente: " + order.cliente} />
-            <ItemLabel text={"Fecha de pedido: " + order.fecha} />
+            <View style={styles.linea}>
+                <View style={{ width: "60%" }}>
+                    <ItemLabel text={"Orden: " + order.orden} />
+                </View>
+                <View style={{ width: "40%" }}>
+                    <ItemLabel text={"Fecha: " + order.fecha} />
+                </View>
+            </View>
+            <ItemLabel text={"Cliente: " + order.cliente} />
+            <ItemLabel text={"Alias: " + order.alias} />
+            <ItemLabel text={"Sucursal: " + this.sucursal(order.sucursal)} />
             <Button onPress={this.startPickup} title="Comenzar Recolección" />
         </ItemView> : null;
         const products = this.props.articles ? this.props.articles.values() : [];
@@ -196,9 +219,12 @@ class ProductsPickup extends React.Component {
                 <KeyboardAvoidingView
                     style={{ height: "100%", width: "100%" }} enabled behavior="padding">
                     <View style={componentstyles.containerView}>
-                        <Field label="Numero de Recolección"
+                        <Field
+                            label="No. de Recolección"
+                            placeholder={"####"}
                             onChangeText={(text) => this.setState({ orderNumber: text })}
-                            onSubmitEditing={this.searchOrder} placeholder={"####"} />
+                            onSubmitEditing={this.searchOrder}
+                        />
 
                         <ActivityIndicator color="#ffffff"
                             animating={this.state.isLoading} size={"large"} />
@@ -248,6 +274,9 @@ const styles = StyleSheet.create({
     itemText: {
         color: "#000000",
         fontSize: 20,
-    }
+    }, linea: {
+        flexDirection: 'row',
+        justifyContent: "space-between",
+    },
 });
 export default connect(mapStateToProps)(ProductsPickup);
