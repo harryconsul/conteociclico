@@ -106,13 +106,13 @@ class ProductsPickup extends React.Component {
     }
 
     sucursal = (sucursal) => {
-              
-        return new Promise((resolve,reject)=>{
+
+        return new Promise((resolve, reject) => {
             businessUnit(sucursal, this.props.token, (data) => {
                 const rawRows = data.fs_P0006S_W0006SA.data.gridData.rowset;
-                 resolve(rawRows[0].sDescription_41.value);
-    
-            }, (reason) =>reject(reason));
+                resolve(rawRows[0].sDescription_41.value);
+
+            }, (reason) => reject(reason));
         });
     }
     searchOrder = () => {
@@ -132,11 +132,11 @@ class ProductsPickup extends React.Component {
             let order = null;
             if (rows.length) {
                 order = rows[0];
-                this.sucursal(order.sucursal).then((nombreSucursal)=>{
-                    order.nombreSucursal=nombreSucursal;
+                this.sucursal(order.sucursal).then((nombreSucursal) => {
+                    order.nombreSucursal = nombreSucursal;
                     this.setState({ order, isLoading: false, isConfirming: true, });
                 })
-               
+
                 const stack = {
                     stackId: response.data.stackId,
                     stateId: response.data.stateId,
@@ -158,15 +158,21 @@ class ProductsPickup extends React.Component {
             const productToPickup = new Map();
             //console.warn(rawRows);
             for (let i = 0; i < rawRows.length; i++) {
+                //Catálogo: sItemNumber_35
                 const key = rawRows[i].sItemNumber_35.value;
 
                 const value = {
                     key,
-                    serial: rawRows[i].sLotSerial_50.value,
+                    catalogo: rawRows[i].sItemNumber_35.value,
+                    lote: rawRows[i].sLotSerial_50.value,
                     um: rawRows[i].sUnitofMeasure_178.value,
-                    location: rawRows[i].sDescription_44.value,
-                    description: rawRows[i].sLocation_36.value,
-                    qty: rawRows[i].mnQuantityShipped_71.value,
+                    ubicacion: rawRows[i].sLocation_36.value,
+                    producto: rawRows[i].sDescription_44.value,
+                    cantidad: rawRows[i].mnQuantityShipped_71.value,
+                    sucursal: rawRows[i].sBranchPlant_37.value,
+                    prevStatus: rawRows[i].sLastStat_48.value,
+                    nextStatus: rawRows[i].sNextStat_47.value,
+                    ordenTipo: rawRows[i].sOrTy_77.value,
                 }
                 productToPickup.set(key, value);
             }
@@ -184,6 +190,7 @@ class ProductsPickup extends React.Component {
     }
     confirmShipment = () => {
         shipmentConfirmation(this.props.token, this.props.stack, (response) => {
+            console.warn(response);
             Alert.alert("Aviso", "Recolección Confirmada", [
                 {
                     text: "Aceptar",
@@ -197,28 +204,35 @@ class ProductsPickup extends React.Component {
     }
     handleSelectRow = (key) => {
         const item = this.props.articles.get(key);
-        this.props.dispatch(actionSetArticle({ ...item, qty: 0 }));
+        this.props.dispatch(actionSetArticle({ ...item, cantidad: 0 }));
 
     }
     render() {
         const { order, isConfirming } = this.state;
-        const orderView = order && isConfirming ? <ItemView index={1} >
-            <View style={styles.linea}>
-                <View style={{ width: "60%" }}>
-                    <ItemLabel text={"Orden: " + order.orden} />
+        const iniciar = isConfirming ?
+            <Button onPress={this.startPickup} title="Iniciar Recolección" />
+            : null;
+
+        const orderView = order ?
+            <ItemView index={1} >
+                <View style={styles.linea}>
+                    <View style={{ width: "60%" }}>
+                        <ItemLabel text={"Orden: " + order.orden} />
+                    </View>
+                    <View style={{ width: "40%" }}>
+                        <ItemLabel text={"Fecha: " + order.fecha} />
+                    </View>
                 </View>
-                <View style={{ width: "40%" }}>
-                    <ItemLabel text={"Fecha: " + order.fecha} />
-                </View>
-            </View>
-            <ItemLabel text={"Cliente: " + order.cliente} />
-            <ItemLabel text={"Alias: " + order.alias} />
-            <ItemLabel text={"Sucursal: " + order.nombreSucursal} />
-            <Button onPress={this.startPickup} title="Comenzar Recolección" />
-        </ItemView> : null;
+                <ItemLabel text={"Cliente: " + order.cliente} />
+                <ItemLabel text={"Recibe: " + order.alias} />
+                <ItemLabel text={"Sucursal: " + order.nombreSucursal} />
+                {iniciar}
+            </ItemView>
+            :
+            null;
         const products = this.props.articles ? this.props.articles.values() : [];
         const productsArray = (this.state.articles ?
-            Array.from(products) : []).filter((item) => item.qty);
+            Array.from(products) : []).filter((item) => item.cantidad);
 
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
@@ -227,27 +241,35 @@ class ProductsPickup extends React.Component {
                     <View style={componentstyles.containerView}>
                         <Field
                             label="No. de Recolección"
+                            autoFocus
                             placeholder={"####"}
+                            keyboardType={"numeric"}
                             onChangeText={(text) => this.setState({ orderNumber: text })}
                             onSubmitEditing={this.searchOrder}
                         />
-
-                        <ActivityIndicator color="#ffffff"
-                            animating={this.state.isLoading} size={"large"} />
+                        {
+                            this.state.isLoading ?
+                                <ActivityIndicator color="#ffffff" animating={true} size={"large"} />
+                                : null
+                        }
                         {orderView}
                         {
                             this.state.articles ?
-                                <Button disabled={productsArray.length ? true : false} title="Confirmar Recolección" onPress={this.confirmShipment} />
+                                <Button disabled={productsArray.length ? true : false}
+                                    title="Confirmar Recolección"
+                                    onPress={this.confirmShipment}
+                                />
                                 : null
                         }
                         <FlatList data={productsArray}
                             renderItem={({ item, index }) =>
                                 <TouchableOpacity key={item.key} index={index} onPress={() => this.handleSelectRow(item.key)}>
                                     <ItemView index={index} >
-                                        <ItemLabel text={"Numero: " + item.serial} />
-                                        <ItemHightLight text={"Descripcion: " + item.description} />
-                                        <ItemHightLight text={"Ubicación: " + item.location} />
-                                        <ItemHightLight text={"Cantidad: " + item.qty} />
+                                        <ItemLabel text={"Catálogo: " + item.catalogo} />
+                                        <ItemLabel text={"Producto: " + item.producto} />
+                                        <ItemLabel text={"Cantidad: " + item.cantidad + " " + item.um} />
+                                        <ItemLabel text={"Ubicación: " + item.ubicacion} />
+                                        <ItemLabel text={"Lote: " + item.lote} />
                                     </ItemView>
                                 </TouchableOpacity>
 

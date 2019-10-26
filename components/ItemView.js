@@ -3,14 +3,12 @@ import { View , StyleSheet} from 'react-native';
 const styles = StyleSheet.create({
     
     itemEven: {
-        flex: 1,
         flexDirection:'column',        
         backgroundColor: "#ccccccb8",
         marginBottom: 5,
         padding: 10
     },
     itemOdd: {
-        flex: 1,
         flexDirection:'column',        
         backgroundColor: "#ffffffb8",
         marginBottom: 5,
