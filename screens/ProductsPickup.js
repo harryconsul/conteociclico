@@ -14,6 +14,7 @@ import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
 import backgroundImage from '../assets/labmicroBg.jpg';
 import { businessUnit } from '../apicalls/business_unit.operations';
+import { trabajarBatch, buscarBatch } from '../apicalls/batch.operation';
 
 const initialState = {
     isLoading: false,
@@ -116,7 +117,6 @@ class ProductsPickup extends React.Component {
         });
     }
     searchOrder = () => {
-        this.setState({ isLoading: true });
         searchShipment(this.state.orderNumber, this.props.token, (response) => {
             const rawRows = response.data.fs_P554205_W554205D.data.gridData.rowset;
 
@@ -148,7 +148,7 @@ class ProductsPickup extends React.Component {
                 Alert.alert("El folio que busca ya fue procesado o no existe");
                 this.setState({ isLoading: false });
             }
-
+        
         }, (error) => console.warn(error));
     }
     startPickup = () => {
