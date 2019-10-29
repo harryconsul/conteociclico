@@ -3,8 +3,9 @@ import axios from 'axios';
 
 const searchCyclicCount = (businessUnit) => {
     return {
-        formName: "P5541240_W5541240A",
+        formName: "P5541240_W5541240A",        
         version: "",
+        maxPageSize:1000,
         formActions: [
             {
                 command: "SetComboValue",

@@ -5,6 +5,11 @@ export const queryArticle=(unidad,producto,token,callback)=>{
     formServiceRequest(_formAction,callback);
 }
 
+export const queryArticleByItemNumber=(unidad,producto,token,callback)=>{
+    const _formAction =formActionByItemNumber(unidad , producto , token); 
+    formServiceRequest(_formAction,callback);
+}
+
 const formServiceRequest=(formAction,callback)=>{
     axios.post("formservice",formAction).then((response)=>{
         callback(response.data);
@@ -24,6 +29,33 @@ const formAction = (unidad, producto , token) => (
                 "value": producto,
                 "controlID": "40"
             }, 
+            {
+                "command": "SetControlValue",
+                "value": unidad,
+                "controlID": "49"
+            },         
+            {
+                "command": "DoAction",
+                "controlID": "15"
+            }
+        ],
+        "deviceName": "RESTclient",
+        "formName": "P5541001_W5541001A"
+    }
+)
+
+
+const formActionByItemNumber = (unidad, producto , token) => (
+    {
+        token,
+        version: "",
+        "formActions": [
+            
+            {
+                "command": "SetQBEValue",
+                "value": producto,
+                "controlID": "1[33]"
+            },
             {
                 "command": "SetControlValue",
                 "value": unidad,

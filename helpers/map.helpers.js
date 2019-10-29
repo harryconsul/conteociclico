@@ -5,6 +5,7 @@ export const reviewToArticles = (review) => {
             totalToPush={...current};
         }else{
             totalToPush.qtyVariance=current.qtyVariance;
+            totalToPush.qty  = Number(current.qtyVariance.replace("-",""))
             previous.push(totalToPush);
         }
         return previous;
@@ -12,8 +13,9 @@ export const reviewToArticles = (review) => {
     
     const articles = new Map();
     for (let item of summary) {
-        if ( Number(item.qtyVariance)<0 || item.qtyVariance.substring(item.qtyVariance.length-1)==='-') {
-            articles.set(item.key, { ...item });
+        
+        if ( Number(item.qtyVariance)<0 || item.qtyVariance.indexOf("-")>=0) {
+            articles.set(item.key, { ...item,price:0, });
         }
     }
     return articles;

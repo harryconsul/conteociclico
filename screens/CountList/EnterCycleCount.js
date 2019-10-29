@@ -113,6 +113,7 @@ class EnterCycleCount extends React.Component {
                                     serial: item.sLotSerial_21.value,
                                     description: item.sDescription_28.value,
                                     location: item.sLocation_61.value,
+                                    itemNumber:item.sItemNumber_42.value,
                                     rowId: item.rowIndex,
                                     qtyCounted: item.mnQuantityCounted_25.value,
                                     qtyOnHand: item.mnQuantityOnHand_23.value,
@@ -177,8 +178,24 @@ class EnterCycleCount extends React.Component {
         }
     }
     registerAutorization=()=>{
+        Alert.alert("Aviso","Conteo Ciclico Autorizado",[
+            {
+                text:"Crear Orden de Venta",
+                onPress:this.createSaleOrder
+
+            },
+            {
+                text:"Cerrar",
+                onPress:()=>Navigation.pop(this.props.componentId)
+                
+            }
+        ])
+        
+    }
+    createSaleOrder=()=>{
         
         const articlesToOrder  =   mapHelpers.reviewToArticles(this.state.review);
+       
         this.props.dispatch(actionSetArticlesMap(articlesToOrder));
         Navigation.push(this.props.componentId, {
             component: {
