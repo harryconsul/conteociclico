@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     View, FlatList, ImageBackground, Text,
-    StyleSheet, ActivityIndicator, TouchableOpacity,
+    StyleSheet, ActivityIndicator, TouchableOpacity, Alert,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
@@ -46,31 +46,47 @@ class QueryArticles extends React.Component {
     }
 
     search = () => {
-        this.setState({ isLoading: true });
+        if (this.state.unidad != 0) {
+            //1ero debe existir la unidad de negocio
+            if (this.state.producto.length != 0) {
+                //2do siempre debe ingresar un número de producto
+                this.setState({ isLoading: true });
+                queryArticle(this.state.unidad, this.state.producto, this.props.user.token, (data) => {
+                    const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
+                    if (rawRows.length != 0) {
+                        const rows = rawRows.map((item, index) => ({
+                            key: index,
+                            etiqueta: item.mnNmeronico_24.value,
+                            producto: item.sDescription_38.value,
+                            unidadNegocio: item.sBusinessUnit_48.value,
+                            ubicacion: item.sLocation_55.value,
+                            lote: item.sLotSerialNumber_37.value,
+                            disponible: item.mnQuantityOnHand_46.value,
+                            existencia: item.mnQuantitySinCalcular_57.value,
+                            comprometido: item.mnQuantityHardCommitted_58.value,
+                            caducidad: item.dtExpirationDateMonth_53.value,
+                            unidadMedida: item.sUM_54.value,
+                            shortNumber: item.mnShortItemNo_25.value,
+                            itemNumber: item.s2ndItemNumber_33.value,
+                        }));
 
-        queryArticle(this.state.unidad, this.state.producto, this.props.user.token, (data) => {
-            const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
+                        this.setState({ rows });
+                    } else {
+                        const rows = null;
+                        this.setState({ rows });
+                        Alert.alert("Número no encontrado, valide el dato");
+                    }
 
-            const rows = rawRows.map((item, index) => ({
-                key: index,
-                etiqueta: item.mnNmeronico_24.value,
-                producto: item.sDescription_38.value,
-                unidadNegocio: item.sBusinessUnit_48.value,
-                ubicacion: item.sLocation_55.value,
-                lote: item.sLotSerialNumber_37.value,
-                disponible: item.mnQuantityOnHand_46.value,
-                existencia: item.mnQuantitySinCalcular_57.value,
-                comprometido: item.mnQuantityHardCommitted_58.value,
-                caducidad: item.dtExpirationDateMonth_53.value,
-                unidadMedida: item.sUM_54.value,
-                shortNumber: item.mnShortItemNo_25.value,
-                itemNumber: item.s2ndItemNumber_33.value,
-            }));
-
-            this.setState({ rows, isLoading: false });
+                    this.setState({ isLoading: false });
 
 
-        }, (reason) => console.warn("error", reason));
+                }, (reason) => console.warn("error", reason));
+            }else{
+                Alert.alert("Ingrese el número del producto");
+            }
+        } else {
+            Alert.alert("Ingrese la unidad de negocio");
+        }
     }
     componentDidMount() {
         /*if (this.props.notScreen) {
@@ -88,7 +104,8 @@ class QueryArticles extends React.Component {
                                 <View style={styles.header}>
                                     <Text style={styles.headerTitle}>{this.props.businessUnitNombre}</Text>
                                 </View>
-                                <Field onChangeText={(text) => this.setState({ producto: text })}
+                                <Field
+                                    onChangeText={(text) => this.setState({ producto: text })}
                                     onSubmitEditing={this.search}
                                     inputRef={this.state.articleRef}
                                     placeholder="#####" label="Número único" />
@@ -104,7 +121,9 @@ class QueryArticles extends React.Component {
 
                                 </View>
                                 <View style={{ width: "60%" }}>
-                                    <Field onChangeText={(text) => this.setState({ producto: text })}
+                                    <Field
+                                        onChangeText={(text) => this.setState({ producto: text })}
+                                        keyboardType={"numeric"}
                                         onSubmitEditing={this.search}
                                         inputRef={this.state.articleRef}
                                         placeholder="#####" label="Número único" />
@@ -119,54 +138,57 @@ class QueryArticles extends React.Component {
                             :
                             null
                     }
+                    {
+                        this.state.rows ?
+                            <FlatList data={this.state.rows}
+                                renderItem={({ item, index }) =>
+                                    <TouchableOpacity key={item.key}
+                                        onPress={this.props.handleClickRow ? () => this.props.handleClickRow(item) : null} >
+                                        <ItemView index={index} >
+                                            <View style={styles.linea}>
+                                                <View style={{ width: "33%" }}>
+                                                    <ItemLabel text={"No. " + item.etiqueta} />
+                                                </View>
+                                                <View style={{ width: "67%" }}>
+                                                    <ItemLabel text={"Catálogo: " + item.itemNumber} />
+                                                </View>
+                                            </View>
+                                            <View style={styles.linea}>
+                                                <View style={{ width: "100%" }}>
+                                                    <ItemLabel text={item.producto} />
+                                                </View>
+                                            </View>
+                                            <View style={styles.linea}>
+                                                <View style={{ width: "33%" }}>
+                                                    <ItemLabel style={{ fontWeight: 'bold', }} text={"Disp.: " + item.disponible + " " + item.unidadMedida} />
+                                                </View>
+                                                <View style={{ width: "33%" }}>
+                                                    <ItemLabel text={"Exis.: " + item.existencia + " " + item.unidadMedida} />
+                                                </View>
+                                                <View style={{ width: "34%" }}>
+                                                    <ItemLabel text={"Comp.: " + item.comprometido + " " + item.unidadMedida} />
+                                                </View>
+                                            </View>
+                                            <View style={styles.linea}>
+                                                <View style={{ width: "65%" }}>
+                                                    <ItemLabel text={"Ubicación: " + (item.ubicacion ? item.ubicacion : "")} />
+                                                </View>
+                                            </View>
+                                            <View style={styles.linea}>
+                                                <View style={{ width: "40%" }}>
+                                                    <ItemLabel text={"Cad.: " + item.caducidad} />
+                                                </View>
+                                                <View style={{ width: "60%" }}>
+                                                    <ItemLabel text={"Lote: " + item.lote} />
+                                                </View>
+                                            </View >
 
-                    <FlatList data={this.state.rows}
-                        renderItem={({ item, index }) =>
-                            <TouchableOpacity key={item.key}
-                                onPress={this.props.handleClickRow ? () => this.props.handleClickRow(item) : null} >
-                                <ItemView index={index} >
-                                    <View style={styles.linea}>
-                                        <View style={{ width: "33%" }}>
-                                            <ItemLabel text={"No. " + item.etiqueta} />
-                                        </View>
-                                        <View style={{ width: "67%" }}>
-                                            <ItemLabel text={"Catálogo: " + item.itemNumber} />
-                                        </View>
-                                    </View>
-                                    <View style={styles.linea}>
-                                        <View style={{ width: "100%" }}>
-                                            <ItemLabel text={item.producto} />
-                                        </View>
-                                    </View>
-                                    <View style={styles.linea}>
-                                        <View style={{ width: "33%" }}>
-                                            <ItemLabel style={{ fontWeight: 'bold', }} text={"Disp.: " + item.disponible + " " + item.unidadMedida} />
-                                        </View>
-                                        <View style={{ width: "33%" }}>
-                                            <ItemLabel text={"Exis.: " + item.existencia + " " + item.unidadMedida} />
-                                        </View>
-                                        <View style={{ width: "34%" }}>
-                                            <ItemLabel text={"Comp.: " + item.comprometido + " " + item.unidadMedida} />
-                                        </View>
-                                    </View>
-                                    <View style={styles.linea}>
-                                        <View style={{ width: "65%" }}>
-                                            <ItemLabel text={"Ubicación: " + (item.ubicacion ? item.ubicacion : "")} />
-                                        </View>
-                                    </View>
-                                    <View style={styles.linea}>
-                                        <View style={{ width: "50%" }}>
-                                            <ItemLabel text={"Lote: " + item.lote} />
-                                        </View>
-                                        <View style={{ width: "65%" }}>
-                                            <ItemLabel text={"Caducidad: " + item.caducidad} />
-                                        </View>
-
-                                    </View >
-
-                                </ItemView>
-                            </TouchableOpacity>
-                        } />
+                                        </ItemView>
+                                    </TouchableOpacity>
+                                } />
+                            :
+                            null
+                    }
                 </View>
             </ImageBackground>
 
