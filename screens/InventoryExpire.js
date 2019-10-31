@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {
-    View, ImageBackground, FlatList, Alert,
+    View, ImageBackground, FlatList, Alert, ActivityIndicator,
     Button, KeyboardAvoidingView, TouchableOpacity,
 } from 'react-native';
 import { Navigation } from 'react-native-navigation';
@@ -90,15 +90,14 @@ class InventoryExpire extends Component {
     handleSelectRow = (key) => { }
 
     confirmarSalida = () => {
-
-        const { unidadOrigen , unidadOrigenNombre , motivo , razonCodigo , razonDescripcion } = this.state;
-
+        this.setState({ isLoading: true });
+        const { unidadOrigen, unidadOrigenNombre, motivo, razonCodigo, razonDescripcion } = this.state;
 
         //Validaciones del encabezado
         if (unidadOrigenNombre) {
             if (razonDescripcion) {
                 if (motivo != "") {
-
+                    
                     const rows = [];
 
                     for (let article of this.props.articles.values()) {
@@ -127,12 +126,13 @@ class InventoryExpire extends Component {
                                 text: 'Aceptar',
                                 onPress: () => {
                                     this.setState({ ...initialState });
-                                    this.setState({reiniciar: true});
+                                    this.setState({ reiniciar: true });
                                     this.props.dispatch(actionSetArticlesMap(new Map()));
                                 }
                             }]
                         );
                     });
+                    
                 } else {
                     Alert.alert(
                         'Sin motivo de salida!',
@@ -148,13 +148,15 @@ class InventoryExpire extends Component {
                     [{ text: 'Aceptar' }]
                 );
             }
-        }else{
+        } else {
             Alert.alert(
                 'Sin Sucursal!',
                 'Ingrese el número de sucursal',
                 [{ text: 'Aceptar' }]
             );
         }
+
+        this.setState({ isLoading: false });
     }
 
     render() {
@@ -208,6 +210,14 @@ class InventoryExpire extends Component {
                             </View>
                         </View>
 
+                        {
+                            this.state.isLoading ?
+                                <ActivityIndicator color="#ffffff"
+                                    animating={this.state.isLoading} size={"large"} />
+                                :
+                                null
+                        }
+
                         <View style={{ flexDirection: 'row', justifyContent: "space-between" }}>
                             <Button title="AGREGAR PRODUCTOS"
                                 onPress={this.setUpProduct}
@@ -225,8 +235,8 @@ class InventoryExpire extends Component {
                                 <TouchableOpacity key={item.key} index={index} onPress={() => this.handleSelectRow(item.key)}>
                                     <ItemView index={index} >
                                         <ItemLabel text={"Número: " + item.itemNumber} />
-                                        <ItemHightLight text={"Descripción: " + item.description} />
-                                        <ItemHightLight text={"Ubicación: " + item.location} />
+                                        <ItemLabel text={item.description} />
+                                        <ItemLabel text={"Ubicación: " + item.location} />
                                         <View style={{
                                             flexDirection: 'row',
                                             justifyContent: "space-between",

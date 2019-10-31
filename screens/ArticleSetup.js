@@ -83,7 +83,8 @@ class ArticleSetup extends React.Component {
         const { item, qty, price, locationTo } = this.state;
         
         //la cantidad ingresada debe ser, menor o igual a su stock.
-        if (qty <= item.stock) {
+        //se tuvo que aplicar parseInt(), caso contrario mandaba al else{alert}
+        if (parseInt(qty) <= parseInt(item.stock)) {
             const updateItem = { ...item, qty, price ,locationTo};
 
             this.props.dispatch(actionSetArticle(updateItem));

@@ -106,6 +106,7 @@ class QueryArticles extends React.Component {
                                 </View>
                                 <Field
                                     onChangeText={(text) => this.setState({ producto: text })}
+                                    keyboardType={"numeric"}
                                     onSubmitEditing={this.search}
                                     inputRef={this.state.articleRef}
                                     placeholder="#####" label="Número único" />

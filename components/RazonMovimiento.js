@@ -6,11 +6,11 @@ import Field from './Field';
 import { razonMovimiento } from '../apicalls/codigo.razon';
 
 export const RazonMovimiento = (props) => {
-    const [razon, setRazon] = useState({ codigo: null , descripcion: null });
+    const [razon, setRazon] = useState({ codigo: "" , descripcion: "" });
 
     search = () => {
         //Buscar la unidad de negocio por número
-        if (razon.codigo.length > 0) {
+        if (razon.codigo.length != 0) {
             razonMovimiento(razon.codigo, props.token, (data) => {
                 
                 const rawRows = data.fs_P0004A_W0004AA.data.gridData.rowset;
