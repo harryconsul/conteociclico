@@ -29,7 +29,7 @@ import AddProduct from './screens/AddProduct';
 import {navigationHelpers} from './helpers'
 
 axios.defaults.baseURL="http://207.249.158.84:91/jderest/";
-axios.defaults.headers.post['Content-Type'] = 'application/json';
+axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8';
 
 Navigation.registerComponent("Auth", () => (props) => (
   <Provider store={store}>

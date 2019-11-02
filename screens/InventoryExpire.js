@@ -119,6 +119,7 @@ class InventoryExpire extends Component {
 
                         const doctipo = response.data.fs_P4112_W4112A.data.txtPrevDocType_192.value;
                         const document = response.data.fs_P4112_W4112A.data.txtPrevDocumentNo_151.value;
+                        this.setState({ isLoading: false });
                         Alert.alert(
                             'Salida confirmada',
                             doctipo + ": " + document,
@@ -134,6 +135,7 @@ class InventoryExpire extends Component {
                     });
                     
                 } else {
+                    this.setState({ isLoading: false });
                     Alert.alert(
                         'Sin motivo de salida!',
                         'Ingrese el motivo de salida',
@@ -142,6 +144,7 @@ class InventoryExpire extends Component {
                 }
 
             } else {
+                this.setState({ isLoading: false });
                 Alert.alert(
                     'Sin razón de salida!',
                     'Ingrese el código de razón',
@@ -149,6 +152,7 @@ class InventoryExpire extends Component {
                 );
             }
         } else {
+            this.setState({ isLoading: false });
             Alert.alert(
                 'Sin Sucursal!',
                 'Ingrese el número de sucursal',
@@ -156,7 +160,7 @@ class InventoryExpire extends Component {
             );
         }
 
-        this.setState({ isLoading: false });
+        
     }
 
     render() {
@@ -174,7 +178,13 @@ class InventoryExpire extends Component {
                 <KeyboardAvoidingView style={{ height: "100%", width: "100%" }}
                     enabled behavior="padding">
                     <View style={componentstyles.containerView}>
-
+                         {
+                            this.state.isLoading ?
+                                <ActivityIndicator color="#ffffff"
+                                    animating={true} size={"large"} />
+                                :
+                                null
+                        }
                         <View style={{ height: 250 }}>
                             <View>
                                 <BusinessUnit
@@ -210,13 +220,7 @@ class InventoryExpire extends Component {
                             </View>
                         </View>
 
-                        {
-                            this.state.isLoading ?
-                                <ActivityIndicator color="#ffffff"
-                                    animating={this.state.isLoading} size={"large"} />
-                                :
-                                null
-                        }
+                      
 
                         <View style={{ flexDirection: 'row', justifyContent: "space-between" }}>
                             <Button title="AGREGAR PRODUCTOS"

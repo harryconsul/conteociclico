@@ -15,7 +15,8 @@ import backgroundImage from '../assets/labmicroBg.jpg';
 import ContractPicker from '../components/ContractPicker';
 import DatePicker from '../components/DatePicker';
 import { startSaleOrder, fillOrderHeader, fillOrderDetail } from '../apicalls/sale_order.operations';
-import { queryArticleByItemNumber } from '../apicalls/query.operation'
+import { queryArticleByItemNumber } from '../apicalls/query.operation';
+
 import { dateHelpers } from '../helpers/'
 class SaleOrder extends React.Component {
 
@@ -67,7 +68,8 @@ class SaleOrder extends React.Component {
             }
 
             this.props.dispatch(actionUpdateStack(stack));
-        })
+        });
+       
     }
     setupArticles = () => {
         Navigation.showModal({
