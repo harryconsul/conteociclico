@@ -274,6 +274,7 @@ class ProductsPickup extends React.Component {
                             placeholder={"####"}
                             keyboardType={"numeric"}
                             onChangeText={(text) => this.setState({ orderNumber: text })}
+                            defaultValue={this.state.orderNumber}
                             onSubmitEditing={this.searchOrder}
                         />
                         {orderView}
