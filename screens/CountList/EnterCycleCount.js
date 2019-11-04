@@ -7,8 +7,8 @@ import { enterCyclicCount, reviewCyclicCount } from '../../apicalls/count.operat
 import { componentstyles } from '../../styles';
 import backgroundImage from '../../assets/labmicroBg.jpg';
 import { actionSetTransactionMode, actionUpdateStack, actionSetArticlesMap } from '../../store/actions/actions.creators';
-import { transactionModes,topBarButtons } from '../../constants/';
-import {mapHelpers} from '../../helpers'
+import { transactionModes, topBarButtons } from '../../constants/';
+import { mapHelpers } from '../../helpers';
 
 class EnterCycleCount extends React.Component {
     constructor(props) {
@@ -20,7 +20,7 @@ class EnterCycleCount extends React.Component {
             mapIndex: {},
             review: null,
             isLoading: false,
-            waitingForSign:0,
+            waitingForSign: 0,
 
         }
     }
@@ -83,9 +83,9 @@ class EnterCycleCount extends React.Component {
 
         for (let article of this.props.articles.values()) {
             //const article = this.props.articles[key]
-            if (article.qty) {
-                list.push(article);
-            }
+            //if (article.qty) {
+            list.push(article);
+            //}
         }
         this.setState({ isLoading: true });
 
@@ -100,37 +100,49 @@ class EnterCycleCount extends React.Component {
                 this.props.dispatch(actionUpdateStack(stack));
 
                 if (response.data.currentApp === 'P5541240_W5541240A') {
-                    const rows = response.data.fs_P5541240_W5541240A.data.gridData.rowset;
-                    const cyclicCount = rows.filter(item => item.mnCycleNumber_25.value === this.props.cycleCountNumber)
-                    if (cyclicCount) {
-                        reviewCyclicCount(this.props.user.token, this.props.stack, cyclicCount.rowIndex, (response) => {
+                    Alert.alert("Exito", "Conteo Registrado , se procede a validar las variaciones", [
+                        {
+                            text: "Continuar",
+                            onPress: () => {
+                                const rows = response.data.fs_P5541240_W5541240A.data.gridData.rowset;
+                                const cyclicCount = rows.filter(item => item.mnCycleNumber_25.value === this.props.cycleCountNumber)
+                                if (cyclicCount) {
+                                    reviewCyclicCount(this.props.user.token, this.props.stack, cyclicCount.rowIndex, (response) => {
 
-                            const rawRows = response.data.fs_P41241_W41241A.data.gridData.rowset;
-                            
-                            const review = rawRows.map(item => (
-                                {
-                                    key:item.mnNmeroEtiqueta_96.value,
-                                    serial: item.sLotSerial_21.value,
-                                    description: item.sDescription_28.value,
-                                    location: item.sLocation_61.value,
-                                    itemNumber:item.sItemNumber_42.value,
-                                    rowId: item.rowIndex,
-                                    qtyCounted: item.mnQuantityCounted_25.value,
-                                    qtyOnHand: item.mnQuantityOnHand_23.value,
-                                    qtyVariance: item.mnQuantityVariance_31.value,
-                                    isItem: item.sDescription_28.value === 'TOTALS' || item.sDescription_28.value === 'TOTALES' ? false : true,
+                                        const rawRows = response.data.fs_P41241_W41241A.data.gridData.rowset;
+                                        console.warn(rawRows);
+                                        const review = rawRows.map(item => (
+                                            {
+                                                key: item.mnNmeroEtiqueta_96.value,
+                                                serial: item.sLotSerial_21.value,
+                                                description: item.sDescription_28.value,
+                                                location: item.sLocation_61.value,
+                                                itemNumber: item.sItemNumber_42.value,
+                                                rowId: item.rowIndex,
+                                                qtyCounted: item.mnQuantityCounted_25.value,
+                                                qtyOnHand: item.mnQuantityOnHand_23.value,
+                                                qtyVariance: this.props.isWarehouse
+                                                    ? item.mnQuantityVariance_31.value
+                                                    : Number(item.mnQuantityCounted_25.value) - Number(item.mnSaftyStock_97.value),
+
+                                                isItem: item.sDescription_28.value === 'TOTALS' || item.sDescription_28.value === 'TOTALES' ? false : true,
+                                            }
+                                        ));
+
+                                        this.setState({ review, isLoading: false });
+
+
+                                    })
                                 }
-                            ));
 
-                            this.setState({ review, isLoading: false });
+                            }
+                        }
+                    ])
 
-
-                        })
-                    }
                 }
             });
     }
-    showPlaceSign=(signType)=>{
+    showPlaceSign = (signType) => {
 
         Navigation.showModal({
             stack: {
@@ -138,11 +150,11 @@ class EnterCycleCount extends React.Component {
                     {
                         component: {
                             name: "PlaceSign",
-                            passProps:{
-                                itemKey:this.props.cycleCountNumber,
-                                fileName:"firma-"+signType+"-"+this.props.cycleCountNumber,
+                            passProps: {
+                                itemKey: this.props.cycleCountNumber,
+                                fileName: "firma-" + signType + "-" + this.props.cycleCountNumber,
                                 title: 'Firma de quien ' + signType,
-                                closeOnSave:true,
+                                closeOnSave: true,
                             }
                         },
                         options: {
@@ -164,46 +176,46 @@ class EnterCycleCount extends React.Component {
             }
         });
     }
-    componentDidAppear(){
+    componentDidAppear() {
         switch (this.state.waitingForSign) {
             case 1:
-                this.setState({waitingForSign:2});
+                this.setState({ waitingForSign: 2 });
                 this.showPlaceSign("cuenta");
                 break;
             case 2:
-                this.setState({waitingForSign:3});
+                this.setState({ waitingForSign: 3 });
                 this.registerAutorization();
             default:
                 break;
         }
     }
-    registerAutorization=()=>{
-        Alert.alert("Aviso","Conteo Ciclico Autorizado",[
+    registerAutorization = () => {
+        Alert.alert("Aviso", "Conteo Ciclico Autorizado", [
             {
-                text:"Crear Orden de Venta",
-                onPress:this.createSaleOrder
+                text: "Crear Orden de Venta",
+                onPress: this.createSaleOrder
 
             },
             {
-                text:"Cerrar",
-                onPress:()=>Navigation.pop(this.props.componentId)
-                
+                text: "Cerrar",
+                onPress: () => Navigation.pop(this.props.componentId)
+
             }
         ])
-        
+
     }
-    createSaleOrder=()=>{
-        
-        const articlesToOrder  =   mapHelpers.reviewToArticles(this.state.review);
-       
+    createSaleOrder = () => {
+
+        const articlesToOrder = mapHelpers.reviewToArticles(this.state.review);
+
         this.props.dispatch(actionSetArticlesMap(articlesToOrder));
         Navigation.push(this.props.componentId, {
             component: {
                 name: 'SaleOrder',
                 id: 'SaleOrder',
                 passProps: {
-                    fromCyclicCount:true,
-                    clienteEntrega:this.props.businessUnit,
+                    fromCyclicCount: true,
+                    clienteEntrega: this.props.businessUnit,
                 },
                 options: {
                     topBar: {
@@ -219,8 +231,8 @@ class EnterCycleCount extends React.Component {
         });
 
     }
-    authorizeCounting=()=>{
-        this.setState({waitingForSign:1});
+    authorizeCounting = () => {
+        this.setState({ waitingForSign: 1 });
         this.showPlaceSign("autoriza");
 
     }

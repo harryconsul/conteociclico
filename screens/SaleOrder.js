@@ -172,6 +172,7 @@ class SaleOrder extends React.Component {
     }
 
     confirmOrderDetail = () => {
+        this.setState({isLoading:true});
         const list = [];
 
         for (let article of this.props.articles.values()) {
@@ -180,9 +181,12 @@ class SaleOrder extends React.Component {
                 list.push(article);
             }
         }
+
         const { token, stack } = this.props;
         fillOrderDetail(token, stack, list, (response) => {
+            this.setState({isLoading:false})
             if (response) {
+
                 console.warn("response 2", response.data)
             }
         })
@@ -208,6 +212,12 @@ class SaleOrder extends React.Component {
                 <KeyboardAvoidingView style={{ height: "100%", width: "100%" }}
                     behavior="padding" enabled>
                     <View style={componentstyles.containerView}>
+                    {
+                        this.state.isLoading? 
+                        <ActivityIndicator color="#ffffff"
+                                animating={true} size={"large"} />
+                        :null
+                    }                    
                         {this.state.isOnDetail ?
                             <View style={{ height: 180 }}>
                                 <ItemView>
@@ -220,7 +230,7 @@ class SaleOrder extends React.Component {
                                 <ItemView index={2} >
 
 
-                                    <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                                    
                                         <ClientField label="Vendido a"
                                             token={this.props.token}
                                             clientNumber={this.state.clienteVenta}
@@ -239,7 +249,7 @@ class SaleOrder extends React.Component {
                                             }}
                                         />
 
-                                    </View>
+                                    
                                     <ContractPicker contract={this.state.contrato}
                                         setContract={(contrato) => this.setState({ contrato })}
                                         token={this.props.token} clientNumber={this.state.clienteVenta}
@@ -254,8 +264,7 @@ class SaleOrder extends React.Component {
                         }
 
 
-                        <ActivityIndicator color="#ffffff"
-                            animating={this.state.isLoading} size={"large"} />
+                        
 
                         {
                             this.state.isOnDetail ?

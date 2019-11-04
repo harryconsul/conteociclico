@@ -126,7 +126,7 @@ const actionSetSaleDetail = (rows) => {
 export const startSaleOrder = (token, callback) => {
     const _action = actionStartSaleOrder();
     const _stack = createStack(token, _action)
-    console.warn(_stack);
+    
     callStackService(_stack, callback);
 
 }

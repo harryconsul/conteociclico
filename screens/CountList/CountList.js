@@ -75,6 +75,7 @@ class CountList extends React.Component {
                     location: current.sLocation_82.value,
                     um: current.sUM_32.value,
                     rowId: current.rowIndex,
+                    qty:0,
                 });
 
                 return previous;
