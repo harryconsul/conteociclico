@@ -64,7 +64,7 @@ class SideMenu extends React.Component {
                         optionName="Conteo Ciclico" />
                       <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false)}
                         optionName="Conteo Ciclico - Sucursal" />
-                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("QueryArticles", "Consulta de Existensias", false)}
+                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("QueryArticles", "Consulta de Existensias", true)}
                         optionName="Consulta de Existensias" />
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("PlaceSign", "Firma", false)}
                         optionName="Firma Algo" />

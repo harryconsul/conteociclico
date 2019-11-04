@@ -11,6 +11,8 @@ import Field from '../components/Field';
 import backgroundImage from '../assets/labmicroBg.jpg';
 import { queryArticle } from '../apicalls/query.operation';
 import { BusinessUnit } from '../components/BusinessUnit';
+import { actionSetTransactionMode } from '../store/actions/actions.creators';
+import { transactionModes } from '../constants';
 
 
 class QueryArticles extends React.Component {
@@ -31,6 +33,19 @@ class QueryArticles extends React.Component {
     }
 
     navigationButtonPressed({ buttonId }) {
+        switch (buttonId) {
+            case 'sideMenu':
+                this.openSideBar();
+                break;
+            case 'barCode':
+                this.openBarcode('BarcodeReader');
+                break;
+            default:
+                this.openBarcode('BarcodeInput');
+        }
+    }
+
+    openSideBar = () => {
         Navigation.mergeOptions('SideMenu', {
             sideMenu: {
                 left: {
@@ -38,6 +53,48 @@ class QueryArticles extends React.Component {
                 }
             }
         });
+    }
+
+    openBarcode = (screen) => {
+        this.props.dispatch(actionSetTransactionMode(transactionModes.READ_RETURN));
+
+        Navigation.showModal({
+            stack: {
+                children: [
+                    {
+                        component: {
+                            name: screen,
+                        },
+                        options: {
+                            topBar: {
+                                title: {
+                                    text: 'Captura Codigo de Barras'
+                                },
+                                drawBehind: true,
+                                background: {
+                                    color: '#8c30f1c7',
+                                    translucent: true,
+                                    blur: false
+                                },
+
+                            }
+                        }
+                    }
+                ]
+            }
+        });
+    }
+
+    componentDidAppear() {
+        if (this.props.articles) {
+
+            const search = this.props.articles.get("search");
+            if (search) {
+                this.setState({ producto: search.value }, this.search);
+            }
+
+
+        }
     }
 
     unidadNegocio = (unidad) => {
@@ -126,6 +183,7 @@ class QueryArticles extends React.Component {
                                         onChangeText={(text) => this.setState({ producto: text })}
                                         keyboardType={"numeric"}
                                         onSubmitEditing={this.search}
+                                        defaultValue = {this.state.producto}
                                         inputRef={this.state.articleRef}
                                         placeholder="#####" label="Número único" />
                                 </View>
@@ -199,7 +257,8 @@ class QueryArticles extends React.Component {
 const mapStateToProps = (state) => {
     return {
         user: state.user,
-        stack: state.stack
+        stack: state.stack,
+        articles: state.articles,
     }
 
 }
