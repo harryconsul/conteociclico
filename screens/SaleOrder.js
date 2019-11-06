@@ -2,7 +2,7 @@ import React from 'react';
 import {
     View, Text, Button, FlatList,
     ImageBackground, StyleSheet, TouchableOpacity,
-    ActivityIndicator, KeyboardAvoidingView,
+    ActivityIndicator, KeyboardAvoidingView,Alert
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
@@ -18,6 +18,7 @@ import { startSaleOrder, fillOrderHeader, fillOrderDetail } from '../apicalls/sa
 import { queryArticleByItemNumber } from '../apicalls/query.operation';
 
 import { dateHelpers } from '../helpers/'
+
 class SaleOrder extends React.Component {
 
 
@@ -102,6 +103,7 @@ class SaleOrder extends React.Component {
             fechaEntrega: dateHelpers.dateToLatinString(fechaEntrega),
         };
         this.setState({ isLoading: true });
+        
         fillOrderHeader(token, stack, form, (response) => {
             const data = response.data.fs_P574210F_W574210FA.data;
 
@@ -124,45 +126,54 @@ class SaleOrder extends React.Component {
             if (this.props.fromCyclicCount) {
                 const currentArticles = [...this.props.articles.values()]
                 this.props.dispatch(actionSetArticlesMap(new Map()));
-
+                const articlesSearchPromises = [];
                 for (let article of currentArticles) {
-                    queryArticleByItemNumber(cabecera.sucursal, article.itemNumber, this.props.token, (response) => {
-                        let qtyToFill = article.qty;
-                        const rawRows = response.fs_P5541001_W5541001A.data.gridData.rowset;
-
-                        for (let i = 0; i < rawRows.length; i++) {
-                            const qtyOnHand = Number(rawRows[i].mnQuantityOnHand_46.value);
-                            if (!Number.isNaN(qtyOnHand) && qtyOnHand > 0) {
-                                if (qtyToFill > qtyOnHand) {
-                                    qtyToFill -= qtyOnHand;
-                                    this.props.dispatch(actionSetArticle({
-                                        ...article,
-                                        key: rawRows[i].sLotSerialNumber_37.value + rawRows[i].sLocation_55.value,
-                                        serial: rawRows[i].sLotSerialNumber_37.value,
-                                        location: rawRows[i].sLocation_55.value,
-                                        qty: qtyOnHand,
-
-                                    }));
-
-                                } else {
-
-
-                                    this.props.dispatch(actionSetArticle({
-                                        ...article,
-                                        key: rawRows[i].sLotSerialNumber_37.value + rawRows[i].sLocation_55.value,
-                                        serial: rawRows[i].sLotSerialNumber_37.value,
-                                        location: rawRows[i].sLocation_55.value,
-                                        qty: qtyToFill,
-
-                                    }));
-
-                                    break;
+                    const createSearchPromise = (article)=>new Promise((resolve)=>{
+                        queryArticleByItemNumber(cabecera.sucursal, article.itemNumber, this.props.token, (response) => {
+                            let qtyToFill = article.qty;
+                            const rawRows = response.fs_P5541001_W5541001A.data.gridData.rowset;
+                            
+                            for (let i = 0; i < rawRows.length; i++) {
+                                const qtyOnHand = Number(rawRows[i].mnQuantityOnHand_46.value);
+                                if (!Number.isNaN(qtyOnHand) && qtyOnHand > 0) {
+                                    if (qtyToFill > qtyOnHand) {
+                                        qtyToFill -= qtyOnHand;
+                                        this.props.dispatch(actionSetArticle({
+                                            ...article,
+                                            key: rawRows[i].sLotSerialNumber_37.value + rawRows[i].sLocation_55.value,
+                                            serial: rawRows[i].sLotSerialNumber_37.value,
+                                            location: rawRows[i].sLocation_55.value,
+                                            qty: qtyOnHand,
+    
+                                        }));
+    
+                                    } else {
+    
+    
+                                        this.props.dispatch(actionSetArticle({
+                                            ...article,
+                                            key: rawRows[i].sLotSerialNumber_37.value + rawRows[i].sLocation_55.value,
+                                            serial: rawRows[i].sLotSerialNumber_37.value,
+                                            location: rawRows[i].sLocation_55.value,
+                                            qty: qtyToFill,
+    
+                                        }));
+    
+                                        break;
+                                    }
                                 }
                             }
-                        }
+                            resolve(true);
+                        });
                     });
+
+                    articlesSearchPromises.push(createSearchPromise(article));
+                   
+                    
                 }
-                this.setState({ isLoading: false });
+                Promise.all(articlesSearchPromises).then(()=> this.setState({ isLoading: false }))
+
+               
 
             } else {
                 this.setState({ isLoading: false });
@@ -186,8 +197,10 @@ class SaleOrder extends React.Component {
         fillOrderDetail(token, stack, list, (response) => {
             this.setState({isLoading:false})
             if (response) {
-
-                console.warn("response 2", response.data)
+                Alert.alert("Operación Exitosa","Se ha guardado la orden de venta #" +
+                response.data.fs_P574210F_W574210FG.data.txtPreviousOrderNumber_102.value)
+                
+               
             }
         })
 
@@ -226,7 +239,7 @@ class SaleOrder extends React.Component {
                                 </ItemView>
                             </View>
                             :
-                            <View style={{ height: 310 }}>
+                            <View style={{ height: 380 }}>
                                 <ItemView index={2} >
 
 
@@ -257,7 +270,7 @@ class SaleOrder extends React.Component {
                                     <DatePicker label="Fecha de Conteo" date={this.state.fechaEntrega}
                                         setDate={(fechaEntrega) => this.setState({ fechaEntrega })}
                                     />
-
+                                   
                                 </ItemView>
                                 <Button title="Confirmar Cabecera" onPress={this.confirmHeader} />
                             </View>

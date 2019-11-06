@@ -134,15 +134,19 @@ export const fillOrderHeader = (token, stack, form, callback) => {
 
     const action = pushStack(token, actionFillForm(form), stack);
     callStackService(action, (response) => {
+        if(!errorHelpers.handleErrors(response.data.fs_P574210F_W574210FG) ){
 
-        const stackConfirm = {
-            stackId: response.data.stackId,
-            stateId: response.data.stateId,
-            rid: response.data.rid,
-
+            const stackConfirm = {
+                stackId: response.data.stackId,
+                stateId: response.data.stateId,
+                rid: response.data.rid,
+    
+            }
+            const actionConfirm = pushStack(token, actionConfirmHeader(), stackConfirm);
+            callStackService(actionConfirm, callback);
+            
         }
-        const actionConfirm = pushStack(token, actionConfirmHeader(), stackConfirm);
-        callStackService(actionConfirm, callback);
+        
 
     });
 

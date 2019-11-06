@@ -110,21 +110,19 @@ class EnterCycleCount extends React.Component {
                                     reviewCyclicCount(this.props.user.token, this.props.stack, cyclicCount.rowIndex, (response) => {
 
                                         const rawRows = response.data.fs_P41241_W41241A.data.gridData.rowset;
-                                        console.warn(rawRows);
-                                        const review = rawRows.map(item => (
+                                       
+                                        const review = rawRows.map((item,index) => (
                                             {
-                                                key: item.mnNmeroEtiqueta_96.value,
+                                                key: index,
                                                 serial: item.sLotSerial_21.value,
                                                 description: item.sDescription_28.value,
                                                 location: item.sLocation_61.value,
                                                 itemNumber: item.sItemNumber_42.value,
                                                 rowId: item.rowIndex,
                                                 qtyCounted: item.mnQuantityCounted_25.value,
-                                                qtyOnHand: item.mnQuantityOnHand_23.value,
-                                                qtyVariance: this.props.isWarehouse
-                                                    ? item.mnQuantityVariance_31.value
-                                                    : Number(item.mnQuantityCounted_25.value) - Number(item.mnSaftyStock_97.value),
-
+                                                qtyOnHand:  item.mnQuantityOnHand_23.value,
+                                                qtyVariance:  item.mnQuantityVariance_31.value,
+                                                safetyStock:item.mnSafetyStock_97.value,
                                                 isItem: item.sDescription_28.value === 'TOTALS' || item.sDescription_28.value === 'TOTALES' ? false : true,
                                             }
                                         ));
@@ -266,7 +264,7 @@ class EnterCycleCount extends React.Component {
                     </View>
 
                     {review ?
-                        <Review list={review} /> :
+                        <Review list={review}  isWareHouse={this.props.isWareHouse} /> :
                         <Articles list={list} />
                     }
 
@@ -323,7 +321,7 @@ const Articles = ({ list }) => (
     </View>
 
 );
-const Review = ({ list }) => (
+const Review = ({ list,isWareHouse }) => (
     <View style={{ marginTop: 15 }}>
         <Text style={componentstyles.title}> Diferencias </Text>
 
@@ -335,7 +333,9 @@ const Review = ({ list }) => (
                         <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
                             <ItemLabel text={"Lote/Serie : " + item.serial} />
                             <ItemLabel text={"Ubicación: " + item.location} />
-
+                            { isWareHouse?null
+                              :<ItemLabel text={"Inventario Seguridad: " + item.safetyStock} />
+                            }
                         </View> : null
                     }
                     <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>

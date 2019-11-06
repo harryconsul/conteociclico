@@ -1,12 +1,22 @@
 export const reviewToArticles = (review) => {
     let totalToPush = null;
+    let safetyStock = null;
+    let qtyCounted = 0 ; 
     const summary = review.reduce((previous,current)=>{
         if(current.isItem){
             totalToPush={...current};
+            qtyCounted  += Number(totalToPush.qtyCounted);
+            if(safetyStock===null){
+                safetyStock  = Number(totalToPush.safetyStock);
+            }
+           
+
         }else{
-            totalToPush.qtyVariance=current.qtyVariance;
-            totalToPush.qty  = Number(current.qtyVariance.replace("-",""))
+            totalToPush.qtyVariance=qtyCounted - safetyStock ;
+            totalToPush.qty  = Math.abs(totalToPush.qtyVariance);
             previous.push(totalToPush);
+            qtyCounted=0;
+            safetyStock = null;
         }
         return previous;
     },[]);
@@ -14,7 +24,7 @@ export const reviewToArticles = (review) => {
     const articles = new Map();
     for (let item of summary) {
         
-        if ( Number(item.qtyVariance)<0 || item.qtyVariance.indexOf("-")>=0) {
+        if ( item.qtyVariance<0) {
             articles.set(item.key, { ...item,price:0, });
         }
     }

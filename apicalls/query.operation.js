@@ -22,6 +22,7 @@ const formAction = (unidad, producto , token) => (
     {
         token,
         version: "",
+        maxPageSize:1000,
         "formActions": [
             
             {
@@ -49,6 +50,7 @@ const formActionByItemNumber = (unidad, producto , token) => (
     {
         token,
         version: "",
+        maxPageSize:1000,
         "formActions": [
             
             {
