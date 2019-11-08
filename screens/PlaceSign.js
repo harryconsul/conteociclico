@@ -4,7 +4,8 @@ import {Navigation} from 'react-native-navigation'
 import {View} from 'react-native';
 import {connect} from 'react-redux';
 class PlaceSign extends React.Component{
-    close=()=>{
+    close=(response)=>{
+        
         if(this.props.closeOnSave){
             Navigation.dismissModal(this.props.componentId);
         }

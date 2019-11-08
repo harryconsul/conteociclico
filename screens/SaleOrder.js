@@ -198,7 +198,28 @@ class SaleOrder extends React.Component {
             this.setState({isLoading:false})
             if (response) {
                 Alert.alert("Operación Exitosa","Se ha guardado la orden de venta #" +
-                response.data.fs_P574210F_W574210FG.data.txtPreviousOrderNumber_102.value)
+                response.data.fs_P574210F_W574210FG.data.txtPreviousOrderNumber_102.value,[
+                    {
+                        text:"Aceptar",
+                        onPress:()=>{
+                            this.props.dispatch(actionSetArticlesMap(new Map()));
+                            this.setState({
+                                isLoading: false,
+                                articles: null,
+                                isOnDetail: false,
+                                clienteVenta: "",
+                                clienteEntrega:"",
+                                fechaEntrega: new Date(),
+                                contrato: "",
+                                cabecera: {
+                                    numeroOrden: "",
+                                    sucursal: 0,
+                                    saldo: 0,
+                                    moneda: "",
+                                },});
+                        }
+                    }
+                ]);
                 
                
             }

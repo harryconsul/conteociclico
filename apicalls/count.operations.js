@@ -45,7 +45,8 @@ const actionEnterCyclicCount=(rows)=>{
                                     "value":row.qty,
                                     "command": "SetGridCellValue",
                                     "columnID": "29"
-                                },                                
+                                }, 
+                                                               
                             ]
                         })
                     ),  

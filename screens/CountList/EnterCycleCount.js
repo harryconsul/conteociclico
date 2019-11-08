@@ -83,12 +83,14 @@ class EnterCycleCount extends React.Component {
 
         for (let article of this.props.articles.values()) {
             //const article = this.props.articles[key]
-            //if (article.qty) {
-            list.push(article);
-            //}
+            if (article.qty) {
+                list.push(article);
+            }else{
+                list.push({...article,qty:"0"});
+            }
         }
         this.setState({ isLoading: true });
-
+        
         enterCyclicCount(this.props.user.token, this.props.stack, list,
             (response) => {
                 const stack = {

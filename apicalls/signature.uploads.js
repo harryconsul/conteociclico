@@ -12,31 +12,32 @@ export const uploadSignature=(key,path,token,fileName,callback)=>{
         "ssoEnabled":false,
         "moStructure":"GT5541240",
         "moKey":[
-           "22478"
+           key
         ],
         "formName":"P5541240_W5541240A",
         "version":"",
         "file":{
             "fileLocation":finalPath,
-            "fileName":"test.png",
-            "itemName":"test",  
+            "fileName":fileName + ".png",
+            "itemName": fileName,  
             "sequence":0          
         }
     }
+    
     const json = JSON.stringify(data);
     
     RNFS.writeFile(pathJson,json,'utf8').then(()=>{
         formData.append('file',{
             uri:finalPath,
             type:'image/png',
-            name:"test.png",
-            },"test.png");      
+            name: fileName+ ".png",
+            },fileName + ".png");      
        
         
         formData.append("moAdd",{
             uri:'file://'+pathJson,
             type:'application/json',
-            name:"test1.txt",
+            name: fileName + ".txt",
             });
         
         const config = {
@@ -45,7 +46,7 @@ export const uploadSignature=(key,path,token,fileName,callback)=>{
             }
         }
     
-        axios.post("file/upload",formData,config).then((response)=>callback())
+        axios.post("file/upload",formData,config).then((response)=>callback(response))
         .catch(error=>console.warn(error));
     })
    
