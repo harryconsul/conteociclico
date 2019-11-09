@@ -74,7 +74,7 @@ const actionConfirmDetail = () => {
     }
 }
 
-const actionSetSaleDetail = (rows) => {
+const actionSetSaleDetail = (rows,businessUnit) => {
     return {
         formOID: "W574210FA",
         formActions: [
@@ -108,6 +108,11 @@ const actionSetSaleDetail = (rows) => {
                                     "value": row.serial,
                                     "command": "SetGridCellValue",
                                     "columnID": "133"
+                                },
+                                {
+                                    "value": businessUnit,
+                                    "command": "SetGridCellValue",
+                                    "columnID": "35"
                                 },
 
                             ]
@@ -153,9 +158,9 @@ export const fillOrderHeader = (token, stack, form, callback) => {
 
 }
 
-export const fillOrderDetail = (token, stack, rows, callback) => {
+export const fillOrderDetail = (token, stack, rows,businessUnit, callback) => {
 
-    const action = pushStack(token, actionSetSaleDetail(rows), stack);
+    const action = pushStack(token, actionSetSaleDetail(rows,businessUnit), stack);
     callStackService(action, (response) => {
 
         if (!errorHelpers.handleErrors(response.data.fs_P574210F_W574210FA)) {

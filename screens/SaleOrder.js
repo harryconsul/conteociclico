@@ -2,7 +2,7 @@ import React from 'react';
 import {
     View, Text, Button, FlatList,
     ImageBackground, StyleSheet, TouchableOpacity,
-    ActivityIndicator, KeyboardAvoidingView,Alert
+    ActivityIndicator, KeyboardAvoidingView, Alert
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
@@ -70,7 +70,7 @@ class SaleOrder extends React.Component {
 
             this.props.dispatch(actionUpdateStack(stack));
         });
-       
+
     }
     setupArticles = () => {
         Navigation.showModal({
@@ -103,7 +103,7 @@ class SaleOrder extends React.Component {
             fechaEntrega: dateHelpers.dateToLatinString(fechaEntrega),
         };
         this.setState({ isLoading: true });
-        
+
         fillOrderHeader(token, stack, form, (response) => {
             const data = response.data.fs_P574210F_W574210FA.data;
 
@@ -128,11 +128,11 @@ class SaleOrder extends React.Component {
                 this.props.dispatch(actionSetArticlesMap(new Map()));
                 const articlesSearchPromises = [];
                 for (let article of currentArticles) {
-                    const createSearchPromise = (article)=>new Promise((resolve)=>{
-                        queryArticleByItemNumber(cabecera.sucursal, article.itemNumber, this.props.token, (response) => {
+                    const createSearchPromise = (article) => new Promise((resolve) => {
+                        queryArticleByItemNumber(this.props.clienteEntrega, article.itemNumber, this.props.token, (response) => {
                             let qtyToFill = article.qty;
                             const rawRows = response.fs_P5541001_W5541001A.data.gridData.rowset;
-                            
+                           
                             for (let i = 0; i < rawRows.length; i++) {
                                 const qtyOnHand = Number(rawRows[i].mnQuantityOnHand_46.value);
                                 if (!Number.isNaN(qtyOnHand) && qtyOnHand > 0) {
@@ -143,22 +143,24 @@ class SaleOrder extends React.Component {
                                             key: rawRows[i].sLotSerialNumber_37.value + rawRows[i].sLocation_55.value,
                                             serial: rawRows[i].sLotSerialNumber_37.value,
                                             location: rawRows[i].sLocation_55.value,
+                                            expirationDate: rawRows[i].dtExpirationDateMonth_53.value,
                                             qty: qtyOnHand,
-    
+
                                         }));
-    
+
                                     } else {
-    
-    
+
+
                                         this.props.dispatch(actionSetArticle({
                                             ...article,
                                             key: rawRows[i].sLotSerialNumber_37.value + rawRows[i].sLocation_55.value,
                                             serial: rawRows[i].sLotSerialNumber_37.value,
                                             location: rawRows[i].sLocation_55.value,
+                                            expirationDate: rawRows[i].dtExpirationDateMonth_53.value,
                                             qty: qtyToFill,
-    
+
                                         }));
-    
+
                                         break;
                                     }
                                 }
@@ -168,12 +170,12 @@ class SaleOrder extends React.Component {
                     });
 
                     articlesSearchPromises.push(createSearchPromise(article));
-                   
-                    
-                }
-                Promise.all(articlesSearchPromises).then(()=> this.setState({ isLoading: false }))
 
-               
+
+                }
+                Promise.all(articlesSearchPromises).then(() => this.setState({ isLoading: false }))
+
+
 
             } else {
                 this.setState({ isLoading: false });
@@ -183,7 +185,7 @@ class SaleOrder extends React.Component {
     }
 
     confirmOrderDetail = () => {
-        this.setState({isLoading:true});
+        this.setState({ isLoading: true });
         const list = [];
 
         for (let article of this.props.articles.values()) {
@@ -193,22 +195,24 @@ class SaleOrder extends React.Component {
             }
         }
 
-        const { token, stack } = this.props;
-        fillOrderDetail(token, stack, list, (response) => {
-            this.setState({isLoading:false})
+        const { token, stack, clienteEntrega, fromCyclicCount } = this.props;
+        const articlesBusinessUnit = fromCyclicCount ? clienteEntrega : ""
+
+        fillOrderDetail(token, stack, list, articlesBusinessUnit, (response) => {
+            this.setState({ isLoading: false })
             if (response) {
-                Alert.alert("Operación Exitosa","Se ha guardado la orden de venta #" +
-                response.data.fs_P574210F_W574210FG.data.txtPreviousOrderNumber_102.value,[
+                Alert.alert("Operación Exitosa", "Se ha guardado la orden de venta #" +
+                    response.data.fs_P574210F_W574210FG.data.txtPreviousOrderNumber_102.value, [
                     {
-                        text:"Aceptar",
-                        onPress:()=>{
+                        text: "Aceptar",
+                        onPress: () => {
                             this.props.dispatch(actionSetArticlesMap(new Map()));
                             this.setState({
                                 isLoading: false,
                                 articles: null,
                                 isOnDetail: false,
                                 clienteVenta: "",
-                                clienteEntrega:"",
+                                clienteEntrega: "",
                                 fechaEntrega: new Date(),
                                 contrato: "",
                                 cabecera: {
@@ -216,12 +220,13 @@ class SaleOrder extends React.Component {
                                     sucursal: 0,
                                     saldo: 0,
                                     moneda: "",
-                                },});
+                                },
+                            });
                         }
                     }
                 ]);
-                
-               
+
+
             }
         })
 
@@ -246,12 +251,12 @@ class SaleOrder extends React.Component {
                 <KeyboardAvoidingView style={{ height: "100%", width: "100%" }}
                     behavior="padding" enabled>
                     <View style={componentstyles.containerView}>
-                    {
-                        this.state.isLoading? 
-                        <ActivityIndicator color="#ffffff"
-                                animating={true} size={"large"} />
-                        :null
-                    }                    
+                        {
+                            this.state.isLoading ?
+                                <ActivityIndicator color="#ffffff"
+                                    animating={true} size={"large"} />
+                                : null
+                        }
                         {this.state.isOnDetail ?
                             <View style={{ height: 180 }}>
                                 <ItemView>
@@ -264,26 +269,26 @@ class SaleOrder extends React.Component {
                                 <ItemView index={2} >
 
 
-                                    
-                                        <ClientField label="Vendido a"
-                                            token={this.props.token}
-                                            clientNumber={this.state.clienteVenta}
-                                            setClientNumber={(cliente) => {
-                                                this.setState({
-                                                    clienteVenta: cliente,
-                                                });
-                                            }} />
-                                        <ClientField label="Entregado a"
-                                            clientNumber={this.state.clienteEntrega}
-                                            token={this.props.token}
-                                            setClientNumber={(cliente) => {
-                                                this.setState({
-                                                    clienteEntrega: cliente,
-                                                });
-                                            }}
-                                        />
 
-                                    
+                                    <ClientField label="Vendido a"
+                                        token={this.props.token}
+                                        clientNumber={this.state.clienteVenta}
+                                        setClientNumber={(cliente) => {
+                                            this.setState({
+                                                clienteVenta: cliente,
+                                            });
+                                        }} />
+                                    <ClientField label="Entregado a"
+                                        clientNumber={this.state.clienteEntrega}
+                                        token={this.props.token}
+                                        setClientNumber={(cliente) => {
+                                            this.setState({
+                                                clienteEntrega: cliente,
+                                            });
+                                        }}
+                                    />
+
+
                                     <ContractPicker contract={this.state.contrato}
                                         setContract={(contrato) => this.setState({ contrato })}
                                         token={this.props.token} clientNumber={this.state.clienteVenta}
@@ -291,14 +296,14 @@ class SaleOrder extends React.Component {
                                     <DatePicker label="Fecha de Conteo" date={this.state.fechaEntrega}
                                         setDate={(fechaEntrega) => this.setState({ fechaEntrega })}
                                     />
-                                   
+
                                 </ItemView>
                                 <Button title="Confirmar Cabecera" onPress={this.confirmHeader} />
                             </View>
                         }
 
 
-                        
+
 
                         {
                             this.state.isOnDetail ?
@@ -313,7 +318,14 @@ class SaleOrder extends React.Component {
                                             <ItemLabel text={"Catalogo: " + item.itemNumber} />
                                             <ItemHightLight text={"Ubicación: " + item.location} />
                                         </View>
-                                        <ItemLabel text={"Lote: " + item.serial} />
+                                        <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }} >
+                                            <ItemLabel text={"Lote: " + item.serial} />
+                                            {   item.expirationDate?
+                                                <ItemLabel text={"Caducidad: " + item.expirationDate} />
+                                                :null
+                                            }
+                                        </View>
+
                                         <ItemHightLight text={"Descripcion: " + item.description} />
                                         <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }} >
                                             <ItemHightLight text={"Cantidad: " + item.qty} />
