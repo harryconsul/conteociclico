@@ -30,14 +30,19 @@ export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, 
                     justifyContent: "space-between"
                 }}>
                     <View style={{ width: "40%" }}>
-                        <ItemHightLight text={"Disp.: " + item.stock + " " + item.um} />
+                        {
+                            item.stock ?
+                                <ItemHightLight text={"Disp.: " + item.stock + " " + item.um} />
+                                :
+                                null
+                        }
                     </View>
                     <View style={{ width: "60%" }}>
                         <ItemLabel text={"Ubicación : " + item.location} />
                     </View>
 
                 </View>
-                
+
                 <View style={{ height: size, marginTop: 15, marginBottom: 10 }}>
                     <Field label="Cantidad" placeholder="#" defaultValue={String(qty)}
                         onChangeText={(text) => setQty(text)} keyboardType="numeric" />
