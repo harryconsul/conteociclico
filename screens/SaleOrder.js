@@ -109,7 +109,7 @@ class SaleOrder extends React.Component {
 
             const cabecera = {
                 numeroOrden: data.txtOrderNumber_17.value,
-                sucursal: data.txtBusinessUnit_11.value,
+                sucursal: this.props.fromCyclicCount? this.props.clienteEntrega:data.txtBusinessUnit_11.value,
                 saldo: data.txtmnSdo_AA_1070.value,
                 moneda: data.txtBaseCurrencyCode_516.value,
             };

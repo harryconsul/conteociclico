@@ -74,6 +74,7 @@ class CountList extends React.Component {
                     description: current.sDescription_30.value,
                     location: current.sLocation_82.value,
                     um: current.sUM_32.value,
+                    itemNumber : current.sItemNumber_125.value,
                     rowId: current.rowIndex,
                     
                 });

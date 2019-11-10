@@ -303,10 +303,14 @@ export default connect(mapStateToProps)(EnterCycleCount);
 
 const Articles = ({ list }) => (
     <View style={{ marginTop: 15 }} >
-        <Text style={componentstyles.title}> Conteo de Articulos </Text>
+        <Text style={componentstyles.title}> Conteo de ArticSulos </Text>
         <FlatList data={list}
             renderItem={({ item, index }) => {
                 return <ItemView key={index} index={index}>
+                     <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                        <ItemLabel text={"Catalogo " + item.itemNumber} />
+                        <ItemLabel text={"Numero Único: " + item.key} />
+                     </View>
                     <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
                         <ItemLabel text={"Lote/Serie: " + item.serial} />
                         <ItemLabel text={"Ubicación: " + item.location} />

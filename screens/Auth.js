@@ -1,7 +1,7 @@
 
 import React, { Component } from 'react';
 import {
-    StyleSheet, Text, View, TextInput, Button,
+    StyleSheet, Text, View, TextInput, Button,Picker,
     ImageBackground, Alert, Switch, ActivityIndicator, KeyboardAvoidingView
 } from 'react-native';
 import { Navigation } from 'react-native-navigation';
@@ -92,6 +92,7 @@ class Auth extends Component {
         username: "", password: "", passwordRef: React.createRef(),
         rememberMe: false, realm: null, userInDB: null,
         isLoading: false,
+        environment: "PY",
     }
 
     componentDidMount() {
@@ -102,7 +103,7 @@ class Auth extends Component {
 
     login = () => {
         this.setState({ isLoading: true });
-        userLogin(this.state.username, this.state.password, (response) => {
+        userLogin(this.state.username, this.state.password,this.state.environment, (response) => {
             this.setState({ isLoading: false });
             const saveUser = new Promise((resolve, reject) => {
                 const { realm, username, password, rememberMe } = this.state;
@@ -110,14 +111,14 @@ class Auth extends Component {
                     if (!this.userInDB) {
                         const users = realm.objects('user');
                         const user = users.filtered("username=$0", username);
-                       
+
                         if (user.length) {
-                           
+
                             realm.write(() => {
                                 realm.create('user', { username, password, rememberMe }, true);
                             });
                         } else {
-                            
+
                             realm.write(() => {
                                 realm.create('user', { username, password, rememberMe });
                             });
@@ -128,13 +129,13 @@ class Auth extends Component {
                         realm.write(() => {
                             realm.create('user', { username, password, rememberMe }, true);
                         });
-                       
+
                     }
                     const responseInfo = response.data.userInfo;
-                    
+
                     resolve({ username, responseInfo });
-                   
-                }catch(error){
+
+                } catch (error) {
                     reject(error);
                 }
             });
@@ -148,7 +149,7 @@ class Auth extends Component {
                 callMainApp();
             }).catch((error) => {
                 Alert("Error al registrar al usuario ");
-            
+
             })
 
 
@@ -163,11 +164,11 @@ class Auth extends Component {
         const users = realm.objects('user');
         const user = users.filtered("username=$0", username);
         if (user.length) {
-            const rememberMe =  user[0].rememberMe
+            const rememberMe = user[0].rememberMe
             const password = rememberMe ? user[0].password : "";
-            
+
             this.userInDB = user[0];
-            this.setState({ password,rememberMe });
+            this.setState({ password, rememberMe });
         } else {
             this.userInDB = null
         }
@@ -198,9 +199,9 @@ class Auth extends Component {
                             style={componentstyles.textboxLogin}
                             placeholderTextColor={"#fffa"}
                             secureTextEntry
-                            onChangeText={(text) => this.setState({ password: text })} 
-                            autoCompleteType="password" 
-                            onSubmitEditing={this.login}    
+                            onChangeText={(text) => this.setState({ password: text })}
+                            autoCompleteType="password"
+                            onSubmitEditing={this.login}
                         />
                         <Button
                             onPress={this.login}
@@ -211,6 +212,19 @@ class Auth extends Component {
                             <Switch value={this.state.rememberMe}
                                 onValueChange={(value) => this.setState({ rememberMe: value })}
                             />
+                        </View>
+                        <View style={{ flexDirection: "row" }}>
+                            <Text style={styles.instructions}>Ambiente</Text>
+                            <Picker
+                                selectedValue={this.state.environment}
+                                style={{ height: 50, width: 100 , color:"#FFFFFF"}}
+                                onValueChange={(itemValue) =>
+                                    this.setState({ environment: itemValue })
+                                }>
+                                <Picker.Item label="PD" value="PD" />
+                                <Picker.Item label="PY" value="PY" />
+                            </Picker>
+
                         </View>
 
                     </View>
