@@ -22,6 +22,7 @@ const initialState = {
     orderNumber: 0,
     isConfirming: true,
     lineas: 0,
+    ruta: "",
 };
 class ProductsPickup extends React.Component {
 
@@ -163,35 +164,41 @@ class ProductsPickup extends React.Component {
             const rawRows = response.data.fs_P554205_W554205E.data.gridData.rowset;
             const productToPickup = new Map();
             let lineas = 0;
+            let ruta = "";
 
             for (let i = 0; i < rawRows.length; i++) {
                 //Sólo mostrar productos que esten en 540 - 560 y que tenga no. de lote.
                 if (parseInt(rawRows[i].sLastStat_48.value) == 540 && parseInt(rawRows[i].sNextStat_47.value) == 560
                     && rawRows[i].sLotSerial_50.value.length > 0) {
-
-                    //Catálogo: sItemNumber_35
-                    const key = rawRows[i].sItemNumber_35.value;
+                    
+                    const key = rawRows[i].mnNmeronico_253.value;
 
                     const value = {
                         key,
-                        catalogo: rawRows[i].sItemNumber_35.value,
+                        articulo: rawRows[i].mnNmeronico_253.value,
+                        itemNumber: rawRows[i].sItemNumber_35.value,
                         lote: rawRows[i].sLotSerial_50.value,
                         um: rawRows[i].sUnitofMeasure_178.value,
-                        ubicacion: rawRows[i].sLocation_36.value,
-                        producto: rawRows[i].sDescription_44.value,
-                        cantidad: rawRows[i].mnQuantityShipped_71.value,
+                        location: rawRows[i].sLocation_36.value,
+                        description: rawRows[i].sDescription_44.value,
+                        qty: rawRows[i].mnQuantityShipped_71.value,
                         sucursal: rawRows[i].sBranchPlant_37.value,
                         prevStatus: rawRows[i].sLastStat_48.value,
                         nextStatus: rawRows[i].sNextStat_47.value,
                         ordenTipo: rawRows[i].sOrTy_77.value,
                     }
+                    
                     productToPickup.set(key, value);
 
                     lineas += 1;
+                    if (ruta === "") {
+                        ruta = rawRows[i].sDescRuta_256.value;
+                    }
+
                 }
             }
             this.props.dispatch(actionSetArticlesMap(productToPickup));
-            this.setState({ isLoading: false, articles: productToPickup, lineas });
+            this.setState({ isLoading: false, articles: productToPickup, lineas, ruta });
             const stack = {
                 stackId: response.data.stackId,
                 stateId: response.data.stateId,
@@ -219,19 +226,20 @@ class ProductsPickup extends React.Component {
     }
     handleSelectRow = (key) => {
         const item = this.props.articles.get(key);
-        this.props.dispatch(actionSetArticle({ ...item, cantidad: 0 }));
+        this.props.dispatch(actionSetArticle({ ...item, qty: 0 }));
 
     }
     render() {
-        const { order, isConfirming, articles, lineas } = this.state;
+        const { order, isConfirming, articles, lineas, ruta } = this.state;
         const iniciar = isConfirming ?
             <Button onPress={this.startPickup} title="Iniciar Recolección" />
             : null;
 
         const products = this.props.articles ? this.props.articles.values() : [];
+        
         const productsArray = (this.state.articles ?
-            Array.from(products) : []).filter((item) => item.cantidad);
-
+            Array.from(products) : []).filter((item) => item.qty);
+        
         const orderView = order ?
             <ItemView index={1} >
                 <View style={styles.linea}>
@@ -247,7 +255,10 @@ class ProductsPickup extends React.Component {
                 <ItemLabel text={"Sucursal: " + order.nombreSucursal} />
                 {
                     articles ?
-                        <ItemHightLight text={"Recolectar " + productsArray.length + " de " + lineas} />
+                        <View>
+                            <ItemHightLight text={"Recolectar " + productsArray.length + " de " + lineas} />
+                            <ItemLabel text={"Ruta: " + ruta} />
+                        </View>
                         :
                         null
                 }
@@ -290,10 +301,17 @@ class ProductsPickup extends React.Component {
                             renderItem={({ item, index }) =>
                                 <TouchableOpacity key={item.key} index={index} onPress={() => this.handleSelectRow(item.key)}>
                                     <ItemView index={index} >
-                                        <ItemLabel text={"Catálogo: " + item.catalogo} />
-                                        <ItemLabel text={"Producto: " + item.producto} />
-                                        <ItemLabel text={"Cantidad: " + item.cantidad + " " + item.um} />
-                                        <ItemLabel text={"Ubicación: " + item.ubicacion} />
+                                        <View style={styles.linea}>
+                                            <View style={{ width: "33%" }}>
+                                                <ItemLabel text={"No. " + item.articulo} />
+                                            </View>
+                                            <View style={{ width: "67%" }}>
+                                                <ItemLabel text={"Catálogo: " + item.itemNumber} />
+                                            </View>
+                                        </View>
+                                        <ItemLabel text={"Producto: " + item.description} />
+                                        <ItemLabel text={"Cantidad: " + item.qty + " " + item.um} />
+                                        <ItemLabel text={"Ubicación: " + item.location} />
                                         <ItemLabel text={"Lote: " + item.lote} />
                                     </ItemView>
                                 </TouchableOpacity>
