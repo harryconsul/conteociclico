@@ -12,6 +12,11 @@ const actionSearchShipment = (orderNumber) => {
                 "controlID": "71"
             },
             {
+                command: "SetControlValue",
+                value: "*",
+                "controlID": "20"
+            },
+            {
                 command: "DoAction",
                 controlID: "15",
             }
