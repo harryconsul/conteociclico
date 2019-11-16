@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text,  StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 import { ArticleCard } from '../components'
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import { actionSetArticle } from '../store/actions/actions.creators';
 import { transactionModes } from '../constants'
+import ArticleScanMode from '../components/ArticleScanMode';
+import closeIcon from '../assets/iconclose.png';
 const PendingView = () => (
   <View
     style={{
@@ -20,16 +22,28 @@ const PendingView = () => (
 );
 
 class BarcodeReader extends React.Component {
-  constructor(props){
+  constructor(props) {
     super(props);
     Navigation.events().bindComponent(this);
     this.state = {
       editingItem: null,
       isEditing: false,
       qty: 0,
+      confirmMode: false,
     }
   }
-  
+  close=()=>{
+    Navigation.dismissModal(this.props.componentId);
+  }
+  navigationButtonPressed = ({ buttonId }) => {
+    switch(buttonId){
+           case 'close':
+               this.close();
+               break;              
+           default:
+                this.close();
+    } 
+}
   handleAccept = () => {
     const { editingItem, qty } = this.state;
     const item = { ...editingItem, qty };
@@ -48,22 +62,28 @@ class BarcodeReader extends React.Component {
       }
     )
   }
-  componentDidMount=()=>{
+  componentDidMount = () => {
     Navigation.mergeOptions(this.props.componentId, {
-        topBar: {
-            title: {
-                text: 'Lectura de Codigo de Barras'
-            },
-            drawBehind: true,
-            background: {
-                color: '#8c30f1c7',
-                translucent: true,
-                blur: false
-            },
-            visible: true,
+      topBar: {
+        title: {
+          text: 'Lectura de Codigo de Barras'
         },
+        drawBehind: true,
+        background: {
+          color: '#8c30f1c7',
+          translucent: true,
+          blur: false
+        },
+        visible: true,
+        rightButtons:[
+          {
+              id:'close',
+              icon:closeIcon,
+          }
+      ]
+      },
     });
-}
+  }
   barCodeHandler = event => {
     //Get the item
     if (this.props.transactionMode === transactionModes.READ_RETURN) {
@@ -100,6 +120,11 @@ class BarcodeReader extends React.Component {
           editingItem,
           qty: editingItem.qty,
           isEditing: true,
+        }, () => {
+          if (!this.state.confirmMode) {
+            setTimeout(this.handleAccept,1000);
+            
+          }
         });
 
 
@@ -137,14 +162,17 @@ class BarcodeReader extends React.Component {
         >
           {({ camera, status, recordAudioPermissionStatus }) => {
             const item = this.state.editingItem;
-            const qty = this.state.qty;
+            const { qty, confirmMode } = this.state;
             if (status !== 'READY') return <PendingView />;
             return (
-              <View style={{ height: "100%", flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                {item ? <View style={{ height: "80%" }}>
-                  <ArticleCard handleAccept={this.handleAccept} 
+              <View style={{ height: "100%", flexDirection: 'row', flexWrap: "wrap", justifyContent: 'center', alignItems: 'center' }}>
+                <View style={{ backgroundColor: "#0e0000e3", marginBottom: "30%", marginTop: 60, flexBasis: "80%", height: 50, padding: 20 }}>
+                  <ArticleScanMode confirmMode={confirmMode} changeMode={(confirmMode) => this.setState({ confirmMode })} />
+                </View>
+                {item ? <View style={{ height: "80%", flexBasis: "80%" }}>
+                  <ArticleCard handleAccept={this.handleAccept}
                     item={item} qty={qty}
-                    setQty={(qty)=>this.setState({qty})} />
+                    setQty={(qty) => this.setState({ qty })} />
                 </View>
                   :
                   <View style={styles.barcodeGuide}></View>
@@ -171,6 +199,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     height: "30%",
     width: "70%",
+    flexBasis: "80%",
 
 
 

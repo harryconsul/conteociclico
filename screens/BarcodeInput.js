@@ -1,8 +1,7 @@
 import React from 'react';
 import {
     View, StyleSheet, Alert, KeyboardAvoidingView
-    , ImageBackground ,Switch,Text
-} from 'react-native';
+    , ImageBackground } from 'react-native';
 import Field from '../components/Field';
 import { ArticleCard } from '../components'
 import { connect } from 'react-redux';
