@@ -32,9 +32,14 @@ class BarcodeReader extends React.Component {
       confirmMode: false,
     }
   }
+
   close=()=>{
-    Navigation.dismissModal(this.props.componentId);
+
+      Navigation.dismissModal(this.props.componentId);
+    
+    
   }
+
   navigationButtonPressed = ({ buttonId }) => {
     switch(buttonId){
            case 'close':
@@ -92,7 +97,7 @@ class BarcodeReader extends React.Component {
         value: event.data,
       }
       this.props.dispatch(actionSetArticle(item));
-      Navigation.dismissModal(this.props.componentId);
+      this.close();
 
     } else {//busqueda del elemento en la lista
       const item = this.props.list.get(event.data);

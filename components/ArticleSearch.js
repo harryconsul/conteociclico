@@ -4,99 +4,32 @@ import {
     StyleSheet, ActivityIndicator, TouchableOpacity, Alert,
 } from 'react-native';
 import { connect } from 'react-redux';
-import { Navigation } from 'react-native-navigation';
+
 import { ItemView, ItemLabel } from '../components';
 import { componentstyles } from '../styles';
 import Field from '../components/Field';
-import backgroundImage from '../assets/labmicroBg.jpg';
+
 import { queryArticle } from '../apicalls/query.operation';
 import { BusinessUnit } from '../components/BusinessUnit';
-import { actionSetTransactionMode } from '../store/actions/actions.creators';
-import { transactionModes } from '../constants';
 
 
-class QueryArticles extends React.Component {
+class ArticleSearch extends React.Component {
 
     constructor(props) {
         super(props);
-        if (!props.notScreen) {
-            Navigation.events().bindComponent(this);
-        }
+       
         this.state = {
             producto: "",
             unidad: props.businessUnit ? props.businessUnit : "",
             unidadNombre: "",
             rows: [],
             isLoading: false,
+            pedingSearch:true,
             articleRef: React.createRef(),
         }
     }
 
-    navigationButtonPressed({ buttonId }) {
-        switch (buttonId) {
-            case 'sideMenu':
-                this.openSideBar();
-                break;
-            case 'barCode':
-                this.openBarcode('BarcodeReader');
-                break;
-            default:
-                this.openBarcode('BarcodeInput');
-        }
-    }
-
-    openSideBar = () => {
-        Navigation.mergeOptions('SideMenu', {
-            sideMenu: {
-                left: {
-                    visible: true
-                }
-            }
-        });
-    }
-
-    openBarcode = (screen) => {
-        this.props.dispatch(actionSetTransactionMode(transactionModes.READ_RETURN));
-
-        Navigation.showModal({
-            stack: {
-                children: [
-                    {
-                        component: {
-                            name: screen,
-                        },
-                        options: {
-                            topBar: {
-                                title: {
-                                    text: 'Captura Codigo de Barras'
-                                },
-                                drawBehind: true,
-                                background: {
-                                    color: '#8c30f1c7',
-                                    translucent: true,
-                                    blur: false
-                                },
-
-                            }
-                        }
-                    }
-                ]
-            }
-        });
-    }
-
-    componentDidAppear() {
-        
-        if (this.props.articles) {
-
-            const search = this.props.articles.get("search");
-            if (search) {
-                this.setState({ producto: search.value }, this.search);
-            }
-
-
-        }
-    }
+      
 
     unidadNegocio = (unidad) => {
         //Los datos de esta función, se alimentan desde BusinessUnit
@@ -104,58 +37,21 @@ class QueryArticles extends React.Component {
     }
 
     search = () => {
+        this.setState({isLoading:true});
+       searchArticle(this.state.unidad,this.state.producto,this.props.user.token)
+        .then(response=>this.setState({isLoading:false,rows:response})).catch(error=>{
+            this.setState({isLoading:false});
+            Alert.alert(error);
+        });
        
-        if (this.state.unidad != 0) {
-            //1ero debe existir la unidad de negocio
-            if (this.state.producto.length != 0) {
-                //2do siempre debe ingresar un número de producto
-                this.setState({ isLoading: true });
-                queryArticle(this.state.unidad, this.state.producto, this.props.user.token, (data) => {
-                    const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
-                    if (rawRows.length != 0) {
-                        const rows = rawRows.map((item, index) => ({
-                            key: index,
-                            etiqueta: item.mnNmeronico_24.value,
-                            producto: item.sDescription_38.value,
-                            unidadNegocio: item.sBusinessUnit_48.value,
-                            ubicacion: item.sLocation_55.value,
-                            lote: item.sLotSerialNumber_37.value,
-                            disponible: item.mnQuantityOnHand_46.value,
-                            existencia: item.mnQuantitySinCalcular_57.value,
-                            comprometido: item.mnQuantityHardCommitted_58.value,
-                            caducidad: item.dtExpirationDateMonth_53.value,
-                            unidadMedida: item.sUM_54.value,
-                            shortNumber: item.mnShortItemNo_25.value,
-                            itemNumber: item.s2ndItemNumber_33.value,
-                        }));
-
-                        this.setState({ rows });
-                    } else {
-                        const rows = null;
-                        this.setState({ rows });
-                        Alert.alert("Número no encontrado, valide el dato");
-                    }
-
-                    this.setState({ isLoading: false });
-
-
-                }, (reason) => console.warn("error", reason));
-            }else{
-                Alert.alert("Ingrese el número del producto");
-            }
-        } else {
-            Alert.alert("Ingrese la unidad de negocio");
-        }
     }
-    componentDidMount() {
-        /*if (this.props.notScreen) {
-            this.state.articleRef.current.focus();
-        }*/
-    }
+    
 
     render() {
+        const  rows = this.state.rows.length ? this.state.rows : this.props.queryRows;
+        
         return (
-            <ImageBackground source={this.props.notScreen ? null : backgroundImage} style={componentstyles.background}>
+            <View  style={componentstyles.background}>
                 <View style={{ ...componentstyles.containerView, width: '100%', margin: 5 }}>
                     {
                         this.props.businessUnitNombre ?
@@ -201,7 +97,7 @@ class QueryArticles extends React.Component {
                     }
                     {
                         this.state.rows ?
-                            <FlatList data={this.state.rows}
+                            <FlatList data={rows}
                                 renderItem={({ item, index }) =>
                                     <TouchableOpacity key={item.key}
                                         onPress={this.props.handleClickRow ? () => this.props.handleClickRow(item) : null} >
@@ -251,7 +147,7 @@ class QueryArticles extends React.Component {
                             null
                     }
                 </View>
-            </ImageBackground>
+            </View>
 
         )
     }
@@ -312,4 +208,47 @@ const styles = StyleSheet.create({
     }
 
 });
-export default connect(mapStateToProps)(QueryArticles);
+export default connect(mapStateToProps)(ArticleSearch);
+
+export const searchArticle = (unidad,producto,token) => {
+    return new Promise( (resolve,reject)=>{
+        if (unidad != 0) {
+            //1ero debe existir la unidad de negocio
+            if (producto.length != 0) {
+                //2do siempre debe ingresar un número de producto
+                
+                queryArticle(unidad, producto, token, (data) => {
+                    const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
+                    if (rawRows.length != 0) {
+                        const rows = rawRows.map((item, index) => ({
+                            key: index,
+                            etiqueta: item.mnNmeronico_24.value,
+                            producto: item.sDescription_38.value,
+                            unidadNegocio: item.sBusinessUnit_48.value,
+                            ubicacion: item.sLocation_55.value,
+                            lote: item.sLotSerialNumber_37.value,
+                            disponible: item.mnQuantityOnHand_46.value,
+                            existencia: item.mnQuantitySinCalcular_57.value,
+                            comprometido: item.mnQuantityHardCommitted_58.value,
+                            caducidad: item.dtExpirationDateMonth_53.value,
+                            unidadMedida: item.sUM_54.value,
+                            shortNumber: item.mnShortItemNo_25.value,
+                            itemNumber: item.s2ndItemNumber_33.value,
+                        }));
+    
+                       resolve(rows);
+                    } else {
+                       reject("Número no encontrado, valide el dato");
+                    }
+    
+                   
+                }, (reason) =>reject(reason));
+            }else{
+                reject("Ingrese el número del producto");
+            }
+        } else {
+            reject("Ingrese la unidad de negocio");
+        }
+    });
+   
+}
