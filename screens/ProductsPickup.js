@@ -45,9 +45,17 @@ class ProductsPickup extends React.Component {
             case 'barCode':
                 this.openBarcode('BarcodeReader');
                 break;
+            case 'refresh':
+                this.refreshScreen();
+                break;
             default:
                 this.openBarcode('BarcodeInput');
         }
+    }
+    refreshScreen = () => {
+        this.setState({ ...initialState });
+        this.props.dispatch(actionSetArticlesMap(new Map()));
+        this.setState({ isLoading: false });
     }
     openSideBar = () => {
         Navigation.mergeOptions('SideMenu', {
@@ -170,7 +178,7 @@ class ProductsPickup extends React.Component {
                 //Sólo mostrar productos que esten en 540 - 560 y que tenga no. de lote.
                 if (parseInt(rawRows[i].sLastStat_48.value) == 540 && parseInt(rawRows[i].sNextStat_47.value) == 560
                     && rawRows[i].sLotSerial_50.value.length > 0) {
-                    
+
                     const key = rawRows[i].mnNmeronico_253.value;
 
                     const value = {
@@ -187,7 +195,7 @@ class ProductsPickup extends React.Component {
                         nextStatus: rawRows[i].sNextStat_47.value,
                         ordenTipo: rawRows[i].sOrTy_77.value,
                     }
-                    
+
                     productToPickup.set(key, value);
 
                     lineas += 1;
@@ -236,10 +244,13 @@ class ProductsPickup extends React.Component {
             : null;
 
         const products = this.props.articles ? this.props.articles.values() : [];
-        
+
         const productsArray = (this.state.articles ?
-            Array.from(products) : []).filter((item) => item.qty);
-        
+            Array.from(products)
+            :
+            [])
+            .filter((item) => item.qty);
+
         const orderView = order ?
             <ItemView index={1} >
                 <View style={styles.linea}>
@@ -291,7 +302,8 @@ class ProductsPickup extends React.Component {
                         {orderView}
                         {
                             this.state.articles ?
-                                <Button disabled={productsArray.length ? true : false}
+                                //La recolección puede ser parcial
+                                <Button disabled={productsArray.length === lineas ? true : false}
                                     title="Confirmar Recolección"
                                     onPress={this.confirmShipment}
                                 />
@@ -313,6 +325,7 @@ class ProductsPickup extends React.Component {
                                         <ItemLabel text={"Cantidad: " + item.qty + " " + item.um} />
                                         <ItemLabel text={"Ubicación: " + item.location} />
                                         <ItemLabel text={"Lote: " + item.lote} />
+                                        
                                     </ItemView>
                                 </TouchableOpacity>
 
