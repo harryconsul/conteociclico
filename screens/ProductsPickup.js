@@ -303,7 +303,7 @@ class ProductsPickup extends React.Component {
                         {
                             this.state.articles ?
                                 //La recolección puede ser parcial
-                                <Button disabled={productsArray.length === lineas ? true : false}
+                                <Button disabled={productsArray.length? true : false}
                                     title="Confirmar Recolección"
                                     onPress={this.confirmShipment}
                                 />
