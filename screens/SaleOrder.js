@@ -61,7 +61,7 @@ class SaleOrder extends React.Component {
 
 
     componentDidMount() {
-        startSaleOrder(this.props.token, (response) => {
+        startSaleOrder(this.props.token,this.props.fromCyclicCount, (response) => {
             const stack = {
                 stackId: response.data.stackId,
                 stateId: response.data.stateId,
@@ -131,19 +131,19 @@ class SaleOrder extends React.Component {
                     const createSearchPromise = (article) => new Promise((resolve) => {
                         queryArticleByItemNumber(this.props.clienteEntrega, article.itemNumber, this.props.token, (response) => {
                             let qtyToFill = article.qty;
-                            const rawRows = response.fs_P5541001_W5541001A.data.gridData.rowset;
-                           
+                            const rawRows = response.fs_P57LOCN_W57LOCNB.data.gridData.rowset;
+                            
                             for (let i = 0; i < rawRows.length; i++) {
-                                const qtyOnHand = Number(rawRows[i].mnQuantityOnHand_46.value);
+                                const qtyOnHand = Number(rawRows[i].mnAvailableQuantity_22.value);
                                 if (!Number.isNaN(qtyOnHand) && qtyOnHand > 0) {
                                     if (qtyToFill > qtyOnHand) {
                                         qtyToFill -= qtyOnHand;
                                         this.props.dispatch(actionSetArticle({
                                             ...article,
-                                            key: rawRows[i].sLotSerialNumber_37.value + rawRows[i].sLocation_55.value,
-                                            serial: rawRows[i].sLotSerialNumber_37.value,
-                                            location: rawRows[i].sLocation_55.value,
-                                            expirationDate: rawRows[i].dtExpirationDateMonth_53.value,
+                                            key: rawRows[i].sLotSerial_11.value + rawRows[i].sLocation_36.value,
+                                            serial: rawRows[i].sLotSerial_11.value,
+                                            location: rawRows[i].sLocation_36.value,
+                                            expirationDate: rawRows[i].dtExpirationDateMonth_127.value,
                                             qty: qtyOnHand,
 
                                         }));
@@ -153,10 +153,10 @@ class SaleOrder extends React.Component {
 
                                         this.props.dispatch(actionSetArticle({
                                             ...article,
-                                            key: rawRows[i].sLotSerialNumber_37.value + rawRows[i].sLocation_55.value,
-                                            serial: rawRows[i].sLotSerialNumber_37.value,
-                                            location: rawRows[i].sLocation_55.value,
-                                            expirationDate: rawRows[i].dtExpirationDateMonth_53.value,
+                                            key: rawRows[i].sLotSerial_11.value + rawRows[i].sLocation_36.value,
+                                            serial: rawRows[i].sLotSerial_11.value,
+                                            location: rawRows[i].sLocation_36.value,
+                                            expirationDate: rawRows[i].dtExpirationDateMonth_127.value,
                                             qty: qtyToFill,
 
                                         }));

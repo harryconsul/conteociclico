@@ -49,26 +49,26 @@ const formAction = (unidad, producto , token) => (
 const formActionByItemNumber = (unidad, producto , token) => (
     {
         token,
-        version: "",
+        version: "DICIPA22",
         maxPageSize:1000,
         "formActions": [
             
             {
-                "command": "SetQBEValue",
+                "command": "SetControlValue",
                 "value": producto,
-                "controlID": "1[33]"
+                "controlID": "38"
             },
             {
                 "command": "SetControlValue",
                 "value": unidad,
-                "controlID": "49"
+                "controlID": "9"
             },         
             {
                 "command": "DoAction",
-                "controlID": "15"
+                "controlID": "56"
             }
         ],
         "deviceName": "RESTclient",
-        "formName": "P5541001_W5541001A"
+        "formName": "P57LOCN_W57LOCNB"
     }
 )

@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { errorHelpers } from '../helpers'
 
-const actionStartSaleOrder = () => {
+const actionStartSaleOrder = (fromCyclicCount) => {
     return {
 
         formName: "P574210F_W574210FG",
-        version: "DICIPA22",
+        version: fromCyclicCount?"DICIPA022":"DICIPA22",
         formInputs: [
             {
                 id: "84",
@@ -128,13 +128,14 @@ const actionSetSaleDetail = (rows,businessUnit) => {
     }
 }
 
-export const startSaleOrder = (token, callback) => {
-    const _action = actionStartSaleOrder();
+export const startSaleOrder = (token,fromCyclicCount=false,callback) => {
+    const _action = actionStartSaleOrder(fromCyclicCount);
     const _stack = createStack(token, _action)
     
     callStackService(_stack, callback);
 
 }
+
 export const fillOrderHeader = (token, stack, form, callback) => {
 
     const action = pushStack(token, actionFillForm(form), stack);
