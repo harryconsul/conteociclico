@@ -85,12 +85,12 @@ class EnterCycleCount extends React.Component {
             //const article = this.props.articles[key]
             if (article.qty) {
                 list.push(article);
-            }else{
-                list.push({...article,qty:"0"});
+            } else {
+                list.push({ ...article, qty: "0" });
             }
         }
         this.setState({ isLoading: true });
-        
+
         enterCyclicCount(this.props.user.token, this.props.stack, list,
             (response) => {
                 const stack = {
@@ -112,8 +112,8 @@ class EnterCycleCount extends React.Component {
                                     reviewCyclicCount(this.props.user.token, this.props.stack, cyclicCount.rowIndex, (response) => {
 
                                         const rawRows = response.data.fs_P41241_W41241A.data.gridData.rowset;
-                                       
-                                        const review = rawRows.map((item,index) => (
+
+                                        const review = rawRows.map((item, index) => (
                                             {
                                                 key: index,
                                                 serial: item.sLotSerial_21.value,
@@ -122,9 +122,9 @@ class EnterCycleCount extends React.Component {
                                                 itemNumber: item.sItemNumber_42.value,
                                                 rowId: item.rowIndex,
                                                 qtyCounted: item.mnQuantityCounted_25.value,
-                                                qtyOnHand:  item.mnQuantityOnHand_23.value,
-                                                qtyVariance:  item.mnQuantityVariance_31.value,
-                                                safetyStock:item.mnSafetyStock_97.value,
+                                                qtyOnHand: item.mnQuantityOnHand_23.value,
+                                                qtyVariance: item.mnQuantityVariance_31.value,
+                                                safetyStock: item.mnSafetyStock_97.value,
                                                 isItem: item.sDescription_28.value === 'TOTALS' || item.sDescription_28.value === 'TOTALES' ? false : true,
                                             }
                                         ));
@@ -209,6 +209,7 @@ class EnterCycleCount extends React.Component {
         const articlesToOrder = mapHelpers.reviewToArticles(this.state.review);
 
         this.props.dispatch(actionSetArticlesMap(articlesToOrder));
+                
         Navigation.push(this.props.componentId, {
             component: {
                 name: 'SaleOrder',
@@ -266,7 +267,7 @@ class EnterCycleCount extends React.Component {
                     </View>
 
                     {review ?
-                        <Review list={review}  isWareHouse={this.props.isWareHouse} /> :
+                        <Review list={review} isWareHouse={this.props.isWareHouse} /> :
                         <Articles list={list} />
                     }
 
@@ -307,10 +308,10 @@ const Articles = ({ list }) => (
         <FlatList data={list}
             renderItem={({ item, index }) => {
                 return <ItemView key={index} index={index}>
-                     <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                    <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
                         <ItemLabel text={"Catalogo " + item.itemNumber} />
                         <ItemLabel text={"Numero Único: " + item.key} />
-                     </View>
+                    </View>
                     <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
                         <ItemLabel text={"Lote/Serie: " + item.serial} />
                         <ItemLabel text={"Ubicación: " + item.location} />
@@ -327,7 +328,7 @@ const Articles = ({ list }) => (
     </View>
 
 );
-const Review = ({ list,isWareHouse }) => (
+const Review = ({ list, isWareHouse }) => (
     <View style={{ marginTop: 15 }}>
         <Text style={componentstyles.title}> Diferencias </Text>
 
@@ -339,8 +340,8 @@ const Review = ({ list,isWareHouse }) => (
                         <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
                             <ItemLabel text={"Lote/Serie : " + item.serial} />
                             <ItemLabel text={"Ubicación: " + item.location} />
-                            { isWareHouse?null
-                              :<ItemLabel text={"Inventario Seguridad: " + item.safetyStock} />
+                            {isWareHouse ? null
+                                : <ItemLabel text={"Inventario Seguridad: " + item.safetyStock} />
                             }
                         </View> : null
                     }

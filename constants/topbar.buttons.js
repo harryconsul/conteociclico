@@ -45,3 +45,13 @@ export const rightButtonsCameraClose = {
     ]
 
 };
+
+export const rightButtonsClose = {
+    rightButtons:[        
+        {
+            id:'close',
+            icon:closeIcon,
+        },        
+    ]
+
+};

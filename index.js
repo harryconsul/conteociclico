@@ -22,6 +22,7 @@ import QueryArticles from './screens/QueryArticles';
 import ProductsPickup from './screens/ProductsPickup';
 import PlaceSign from './screens/PlaceSign';
 import ArticleSetup from './screens/ArticleSetup';
+import TransferOrder from './screens/TransferOrder';
 import store from './store/store';
 import { actionSetCurrentScreen } from './store/actions/actions.creators';
 import { Provider } from 'react-redux';
@@ -113,6 +114,14 @@ Navigation.registerComponent("AddProduct", () => (props) => (
     <AddProduct  {...props} />
   </Provider>
 ));
+
+Navigation.registerComponent("TransferOrder", () => (props) => (
+  <Provider store={store}>
+    <TransferOrder  {...props} />
+  </Provider>
+));
+
+
 
 
 // Subscribe

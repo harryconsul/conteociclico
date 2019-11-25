@@ -6,7 +6,6 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
-
 import ClientField from '../components/ClientField';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
 import { actionUpdateStack, actionSetArticlesMap, actionSetArticle } from '../store/actions/actions.creators';
@@ -16,7 +15,7 @@ import ContractPicker from '../components/ContractPicker';
 import DatePicker from '../components/DatePicker';
 import { startSaleOrder, fillOrderHeader, fillOrderDetail } from '../apicalls/sale_order.operations';
 import { queryArticleByItemNumber } from '../apicalls/query.operation';
-
+import { topBarButtons } from '../constants'
 import { dateHelpers } from '../helpers/'
 
 class SaleOrder extends React.Component {
@@ -28,7 +27,7 @@ class SaleOrder extends React.Component {
 
         this.state = {
             isLoading: false,
-            articles: null,
+            articlesToOrder: new Map(props.articles),
             isOnDetail: false,
             clienteVenta: "",
             clienteEntrega: props.clienteEntrega ? props.clienteEntrega : "",
@@ -61,7 +60,7 @@ class SaleOrder extends React.Component {
 
 
     componentDidMount() {
-        startSaleOrder(this.props.token,this.props.fromCyclicCount, (response) => {
+        startSaleOrder(this.props.token, this.props.fromCyclicCount, (response) => {
             const stack = {
                 stackId: response.data.stackId,
                 stateId: response.data.stateId,
@@ -109,7 +108,7 @@ class SaleOrder extends React.Component {
 
             const cabecera = {
                 numeroOrden: data.txtOrderNumber_17.value,
-                sucursal: this.props.fromCyclicCount? this.props.clienteEntrega:data.txtBusinessUnit_11.value,
+                sucursal: this.props.fromCyclicCount ? this.props.clienteEntrega : data.txtBusinessUnit_11.value,
                 saldo: data.txtmnSdo_AA_1070.value,
                 moneda: data.txtBaseCurrencyCode_516.value,
             };
@@ -132,7 +131,7 @@ class SaleOrder extends React.Component {
                         queryArticleByItemNumber(this.props.clienteEntrega, article.itemNumber, this.props.token, (response) => {
                             let qtyToFill = article.qty;
                             const rawRows = response.fs_P57LOCN_W57LOCNB.data.gridData.rowset;
-                            
+
                             for (let i = 0; i < rawRows.length; i++) {
                                 const qtyOnHand = Number(rawRows[i].mnAvailableQuantity_22.value);
                                 if (!Number.isNaN(qtyOnHand) && qtyOnHand > 0) {
@@ -206,22 +205,71 @@ class SaleOrder extends React.Component {
                     {
                         text: "Aceptar",
                         onPress: () => {
-                            this.props.dispatch(actionSetArticlesMap(new Map()));
-                            this.setState({
-                                isLoading: false,
-                                articles: null,
-                                isOnDetail: false,
-                                clienteVenta: "",
-                                clienteEntrega: "",
-                                fechaEntrega: new Date(),
-                                contrato: "",
-                                cabecera: {
-                                    numeroOrden: "",
-                                    sucursal: 0,
-                                    saldo: 0,
-                                    moneda: "",
-                                },
-                            });
+                            if (this.props.fromCyclicCount) {
+                                Navigation.showModal({
+                                    stack: {
+                                        children: [
+                                            {
+                                                component: {
+                                                    name: 'TransferOrder',
+                                                    id: 'TransferOrder',
+                                                    passProps: {
+                                                        clienteDestino: this.props.clienteEntrega,
+                                                        articles: this.state.articlesToOrder,
+                                                    },
+                                                    options: {
+                                                        topBar: {
+                                                            title: {
+                                                                text: 'Orden de Transferencia',
+                                                                color: '#ffffff'
+                                                            },
+                                                            ...topBarButtons.rightButtonsClose
+                                                        }
+                                                    }
+                                                },
+
+                                            }
+                                        ]
+                                    }
+                                }).then(() => {
+                                    this.props.dispatch(actionSetArticlesMap(new Map()));
+                                    this.setState({
+                                        isLoading: false,
+                                        articles: null,
+                                        isOnDetail: false,
+                                        clienteVenta: "",
+                                        clienteEntrega: "",
+                                        fechaEntrega: new Date(),
+                                        contrato: "",
+                                        cabecera: {
+                                            numeroOrden: "",
+                                            sucursal: 0,
+                                            saldo: 0,
+                                            moneda: "",
+                                        },
+                                    });
+                                });
+                            } else {
+                                this.props.dispatch(actionSetArticlesMap(new Map()));
+                                this.setState({
+                                    isLoading: false,
+                                    articles: null,
+                                    isOnDetail: false,
+                                    clienteVenta: "",
+                                    clienteEntrega: "",
+                                    fechaEntrega: new Date(),
+                                    contrato: "",
+                                    cabecera: {
+                                        numeroOrden: "",
+                                        sucursal: 0,
+                                        saldo: 0,
+                                        moneda: "",
+                                    },
+                                });
+                            }
+
+
+
                         }
                     }
                 ]);
@@ -320,9 +368,9 @@ class SaleOrder extends React.Component {
                                         </View>
                                         <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }} >
                                             <ItemLabel text={"Lote: " + item.serial} />
-                                            {   item.expirationDate?
+                                            {item.expirationDate ?
                                                 <ItemLabel text={"Caducidad: " + item.expirationDate} />
-                                                :null
+                                                : null
                                             }
                                         </View>
 

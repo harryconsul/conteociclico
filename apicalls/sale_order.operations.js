@@ -9,7 +9,7 @@ const actionStartSaleOrder = (fromCyclicCount) => {
         formInputs: [
             {
                 id: "84",
-                value: "S8"
+                value: fromCyclicCount?"S9":"S8"
             }
         ],
 
