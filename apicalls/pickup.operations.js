@@ -36,10 +36,30 @@ const actionStartConfirmation=(rowId)=>{
             ]        
     }
 }
-const actionShipmentConfirmation=()=>(
+const actionShipmentConfirmation=(rows)=>(
     {
         formOID: "W554205E",
             formActions: [
+                {
+               
+                    "gridAction":{
+                        "gridID":"1",
+                        "gridRowUpdateEvents":rows.map(row=>(
+                            {
+                                "rowNumber": Number(row.rowId),
+                                "gridColumnEvents": [
+                                    {
+                                        "value": row.set,
+                                        "command": "SetGridCellValue",
+                                        "columnID": "33"
+                                    }, 
+                                                                   
+                                ]
+                            })
+                        ),  
+                    }
+    
+                },
                 {
                     ".type": "com.oracle.e1.jdemf.FormAction",
                     command: "DoAction",
@@ -49,8 +69,8 @@ const actionShipmentConfirmation=()=>(
     }
 )
 
-export const shipmentConfirmation=(token,stack,callback)=>{
-    const action = pushStack(token,actionShipmentConfirmation(),stack);
+export const shipmentConfirmation=(token,stack ,rows,callback)=>{
+    const action = pushStack(token,actionShipmentConfirmation(rows),stack);
     callStackService(action,callback,(reason)=>console.warn(reason));
 }
 export const searchShipment=(orderNumber,token,callback,errorHandler)=>{

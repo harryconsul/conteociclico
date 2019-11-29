@@ -22,7 +22,6 @@ const initialState = {
     orderNumber: 0,
     isConfirming: true,
     lineas: 0,
-    ruta: "",
 };
 class ProductsPickup extends React.Component {
 
@@ -130,7 +129,7 @@ class ProductsPickup extends React.Component {
             this.setState({ isLoading: true });
             searchShipment(this.state.orderNumber, this.props.token, (response) => {
                 const rawRows = response.data.fs_P554205_W554205D.data.gridData.rowset;
-
+                
                 const rows = rawRows.map(item => ({
                     rowId: item.rowIndex,
                     orden: item.mnOrderNumber_27.value,
@@ -138,6 +137,7 @@ class ProductsPickup extends React.Component {
                     alias: item.sShipToNumber_90.value,
                     fecha: item.dtOrderDate_36.value,
                     sucursal: item.sBusinessUnit_37.value,
+                    ruta: item.sRuta_92.value,
                 }));
 
                 let order = null;
@@ -155,6 +155,7 @@ class ProductsPickup extends React.Component {
                         currentApplication: "P554205_W554205D",
                     }
                     this.props.dispatch(actionUpdateStack(stack));
+
                 } else {
                     Alert.alert("El folio que busca ya fue procesado o no existe");
                     this.setState({ isLoading: false });
@@ -165,48 +166,51 @@ class ProductsPickup extends React.Component {
             Alert.alert("Ingrese el número de recolección.");
         }
     }
+
     startPickup = () => {
         //Se ejecuta al dar tap sobre INICIAR RECOLECCIÓN.
         this.setState({ isConfirming: false, isLoading: true })
         startConfirmation(this.props.token, this.props.stack, (response) => {
             const rawRows = response.data.fs_P554205_W554205E.data.gridData.rowset;
+            
             const productToPickup = new Map();
+            const allArticles = new Map();
             let lineas = 0;
-            let ruta = "";
 
             for (let i = 0; i < rawRows.length; i++) {
-                //Sólo mostrar productos que esten en 540 - 560 y que tenga no. de lote.
+
+                const key = rawRows[i].mnNmeronico_253.value;
+
+                const value = {
+                    key,
+                    rowId: rawRows[i].rowIndex,
+                    articulo: rawRows[i].mnNmeronico_253.value,
+                    itemNumber: rawRows[i].sItemNumber_35.value,
+                    lote: rawRows[i].sLotSerial_50.value,
+                    um: rawRows[i].sUnitofMeasure_178.value,
+                    location: rawRows[i].sLocation_36.value,
+                    description: rawRows[i].sDescription_44.value,
+                    qty: rawRows[i].mnQuantityShipped_71.value,
+                    sucursal: rawRows[i].sBranchPlant_37.value,
+                    prevStatus: rawRows[i].sLastStat_48.value,
+                    nextStatus: rawRows[i].sNextStat_47.value,
+                    ordenTipo: rawRows[i].sOrTy_77.value,
+                }
+                //Sólo mostrar productos que esten en 540 - 560 y que tenga número de lote.
                 if (parseInt(rawRows[i].sLastStat_48.value) == 540 && parseInt(rawRows[i].sNextStat_47.value) == 560
                     && rawRows[i].sLotSerial_50.value.length > 0) {
-
-                    const key = rawRows[i].mnNmeronico_253.value;
-
-                    const value = {
-                        key,
-                        articulo: rawRows[i].mnNmeronico_253.value,
-                        itemNumber: rawRows[i].sItemNumber_35.value,
-                        lote: rawRows[i].sLotSerial_50.value,
-                        um: rawRows[i].sUnitofMeasure_178.value,
-                        location: rawRows[i].sLocation_36.value,
-                        description: rawRows[i].sDescription_44.value,
-                        qty: rawRows[i].mnQuantityShipped_71.value,
-                        sucursal: rawRows[i].sBranchPlant_37.value,
-                        prevStatus: rawRows[i].sLastStat_48.value,
-                        nextStatus: rawRows[i].sNextStat_47.value,
-                        ordenTipo: rawRows[i].sOrTy_77.value,
-                    }
-
                     productToPickup.set(key, value);
 
                     lineas += 1;
-                    if (ruta === "") {
-                        ruta = rawRows[i].sDescRuta_256.value;
-                    }
-
                 }
+                
+                allArticles.set(key,value);
             }
+            
             this.props.dispatch(actionSetArticlesMap(productToPickup));
-            this.setState({ isLoading: false, articles: productToPickup, lineas, ruta });
+            
+            this.setState({ isLoading: false, articles: productToPickup, allArticles: allArticles, lineas });
+
             const stack = {
                 stackId: response.data.stackId,
                 stateId: response.data.stateId,
@@ -217,8 +221,49 @@ class ProductsPickup extends React.Component {
         })
     }
     confirmShipment = () => {
-        this.setState({ isLoading: true });
-        shipmentConfirmation(this.props.token, this.props.stack, (response) => {
+        //this.setState({ isLoading: true });
+        const products = this.props.articles ? this.props.articles.values() : [];
+        
+        const collected = (this.state.articles ?
+            Array.from(products)
+            :
+            [])
+            .filter((item) => !item.qty);
+        
+        const list = [];
+        for (let article of collected) {
+                list.push({ ...article,set:"1"});
+        }
+
+        const {allArticles} = this.state;
+        //Depurar artículos que si fueron recolectados.
+        for (let article of list) {
+            allArticles.delete(article.key);   
+        }
+
+        for (let article of allArticles.values()) {
+                list.push({ ...article,set:""});
+        }
+        
+        if(collected.length > 0){
+            shipmentConfirmation(this.props.token, this.props.stack, list , (response) => {
+
+                Alert.alert("Aviso", "Recolección Confirmada", [
+                    {
+                        text: "Aceptar",
+                        onPress: () => {
+                            this.setState({ ...initialState });
+                            this.props.dispatch(actionSetArticlesMap(new Map()));
+                            this.setState({ isLoading: false });
+                        }
+                    }
+                ])
+            })
+        }else{
+            Alert.alert("Recolecte almenos un artículo.");
+        }
+        
+        /*shipmentConfirmation(this.props.token, this.props.stack, (response) => {
 
             Alert.alert("Aviso", "Recolección Confirmada", [
                 {
@@ -231,20 +276,22 @@ class ProductsPickup extends React.Component {
                 }
             ])
         })
+        */
     }
     handleSelectRow = (key) => {
+        //Se setea qty = 0, para indicar que ya fue recolectado.
         const item = this.props.articles.get(key);
         this.props.dispatch(actionSetArticle({ ...item, qty: 0 }));
 
     }
     render() {
-        const { order, isConfirming, articles, lineas, ruta } = this.state;
+        const { order, isConfirming, articles, lineas } = this.state;
         const iniciar = isConfirming ?
             <Button onPress={this.startPickup} title="Iniciar Recolección" />
             : null;
 
         const products = this.props.articles ? this.props.articles.values() : [];
-
+        
         const productsArray = (this.state.articles ?
             Array.from(products)
             :
@@ -264,15 +311,17 @@ class ProductsPickup extends React.Component {
                 <ItemLabel text={"Cliente: " + order.cliente} />
                 <ItemLabel text={"Alias: " + order.alias} />
                 <ItemLabel text={"Sucursal: " + order.nombreSucursal} />
+                <ItemLabel text={"Ruta: " + order.ruta} />
                 {
                     articles ?
                         <View>
                             <ItemHightLight text={"Recolectar " + productsArray.length + " de " + lineas} />
-                            <ItemLabel text={"Ruta: " + ruta} />
+                            
                         </View>
                         :
                         null
                 }
+                
                 {iniciar}
             </ItemView>
             :
@@ -303,7 +352,7 @@ class ProductsPickup extends React.Component {
                         {
                             this.state.articles ?
                                 //La recolección puede ser parcial
-                                <Button disabled={productsArray.length? true : false}
+                                <Button 
                                     title="Confirmar Recolección"
                                     onPress={this.confirmShipment}
                                 />
