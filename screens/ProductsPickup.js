@@ -231,23 +231,28 @@ class ProductsPickup extends React.Component {
             .filter((item) => !item.qty);
         
         const list = [];
+        /*
         for (let article of collected) {
                 list.push({ ...article,set:"1"});
         }
-
+        */
         const {allArticles} = this.state;
         //Depurar artículos que si fueron recolectados.
-        for (let article of list) {
+        
+        for (let article of collected) {
             allArticles.delete(article.key);   
         }
-
+        
+        
         for (let article of allArticles.values()) {
-                list.push({ ...article,set:""});
+                list.push({ ...article,set:"0"});
         }
         
         if(collected.length > 0){
+            
             shipmentConfirmation(this.props.token, this.props.stack, list , (response) => {
 
+                
                 Alert.alert("Aviso", "Recolección Confirmada", [
                     {
                         text: "Aceptar",

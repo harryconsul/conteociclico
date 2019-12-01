@@ -69,9 +69,39 @@ const actionShipmentConfirmation=(rows)=>(
     }
 )
 
+const actionClickOk=(rows)=>(
+    {
+        formOID: "W554205E",
+            formActions: [
+                {
+                    ".type": "com.oracle.e1.jdemf.FormAction",
+                    command: "DoAction",
+                    controlID: "12"
+                }
+            ]   
+    }
+)
+
 export const shipmentConfirmation=(token,stack ,rows,callback)=>{
-    const action = pushStack(token,actionShipmentConfirmation(rows),stack);
-    callStackService(action,callback,(reason)=>console.warn(reason));
+    const formAction = actionShipmentConfirmation(rows);
+    
+    const action = pushStack(token,formAction,stack);
+    callStackService(action,(response)=>{
+        if(response.data.fs_P554205_W554205E){
+                      
+            const stackConfirm = {
+                    stackId: response.data.stackId,
+                    stateId: response.data.stateId,
+                    rid: response.data.rid,
+    
+                }
+                const actionConfirm = pushStack(token, actionClickOk(), stackConfirm);
+                callStackService(actionConfirm, callback);
+            
+        }else{
+            callback(response)
+        }
+    },(reason)=>console.warn(reason));
 }
 export const searchShipment=(orderNumber,token,callback,errorHandler)=>{
     
@@ -84,8 +114,6 @@ export const startConfirmation =(token,stack,callback)=>{
         
     
 }
-
-
 
 const createStack = (token,formRequest) => {
     return {
