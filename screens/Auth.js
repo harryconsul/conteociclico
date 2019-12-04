@@ -1,7 +1,7 @@
 
 import React, { Component } from 'react';
 import {
-    StyleSheet, Text, View, TextInput, Button,Picker,
+    StyleSheet, Text, View, TextInput, Button, Picker,
     ImageBackground, Alert, Switch, ActivityIndicator, KeyboardAvoidingView
 } from 'react-native';
 import { Navigation } from 'react-native-navigation';
@@ -102,62 +102,62 @@ class Auth extends Component {
     }
 
     login = () => {
-        this.setState({ isLoading: true });
-        userLogin(this.state.username, this.state.password,this.state.environment, (response) => {
-            this.setState({ isLoading: false });
-            const saveUser = new Promise((resolve, reject) => {
-                const { realm, username, password, rememberMe } = this.state;
-                try {
-                    if (!this.userInDB) {
-                        const users = realm.objects('user');
-                        const user = users.filtered("username=$0", username);
+        if (this.state.username != '' && this.state.password != '') {
+            this.setState({ isLoading: true });
+            userLogin(this.state.username, this.state.password, this.state.environment, (response) => {
+                this.setState({ isLoading: false });
+                const saveUser = new Promise((resolve, reject) => {
+                    const { realm, username, password, rememberMe } = this.state;
+                    try {
+                        if (!this.userInDB) {
+                            const users = realm.objects('user');
+                            const user = users.filtered("username=$0", username);
 
-                        if (user.length) {
+                            if (user.length) {
+
+                                realm.write(() => {
+                                    realm.create('user', { username, password, rememberMe }, true);
+                                });
+                            } else {
+
+                                realm.write(() => {
+                                    realm.create('user', { username, password, rememberMe });
+                                });
+                            }
+
+                        } else {
 
                             realm.write(() => {
                                 realm.create('user', { username, password, rememberMe }, true);
                             });
-                        } else {
 
-                            realm.write(() => {
-                                realm.create('user', { username, password, rememberMe });
-                            });
                         }
+                        const responseInfo = response.data.userInfo;
 
-                    } else {
+                        resolve({ username, responseInfo });
 
-                        realm.write(() => {
-                            realm.create('user', { username, password, rememberMe }, true);
-                        });
-
+                    } catch (error) {
+                        reject(error);
                     }
-                    const responseInfo = response.data.userInfo;
-
-                    resolve({ username, responseInfo });
-
-                } catch (error) {
-                    reject(error);
-                }
-            });
-
-            saveUser.then(({ username, responseInfo }) => {
-                this.props.login({
-                    username,
-                    name: responseInfo.alphaName,
-                    token: responseInfo.token,
                 });
-                callMainApp();
-            }).catch((error) => {
-                Alert("Error al registrar al usuario ");
 
-            })
+                saveUser.then(({ username, responseInfo }) => {
+                    this.props.login({
+                        username,
+                        name: responseInfo.alphaName,
+                        token: responseInfo.token,
+                    });
+                    callMainApp();
+                }).catch((error) => {
+                    Alert("Error al registrar al usuario ");
 
+                })
 
+            });
+        }else{
+            Alert.alert("Ingrese sus credenciales de acceso");
+        }
 
-
-
-
-        });
     }
     handleUserSet = () => {
         const { realm, username } = this.state;
@@ -189,6 +189,19 @@ class Auth extends Component {
                                 <ActivityIndicator color="#ffffff" animating={true} size={"large"} />
                                 : null
                         }
+                        <View style={{ flexDirection: "row" }}>
+                            <Text style={styles.instructions}>Ambiente</Text>
+                            <Picker
+                                selectedValue={this.state.environment}
+                                style={{ height: 50, width: 100, color: "#FFFFFF" }}
+                                onValueChange={(itemValue) =>
+                                    this.setState({ environment: itemValue })
+                                }>
+                                <Picker.Item label="PD" value="PD" />
+                                <Picker.Item label="PY" value="PY" />
+                            </Picker>
+
+                        </View>
                         <TextInput autoFocus placeholder={"Usuario"} returnKeyType="next"
                             onSubmitEditing={this.handleUserSet}
                             placeholderTextColor={"#fffa"}
@@ -203,29 +216,16 @@ class Auth extends Component {
                             autoCompleteType="password"
                             onSubmitEditing={this.login}
                         />
-                        <Button
-                            onPress={this.login}
-                            title="Iniciar Sesión"
-                        />
                         <View style={{ flexDirection: "row" }}>
                             <Text style={styles.instructions}>Recordarme en este teléfono</Text>
                             <Switch value={this.state.rememberMe}
                                 onValueChange={(value) => this.setState({ rememberMe: value })}
                             />
                         </View>
-                        <View style={{ flexDirection: "row" }}>
-                            <Text style={styles.instructions}>Ambiente</Text>
-                            <Picker
-                                selectedValue={this.state.environment}
-                                style={{ height: 50, width: 100 , color:"#FFFFFF"}}
-                                onValueChange={(itemValue) =>
-                                    this.setState({ environment: itemValue })
-                                }>
-                                <Picker.Item label="PD" value="PD" />
-                                <Picker.Item label="PY" value="PY" />
-                            </Picker>
-
-                        </View>
+                        <Button
+                            onPress={this.login}
+                            title="Iniciar Sesión"
+                        />
 
                     </View>
                 </KeyboardAvoidingView>
@@ -252,12 +252,15 @@ const styles = StyleSheet.create({
     welcome: {
         fontSize: 20,
         textAlign: 'center',
-        margin: 40,
+        marginTop: 40,
+        marginBottom: 10,
         color: "#ffffff"
     },
     instructions: {
         color: '#fffa',
-        marginTop: 15,
+        marginTop: 3,
+        marginBottom: 7,
+
     },
 });
 

@@ -23,6 +23,7 @@ import ProductsPickup from './screens/ProductsPickup';
 import PlaceSign from './screens/PlaceSign';
 import ArticleSetup from './screens/ArticleSetup';
 import TransferOrder from './screens/TransferOrder';
+import ConfirmTransfer from './screens/ConfirmTransfer';
 import store from './store/store';
 import { actionSetCurrentScreen } from './store/actions/actions.creators';
 import { Provider } from 'react-redux';
@@ -118,6 +119,12 @@ Navigation.registerComponent("AddProduct", () => (props) => (
 Navigation.registerComponent("TransferOrder", () => (props) => (
   <Provider store={store}>
     <TransferOrder  {...props} />
+  </Provider>
+));
+
+Navigation.registerComponent("ConfirmTransfer", () => (props) => (
+  <Provider store={store}>
+    <ConfirmTransfer  {...props} />
   </Provider>
 ));
 
