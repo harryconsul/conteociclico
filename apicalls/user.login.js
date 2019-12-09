@@ -3,9 +3,9 @@ import {Alert} from 'react-native';
 
 const userLogin=(username,password,environment,callback)=>{
     if(environment==="PY"){
-        axios.defaults.baseURL="http://207.249.158.84:91/jderest/";
+        axios.defaults.baseURL="http://hh.dicipa.xlynk.mx:91/jderest/";
     }else{
-        axios.defaults.baseURL="http://207.249.158.84:89/jderest/";
+        axios.defaults.baseURL="http://hh.dicipa.xlynk.mx:89/jderest/";
     }
     axios.post("tokenrequest", {
         username,
