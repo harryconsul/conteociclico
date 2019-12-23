@@ -37,6 +37,11 @@ const actionFillForm = (form) => {
             },
             {
                 command: "SetControlValue",
+                value: form.sucursal,
+                controlID: "98"
+            },
+            {
+                command: "SetControlValue",
                 value: form.fechaEntrega,
                 controlID: "562"
             },

@@ -100,6 +100,7 @@ class SaleOrder extends React.Component {
             clienteVenta,
             contrato,
             fechaEntrega: dateHelpers.dateToLatinString(fechaEntrega),
+            sucursal:this.props.fromCyclicCount?clienteEntrega:" ",
         };
         this.setState({ isLoading: true });
 
