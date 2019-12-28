@@ -13,20 +13,31 @@ export const BusinessUnit = (props) => {
         //Buscar la unidad de negocio por número
         if (unidad.valor != 0) {
             setLoading(true);
-            businessUnit(unidad.valor, props.token, (data) => {
-                const rawRows = data.fs_P0006S_W0006SA.data.gridData.rowset;
-
-                if (rawRows.length > 0) {
-                    setUnidad({
-                        valor: rawRows[0].sBusinessUnit_5.value,
-                        nombre: rawRows[0].sDescription_41.value
-                    });
-                    props.unidad(rawRows[0].sBusinessUnit_5.value,
-                        rawRows[0].sDescription_41.value);
-                }
+            if(props.token){
+                businessUnit(unidad.valor, props.token, (data) => {
+                    const rawRows = data.fs_P0006S_W0006SA.data.gridData.rowset;
+    
+                    if (rawRows.length > 0) {
+                        setUnidad({
+                            valor: rawRows[0].sBusinessUnit_5.value,
+                            nombre: rawRows[0].sDescription_41.value
+                        });
+                        props.unidad(rawRows[0].sBusinessUnit_5.value,
+                            rawRows[0].sDescription_41.value);
+                    }
+                    setLoading(false);
+    
+                }, (reason) =>{
+                    setLoading(false);
+                    props.unidad(unidad.valor,
+                        "");
+                });
+            }else{
                 setLoading(false);
-
-            }, (reason) => console.warn("ERROR", reason));
+                props.unidad(unidad.valor,
+                    "");
+            }
+            
         }else{
             Alert.alert("Ingrese la unidad de negocio");
         }

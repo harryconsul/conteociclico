@@ -14,6 +14,7 @@ const initialState = {
     stack:{
 
     },
+    countRealm:null,
 
 }
 const updateArticle = (articles, article) => {
@@ -59,6 +60,12 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 products: action.products,
+            }
+        case actionTypes.SET_COUNT_REALM:
+
+            return {
+                ...state,
+                countRealm: action.countRealm,
             }
 
     }

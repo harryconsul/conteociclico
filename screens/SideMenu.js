@@ -47,6 +47,9 @@ class SideMenu extends React.Component {
 
     userLogOut = () => {
         this.setState({isLoading:true});
+        if(this.props.realm){
+            this.props.realm.close();
+        }
         logOut(this.props.token, (response) => {
             try {
                 this.setState({isLoading:false});
@@ -119,6 +122,7 @@ const mapStateToProps = state => {
     return {
         currentScreen: state.currentScreen,
         token: state.user.token,
+        realm: state.countRealm,
     }
 }
 export default connect(mapStateToProps)(SideMenu);

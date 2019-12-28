@@ -3,12 +3,12 @@ import { View, TextInput, Text, Button, FlatList, StyleSheet, Alert, ImageBackgr
 import { connect } from 'react-redux';
 import { ItemView, ItemHightLight, ItemLabel } from '../../components'
 import { Navigation } from 'react-native-navigation'
-import { enterCyclicCount, reviewCyclicCount } from '../../apicalls/count.operations'
+import { enterCyclicCount, processReview } from '../../apicalls/count.operations'
 import { componentstyles } from '../../styles';
 import backgroundImage from '../../assets/labmicroBg.jpg';
-import { actionSetTransactionMode, actionUpdateStack, actionSetArticlesMap } from '../../store/actions/actions.creators';
+import { actionSetTransactionMode, actionUpdateStack, actionSetArticlesMap, actionSetCountRealm } from '../../store/actions/actions.creators';
 import { transactionModes, topBarButtons } from '../../constants/';
-import { mapHelpers } from '../../helpers';
+import { mapHelpers,offlineCount } from '../../helpers';
 
 class EnterCycleCount extends React.Component {
     constructor(props) {
@@ -90,57 +90,55 @@ class EnterCycleCount extends React.Component {
             }
         }
         this.setState({ isLoading: true });
-
-        enterCyclicCount(this.props.user.token, this.props.stack, list,
-            (response) => {
-                const stack = {
-                    stackId: response.data.stackId,
-                    stateId: response.data.stateId,
-                    rid: response.data.rid,
-                    currentApplication: response.data.currentApp,
-                }
-                this.props.dispatch(actionUpdateStack(stack));
-
-                if (response.data.currentApp === 'P5541240_W5541240A') {
-                    Alert.alert("Exito", "Conteo Registrado , se procede a validar las variaciones", [
-                        {
-                            text: "Continuar",
-                            onPress: () => {
-                                const rows = response.data.fs_P5541240_W5541240A.data.gridData.rowset;
-                                const cyclicCount = rows.filter(item => item.mnCycleNumber_25.value === this.props.cycleCountNumber)
-                                if (cyclicCount) {
-                                    reviewCyclicCount(this.props.user.token, this.props.stack, cyclicCount.rowIndex, (response) => {
-
-                                        const rawRows = response.data.fs_P41241_W41241A.data.gridData.rowset;
-
-                                        const review = rawRows.map((item, index) => (
-                                            {
-                                                key: index,
-                                                serial: item.sLotSerial_21.value,
-                                                description: item.sDescription_28.value,
-                                                location: item.sLocation_61.value,
-                                                itemNumber: item.sItemNumber_42.value,
-                                                rowId: item.rowIndex,
-                                                qtyCounted: item.mnQuantityCounted_25.value,
-                                                qtyOnHand: item.mnQuantityOnHand_23.value,
-                                                qtyVariance: item.mnQuantityVariance_31.value,
-                                                safetyStock: item.mnSafetyStock_97.value,
-                                                isItem: item.sDescription_28.value === 'TOTALS' || item.sDescription_28.value === 'TOTALES' ? false : true,
-                                            }
-                                        ));
-
-                                        this.setState({ review, isLoading: false });
-
-
-                                    })
+        if(this.props.user.token){
+            enterCyclicCount(this.props.user.token, this.props.stack, list,
+                (response) => {
+                    const stack = {
+                        stackId: response.data.stackId,
+                        stateId: response.data.stateId,
+                        rid: response.data.rid,
+                        currentApplication: response.data.currentApp,
+                    }
+                    this.props.dispatch(actionUpdateStack(stack));
+    
+                    if (response.data.currentApp === 'P5541240_W5541240A') {
+                        Alert.alert("Exito", "Conteo Registrado , se procede a validar las variaciones", [
+                            {
+                                text: "Continuar",
+                                onPress: () => {
+                                    
+                                    processReview(response,this.props.cycleCountNumber,this.props.user.token,this.props.stack)
+                                        .then((review)=>{
+                                            this.setState({ review, isLoading: false });
+                                            offlineCount.deleteCyclicCount(this.props.realm,this.props.cycleCountNumber);
+                                        })
+                                        .catch((error)=>{
+                                            Alert.alert(error);
+                                            this.setState({isLoading:false});
+                                        });
+                                    
+    
                                 }
-
                             }
-                        }
-                    ])
+                        ])
+    
+                    }
+                });
 
-                }
-            });
+        }else{
+            offlineCount.updateCyclicCountArticles(this.props.realm,this.props.cycleCountNumber,list);            
+            this.setState({ isLoading: false });
+            Alert.alert("Conteo Guardado","La revision de varaciones se hara en automatico cuando se sincronize",
+                [
+                    {
+                        text:"Firmar",
+                        onPress:this.authorizeCounting
+                    }
+                ]
+            )
+            
+        }
+       
     }
     showPlaceSign = (signType) => {
 
@@ -154,6 +152,7 @@ class EnterCycleCount extends React.Component {
                                 itemKey: this.props.cycleCountNumber,
                                 fileName: "firma-" + signType + "-" + this.props.cycleCountNumber,
                                 title: 'Firma de quien ' + signType,
+                                signatureType:signType,
                                 closeOnSave: true,
                             }
                         },
@@ -190,6 +189,7 @@ class EnterCycleCount extends React.Component {
         }
     }
     registerAutorization = () => {
+        if(this.props.user.token){
         Alert.alert("Aviso", "Conteo Ciclico Autorizado", [
             {
                 text: "Crear Orden de Venta",
@@ -202,6 +202,18 @@ class EnterCycleCount extends React.Component {
 
             }
         ])
+    }else{
+
+        Alert.alert("Aviso", "Conteo Ciclico Autorizado", [
+          
+            {
+                text: "Cerrar",
+                onPress: () => Navigation.pop(this.props.componentId)
+
+            }
+        ]);
+
+    }
 
     }
     createSaleOrder = () => {
@@ -298,13 +310,14 @@ const mapStateToProps = state => {
         articles: state.articles,
         stack: state.stack,
         user: state.user,
+        realm: state.countRealm,
     };
 }
 export default connect(mapStateToProps)(EnterCycleCount);
 
 const Articles = ({ list }) => (
     <View style={{ marginTop: 15 }} >
-        <Text style={componentstyles.title}> Conteo de ArticSulos </Text>
+        <Text style={componentstyles.title}> Conteo de Articulos </Text>
         <FlatList data={list}
             renderItem={({ item, index }) => {
                 return <ItemView key={index} index={index}>

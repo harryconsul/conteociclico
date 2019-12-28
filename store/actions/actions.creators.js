@@ -48,3 +48,10 @@ export const actionSetCurrentScreen=(screenId)=>{
         screenId,
     }
 }
+
+export const actionSetCountRealm = (countRealm)=>{
+    return{
+        type:actionTypes.SET_COUNT_REALM,
+        countRealm,
+    }
+}

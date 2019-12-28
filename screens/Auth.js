@@ -147,12 +147,23 @@ class Auth extends Component {
                         name: responseInfo.alphaName,
                         token: responseInfo.token,
                     });
+                    this.state.realm.close();
                     callMainApp();
                 }).catch((error) => {
                     Alert("Error al registrar al usuario ");
 
                 })
 
+            },()=>{
+                if (this.userInDB) {
+                    
+                    if(this.userInDB.password === this.state.password){
+                        this.state.realm.close();
+                        Alert.alert('Entrando en Modo OFFLINE');
+                        callMainApp();
+
+                    }
+                }
             });
         }else{
             Alert.alert("Ingrese sus credenciales de acceso");

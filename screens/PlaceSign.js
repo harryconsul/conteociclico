@@ -32,14 +32,18 @@ class PlaceSign extends React.Component{
                 <SignCanvas itemKey={this.props.itemKey}
                     fileName={this.props.fileName}
                     close={this.close}                    
-                    token={this.props.user.token} />
+                    token={this.props.user.token}
+                    signatureType={this.props.signatureType}
+                    realm={this.props.realm}
+                    />
             </View>
         )
     }
 }
 const mapStateToProps = (state) => {
     return {
-        user: state.user,        
+        user: state.user,      
+        realm: state.countRealm,  
     }
 
 }

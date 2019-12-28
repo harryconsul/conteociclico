@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {Alert} from 'react-native';
 
-const userLogin=(username,password,environment,callback)=>{
+const userLogin=(username,password,environment,callback,fallback)=>{
     if(environment==="PY"){
         axios.defaults.baseURL="http://hh.dicipa.xlynk.mx:91/jderest/";
     }else{
@@ -13,7 +13,12 @@ const userLogin=(username,password,environment,callback)=>{
         "deviceName": "RESTclient",
         "role": "*ALL"
     }).then(callback).catch(()=>{
-        Alert.alert("Error en la petición " + error);
+        if(fallback){
+            fallback();
+        }else{
+            Alert.alert("Error en la petición " + error);
+        };
+        
     })
     
 

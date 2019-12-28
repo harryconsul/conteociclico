@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import {Alert} from 'react-native';
 
 const searchCyclicCount = (businessUnit) => {
     return {
@@ -114,11 +114,13 @@ export const reviewCyclicCount =(token,stack,rowId,callback)=>{
 }
 export const enterCyclicCount =(token,stack,rows,callback)=>{
     const action = pushStack(token,actionEnterCyclicCount(rows),stack);
-    
+        
     callStackService(action,callback,(reason)=>console.warn(reason));
         
     
 }
+
+
 
 
 const createStack = (token,formRequest) => {
@@ -140,5 +142,49 @@ const pushStack = (token,actionRequest,stack) => {
 }
 const callStackService = (action,callback,errorHandler)=>{
     
-    axios.post("appstack",action).then(callback).catch(errorHandler);
+    axios.post("appstack",action).then(callback).catch((error)=>console.warn(error));
+}
+
+
+/// ******** unify review handling
+
+
+export const processReview  = (previousReponse,cycleCountNumber,token,stack) => {
+
+    return new Promise((resolve,reject)=>{
+        
+        const rows = previousReponse.data.fs_P5541240_W5541240A.data.gridData.rowset;
+        const cyclicCount = rows.find(item => item.mnCycleNumber_25.value === cycleCountNumber);
+
+        if (cyclicCount) {
+            reviewCyclicCount(token, stack, cyclicCount.rowIndex, (response) => {
+                
+                const rawRows = response.data.fs_P41241_W41241A.data.gridData.rowset;
+                
+                const review = rawRows.map((item, index) => (
+                    {
+                        key: index,
+                        serial: item.sLotSerial_21.value,
+                        description: item.sDescription_28.value,
+                        location: item.sLocation_61.value,
+                        itemNumber: item.sItemNumber_42.value,
+                        rowId: item.rowIndex,
+                        qtyCounted: item.mnQuantityCounted_25.value,
+                        qtyOnHand: item.mnQuantityOnHand_23.value,
+                        qtyVariance: item.mnQuantityVariance_31.value,
+                        safetyStock: item.mnSafetyStock_97.value,
+                        isItem: item.sDescription_28.value === 'TOTALS' || item.sDescription_28.value === 'TOTALES' ? false : true,
+                    }
+                ));
+                
+                resolve(review);      
+    
+    
+            })
+        }else{
+            reject("Error el conteo no esta disponible");
+        }
+    })
+   
+
 }
