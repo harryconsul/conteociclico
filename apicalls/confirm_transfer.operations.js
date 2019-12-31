@@ -12,7 +12,7 @@ const actionSearchOrder = (number) => {
             },
             {
                 command: "SetControlValue",
-                value: "OT",
+                value: "*",
                 "controlID": "9"
             },
             {
@@ -25,7 +25,7 @@ const actionSearchOrder = (number) => {
 
 export const searchOrder=(number,token,callback,errorHandler)=>{
     
-    callStackService(createStack(token,actionSearchShipment(number)),callback,errorHandler);
+    callStackService(createStack(token,actionSearchOrder(number)),callback,errorHandler);
     
 }
 

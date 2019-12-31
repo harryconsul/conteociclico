@@ -19,6 +19,7 @@ import InventoryTransfer from './screens/InventoryTransfer';
 import InventoryExpire from './screens/InventoryExpire';
 import SideMenu from './screens/SideMenu';
 import QueryArticles from './screens/QueryArticles';
+import QueryAvailableArticles from './screens/QueryAvailableArticles';
 import ProductsPickup from './screens/ProductsPickup';
 import PlaceSign from './screens/PlaceSign';
 import ArticleSetup from './screens/ArticleSetup';
@@ -71,6 +72,12 @@ Navigation.registerComponent("SideMenu", () => (props) => (
 Navigation.registerComponent("QueryArticles", () => (props) => (
   <Provider store={store}>
     <QueryArticles  {...props} />
+  </Provider>
+));
+
+Navigation.registerComponent("QueryAvailableArticles", () => (props) => (
+  <Provider store={store}>
+    <QueryAvailableArticles  {...props} />
   </Provider>
 ));
 

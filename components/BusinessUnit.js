@@ -46,6 +46,13 @@ export const BusinessUnit = (props) => {
 
     return (
         <View style={styles.inline} >
+            {
+                loading ?
+                    <ActivityIndicator color="#ffffff"
+                        animating={true} size={"large"} />
+                    :
+                    null
+            }
             <Field
                 label={props.label}
                 keyboardType={"numeric"}
@@ -55,13 +62,6 @@ export const BusinessUnit = (props) => {
                 onSubmitEditing={search}
                 onBlur={search}
             />
-            {
-                loading ?
-                    <ActivityIndicator color="#ffffff"
-                        animating={true} size={"large"} />
-                    :
-                    null
-            }
             <Text style={{ color: 'white' }}>
                 {
                     props.defaultValueNombre ?

@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     View, Button, StyleSheet,
-    Alert,ActivityIndicator,
+    Alert, ActivityIndicator,
 } from 'react-native';
 import SideMenuItem from '../components/SideMenuItem'
 import { Navigation } from 'react-native-navigation'
@@ -11,8 +11,8 @@ import logOut from '../apicalls/user.logout';
 import { navigationHelpers } from '../helpers'
 
 class SideMenu extends React.Component {
-    state={
-        isLoading:false,
+    state = {
+        isLoading: false,
     }
     optionClickHandle = (option, title, showBarcodeButtons) => {
         let rightButtons = null;
@@ -46,13 +46,13 @@ class SideMenu extends React.Component {
     }
 
     userLogOut = () => {
-        this.setState({isLoading:true});
-        if(this.props.realm){
+        this.setState({ isLoading: true });
+        if (this.props.realm) {
             this.props.realm.close();
         }
         logOut(this.props.token, (response) => {
             try {
-                this.setState({isLoading:false});
+                this.setState({ isLoading: false });
                 navigationHelpers.callLogin();
             } catch (reason) {
                 Alert("Error al cerrar sesión ");
@@ -65,10 +65,12 @@ class SideMenu extends React.Component {
                 <View style={{ height: '80%' }}>
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false)}
                         optionName="Conteo Ciclico" />
-                      <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false)}
+                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false)}
                         optionName="Conteo Ciclico - Sucursal" />
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("QueryArticles", "Consulta de Existensias", true)}
                         optionName="Consulta de Existensias" />
+                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("QueryAvailableArticles", "Artículos Disponibles", false)}
+                        optionName="Artículos Disponibles" />
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("PlaceSign", "Firma", false)}
                         optionName="Firma Algo" />
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("ProductsPickup", "Recolección", true)}
