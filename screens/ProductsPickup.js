@@ -332,6 +332,7 @@ class ProductsPickup extends React.Component {
     handleSelectRow = (key) => {
         //Se setea qty = 0, para indicar que ya fue recolectado.
         //El usuario pidio quitarlo, se comenta por si se requiere mas adelante.
+        
         /*
         const item = this.props.articles.get(key);
         this.props.dispatch(actionSetArticle({ ...item, qty: 0 }));
