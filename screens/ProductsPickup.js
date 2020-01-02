@@ -145,11 +145,11 @@ class ProductsPickup extends React.Component {
                             key,
                             rowId: rawRows[i].rowIndex,
                         }
-                        
+
                         printRows.set(key, value);
                     }
                 }
-                
+
                 const list = [];
                 for (let article of printRows.values()) {
                     list.push({ ...article });
@@ -165,54 +165,51 @@ class ProductsPickup extends React.Component {
     }
 
     searchOrder = () => {
-        if (parseInt(this.state.orderNumber) > 0) {
+        const { orderNumber } = this.state;
+        if (orderNumber != '') {
             this.setState({ isLoading: true });
-            searchShipment(this.state.orderNumber, this.props.token, (response) => {
+            searchShipment(orderNumber, this.props.token, (response) => {
 
                 const rawRows = response.data.fs_P554205A_W554205AD.data.gridData.rowset;
-                //ruta:item.sRuta_92.value pendiente en PD
-                let articulosPendientes = false;
-                for (let i = 0; i < rawRows.length; i++) {
-                    if (parseInt(rawRows[i].sLastStat_38.value) === 540)
-                        articulosPendientes = true;
-                }
-                if (articulosPendientes) {
-                    const rows = rawRows.map(item => ({
-                        rowId: item.rowIndex,
-                        orden: item.mnOrderNumber_27.value,
-                        cliente: item.sSoldToName_64.value,
-                        alias: item.sShipToNumber_90.value,
-                        fecha: item.dtOrderDate_36.value,
-                        sucursal: item.sBusinessUnit_37.value,
-                        ruta: 'PENDIENTE',
-                    }));
 
-                    let order = null;
-                    if (rows.length) {
-                        order = rows[0];
-                        this.sucursal(order.sucursal).then((nombreSucursal) => {
-                            order.nombreSucursal = nombreSucursal;
-                            this.setState({ order, isLoading: false, isConfirming: true, });
-                        })
+                const rows = rawRows.map((item) => ({
+                    rowId: item.rowIndex,
+                    orden: item.mnOrderNumber_27.value,
+                    cliente: item.sSoldToName_64.value,
+                    alias: item.sShipToNumber_90.value,
+                    fecha: item.dtOrderDate_36.value,
+                    sucursal: item.sBusinessUnit_37.value,
+                    status: item.sLastStat_38.value,
+                    ruta: 'PENDIENTE EN PD',
+                }));
 
-                        const stack = {
-                            stackId: response.data.stackId,
-                            stateId: response.data.stateId,
-                            rid: response.data.rid,
-                            currentApplication: "P554205A_W554205AD",
-                        }
-                        this.props.dispatch(actionUpdateStack(stack));
+                const orders = rows.filter(row => {
+                    return row.status === '540';
+                });
 
-                    } else {
-                        Alert.alert("Folio procesado o no existe");
-                        this.setState({ isLoading: false });
+                if(orders.length != 0){
+                    //Usar el 1er item
+                    const order = orders[0];
+                    this.sucursal(order.sucursal).then((nombreSucursal) => {
+                        order.nombreSucursal = nombreSucursal;
+                        this.setState({ order, isLoading: false, isConfirming: true, });
+                    });
+
+                    const stack = {
+                        stackId: response.data.stackId,
+                        stateId: response.data.stateId,
+                        rid: response.data.rid,
+                        currentApplication: "P554205A_W554205AD",
                     }
-                } else {
-                    Alert.alert("Folio procesado o no existe");
-                    this.setState({ isLoading: false });
+                    this.props.dispatch(actionUpdateStack(stack));
+
+                }else{
+                    this.setState({orderNumber: ''})
+                    Alert.alert('Recolección ' + orderNumber + ' procesada o no existe');
                 }
 
                 this.setState({ isLoading: false });
+
             }, (error) => console.warn(error));
         } else {
             Alert.alert("Ingrese el número de recolección.");
@@ -221,7 +218,8 @@ class ProductsPickup extends React.Component {
 
     startPickup = () => {
         //Se ejecuta al dar tap sobre INICIAR RECOLECCIÓN.
-        this.setState({ isConfirming: false, isLoading: true })
+        this.setState({ isConfirming: false, isLoading: true });
+
         startConfirmation(this.props.token, this.props.stack, (response) => {
             const rawRows = response.data.fs_P554205A_W554205AE.data.gridData.rowset;
 
@@ -272,14 +270,7 @@ class ProductsPickup extends React.Component {
             this.props.dispatch(actionUpdateStack(stack));
         })
     }
-    /*confirmShipment = () => {
-        this.printOrder().then((respuesta) => {
-            if (respuesta) {
-                console.warn(Impreso)
-            }
-        }, (error) => { console.warn('No fue posible imprimir ', error) })
-    }*/
-    
+
     confirmShipment = () => {
         //this.setState({ isLoading: true });
         const products = this.props.articles ? this.props.articles.values() : [];
@@ -305,32 +296,46 @@ class ProductsPickup extends React.Component {
             this.setState({ isLoading: true });
             shipmentConfirmation(this.props.token, this.props.stack, list, (response) => {
 
-                Alert.alert("Aviso", "Recolección Confirmada", [
-                    {
-                        text: "Aceptar",
-                        onPress: () => {
-                            //this.sucursal(order.sucursal).then((nombreSucursal) => {
-                            this.printOrder().then((respuesta) => {
-                                if (respuesta) {
-                                    this.setState({ ...initialState });
-                                    this.props.dispatch(actionSetArticlesMap(new Map()));
-                                    this.setState({ isLoading: false });
-                                }
-                            }, (error) => { console.warn('No fue posible imprimir ', error) })
+                Alert.alert(
+                    'Proceso terminado',
+                    '¿Imprimir documento?',
+                    [
+                        {
+                            text: 'No',
+                            onPress: () => {
+                                this.setState({ ...initialState });
+                                this.props.dispatch(actionSetArticlesMap(new Map()));
+                                this.setState({ isLoading: false });
+                            }
+                        },
+                        {
+                            text: 'Si',
+                            onPress: () => {
+                                this.printOrder().then((respuesta) => {
+                                    if (respuesta) {
+                                        this.setState({ ...initialState });
+                                        this.props.dispatch(actionSetArticlesMap(new Map()));
+                                        this.setState({ isLoading: false });
+                                    }
+                                }, (error) => { Alert.alert('Error al imprimir documento ', error) });
+                            }
                         }
-                    }
-                ])
+                    ],
+                    { cancelable: false },
+                );
             })
         } else {
             Alert.alert("Recolecte almenos un artículo.");
         }
     }
-    
+
     handleSelectRow = (key) => {
         //Se setea qty = 0, para indicar que ya fue recolectado.
+        //El usuario pidio quitarlo, se comenta por si se requiere mas adelante.
+        /*
         const item = this.props.articles.get(key);
         this.props.dispatch(actionSetArticle({ ...item, qty: 0 }));
-
+        */
     }
     render() {
         const { order, isConfirming, articles, lineas } = this.state;
@@ -406,7 +411,7 @@ class ProductsPickup extends React.Component {
                                 />
                                 : null
                         }
-                        
+
                         <FlatList data={productsArray}
                             renderItem={({ item, index }) =>
                                 <TouchableOpacity key={item.key} index={index} onPress={() => this.handleSelectRow(item.key)}>
