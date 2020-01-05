@@ -78,6 +78,9 @@ class ProductsPickup extends React.Component {
                     {
                         component: {
                             name: screen,
+                            passProps:{
+                                qtyLabel:"Cantidad Pendiente por Recolectar",
+                            }
                         },
                         options: {
                             topBar: {
@@ -243,6 +246,7 @@ class ProductsPickup extends React.Component {
                     location: rawRows[i].sLocation_36.value,
                     description: rawRows[i].sDescription_44.value,
                     qty: rawRows[i].mnQuantityShipped_71.value,
+                    qtyToPickUp:rawRows[i].mnQuantityShipped_71.value,
                     sucursal: rawRows[i].sBranchPlant_37.value,
                     prevStatus: rawRows[i].sLastStat_48.value,
                     nextStatus: rawRows[i].sNextStat_47.value,
@@ -419,8 +423,16 @@ class ProductsPickup extends React.Component {
                                                 <ItemLabel text={"Catálogo: " + item.itemNumber} />
                                             </View>
                                         </View>
-                                        <ItemLabel text={"Producto: " + item.description} />
-                                        <ItemLabel text={"Cantidad: " + item.qty + " " + item.um} />
+                                        <ItemHightLight text={"Producto: " + item.description} />
+                                        <View style={styles.linea}>
+                                            <View style={{ width: "60%" }}>
+                                            <ItemHightLight text={"Pediente de Recolectar: " + item.qty + " " + item.um} />
+                                            </View>
+                                            <View style={{ width: "40%" }}>
+                                                <ItemLabel text={"Recolectado: " + (item.qtyToPickUp - item.qty)} />
+                                            </View>
+                                        </View>
+                                        
                                         <ItemLabel text={"Ubicación: " + item.location} />
                                         <ItemLabel text={"Lote: " + item.lote} />
 

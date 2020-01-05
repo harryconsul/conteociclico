@@ -64,10 +64,10 @@ class BarcodeInput extends React.Component {
 
         this.setState(
             {
-                editingItem: null,
+                //editingItem: null,
                 searchCode: "",
                 isEditing: false,
-                qty: 0,
+                //qty: 0,
 
             }
         )
@@ -101,6 +101,8 @@ class BarcodeInput extends React.Component {
                 } else {
                     if (editingItem.qty) {
                         editingItem.qty--;
+                    }else{
+                        Alert.alert("Has terminado de recolectar : " + editingItem.description)
                     }
                 }
 
@@ -161,8 +163,9 @@ class BarcodeInput extends React.Component {
                         {
 
                             item ?
-                                <ArticleCard handleAccept={this.handleAccept}
+                                <ArticleCard handleAccept={confirmMode?this.handleAccept:null}
                                     item={item} qty={qty}
+                                    qtyLabel={this.props.qtyLabel}
                                     setQty={(qty) => this.setState({ qty })} />
                                 : null
                         }

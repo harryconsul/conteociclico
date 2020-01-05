@@ -1,9 +1,9 @@
 import React from 'react';
-import { Button, View, TextInput, KeyboardAvoidingView } from 'react-native';
+import { Button, View, TextInput, KeyboardAvoidingView, ShadowPropTypesIOS } from 'react-native';
 import { ItemView, ItemHightLight, ItemLabel } from '../components';
 import Field from './Field';
 
-export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, setLocation, location }) => {
+export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, setLocation, location,qtyLabel }) => {
     let size = setPrice ? 150 : 100;
     size += setLocation ? 150 : 100;
 
@@ -44,8 +44,12 @@ export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, 
                 </View>
 
                 <View style={{ height: size, marginTop: 15, marginBottom: 10 }}>
-                    <Field label="Cantidad" placeholder="#" defaultValue={String(qty)}
-                        onChangeText={(text) => setQty(text)} keyboardType="numeric" />
+                    {
+                        handleAccept?
+                        <Field label={qtyLabel?qtyLabel:"Cantidad"} placeholder="#" defaultValue={String(qty)}
+                            onChangeText={(text) => setQty(text)} keyboardType="numeric" />
+                        : <ItemHightLight text={(qtyLabel?qtyLabel:"Cantidad") + ' : ' +  qty} />
+                    }
                     {setPrice ?
                         <Field label="Precio" placeholder="$$" defaultValue={price}
                             onChangeText={(text) => setPrice(text)} keyboardType="numeric" />
@@ -57,8 +61,13 @@ export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, 
                         : null
                     }
                 </View>
-                <Button onPress={handleAccept}
+                {
+                    handleAccept?
+                    <Button onPress={handleAccept}
                     title="Aceptar" />
+                    :null
+                }
+                
             </KeyboardAvoidingView>
         </ItemView>
     )
