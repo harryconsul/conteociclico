@@ -5,6 +5,7 @@ const actionStartTransfer = () => {
     return {
         formName: "P564113_W564113A",
         version: "DICIPA003",
+        maxPageSize: 500,
         formActions: [
             {
                 command: "DoAction",

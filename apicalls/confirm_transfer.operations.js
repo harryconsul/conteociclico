@@ -4,6 +4,7 @@ const actionSearchOrder = (number) => {
     return {
         formName: "P594312B_W594312BD",
         version: "DICIPA01",
+        maxPageSize: 500,
         formActions: [
             {
                 command: "SetControlValue",
@@ -23,10 +24,28 @@ const actionSearchOrder = (number) => {
     }
 }
 
+const actionStartConfirmation = (rowId) => {
+    return {
+        formOID: "W594312BD",
+        formActions: [
+            {
+                ".type": "com.oracle.e1.jdemf.FormAction",
+                command: "DoAction",
+                controlID: "4"
+            }
+        ]
+    }
+}
+
 export const searchOrder=(number,token,callback,errorHandler)=>{
     
     callStackService(createStack(token,actionSearchOrder(number)),callback,errorHandler);
     
+}
+
+export const startConfirmation = (token, stack, callback) => {
+    const action = pushStack(token, actionStartConfirmation(), stack);
+    callStackService(action, callback, (reason) => console.warn(reason));
 }
 
 const createStack = (token,formRequest) => {

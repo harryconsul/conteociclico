@@ -102,7 +102,7 @@ class BarcodeInput extends React.Component {
                     if (editingItem.qty) {
                         editingItem.qty--;
                     }else{
-                        Alert.alert("Has terminado de recolectar : " + editingItem.description)
+                        Alert.alert('Producto : ' + editingItem.description + ' terminado');
                     }
                 }
 

@@ -5,6 +5,7 @@ const actionSearchShipment = (orderNumber) => {
     return {
         formName: "P554205A_W554205AD",
         version: "DICIPA25",
+        maxPageSize:500,
         formActions: [
             {
                 command: "SetControlValue",

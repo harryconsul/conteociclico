@@ -55,3 +55,12 @@ export const rightButtonsClose = {
     ]
 
 };
+
+export const rightButtonsRefreshOnly = {
+    rightButtons:[
+        {
+            id:"refresh",
+            icon:refreshIcon,
+        }
+    ]
+}

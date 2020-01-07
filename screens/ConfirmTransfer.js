@@ -8,7 +8,8 @@ import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import Field from '../components/Field';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
-import { searchOrder } from '../apicalls/confirm_transfer.operations';
+import { searchOrder, startConfirmation } from '../apicalls/confirm_transfer.operations';
+import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, actionSetArticle } from '../store/actions/actions.creators';
 import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
 import backgroundImage from '../assets/labmicroBg.jpg';
@@ -50,6 +51,12 @@ class ConfirmTransfer extends React.Component {
         }
     }
 
+    refreshScreen = () => {
+        this.setState({ ...initialState });
+        this.props.dispatch(actionSetArticlesMap(new Map()));
+        this.setState({ isLoading: false });
+    }
+
     openSideBar = () => {
         Navigation.mergeOptions('SideMenu', {
             sideMenu: {
@@ -59,6 +66,58 @@ class ConfirmTransfer extends React.Component {
             }
         });
     }
+
+    openBarcode = (screen) => {
+        if (this.state.articles) {
+            this.props.dispatch(actionSetTransactionMode(transactionModes.READ_SUBTRACT));
+        } else {
+            this.props.dispatch(actionSetTransactionMode(transactionModes.READ_RETURN));
+        }
+        Navigation.showModal({
+            stack: {
+                children: [
+                    {
+                        component: {
+                            name: screen,
+                            passProps: {
+                                qtyLabel: "Cantidad Pendiente por Recibir",
+                            }
+                        },
+                        options: {
+                            topBar: {
+                                title: {
+                                    text: 'Captura Codigo de Barras'
+                                },
+                                drawBehind: true,
+                                background: {
+                                    color: '#8c30f1c7',
+                                    translucent: true,
+                                    blur: false
+                                },
+
+                            }
+                        }
+                    }
+                ]
+            }
+        });
+    }
+    componentDidAppear() {
+        if (this.props.articles) {
+
+            const search = this.props.articles.get("search");
+            if (search) {
+                this.setState({ orderNumber: search.value }, this.searchOrder);
+            }
+
+
+        }
+    }
+
+    componentDidMount() {
+
+    }
+
     getSucursal = (sucursal) => {
         return new Promise((resolve, reject) => {
             businessUnit(sucursal, this.props.token, (data) => {
@@ -79,6 +138,7 @@ class ConfirmTransfer extends React.Component {
                     rowId: item.rowIndex,
                     expire: item.dtFchCaducMes_129.value,
                     order: item.mnOrderNumber_10.value,
+                    orderType: item.sOrTy_11.value,
                     line: item.mnLineNumber_43.value,
                     qty: item.mnQuantityOpen_16.value,
                     um: item.sTransUOM_87.value,
@@ -91,7 +151,6 @@ class ConfirmTransfer extends React.Component {
                     orderDate: item.dtOrderDate_90.value,
                     requestDate: item.dtRequestDate_91.value,
                     promiseDate: item.dtPromisedDelivery_92.value,
-                    orderType: item.sRelOrdType_130.value,
                     docType: item.sDOCType_127.value,
                     docNumber: item.mnDocumentNumber_128.value,
                     status: item.sRLastStat_126.value,
@@ -114,7 +173,7 @@ class ConfirmTransfer extends React.Component {
                             stackId: response.data.stackId,
                             stateId: response.data.stateId,
                             rid: response.data.rid,
-                            currentApplication: "P554205A_W554205AD",
+                            currentApplication: "P594312B_W594312BD",
                         }
 
                         this.props.dispatch(actionUpdateStack(stack));
@@ -123,7 +182,6 @@ class ConfirmTransfer extends React.Component {
                         Alert.alert("Folio pendiente de envío");
                     }
 
-                    this.setState({ isLoading: false });
                 } else {
                     Alert.alert("Folio procesado o no existe");
                     this.setState({ isLoading: false });
@@ -138,7 +196,61 @@ class ConfirmTransfer extends React.Component {
     }
 
     handleConfirmation = () => {
-        Alert.alert("Hola");
+        //Se ejecuta al dar tap sobre INICIAR RECEPCIÓN.
+        this.setState({ isConfirming: false, isLoading: true });
+
+        startConfirmation(this.props.token, this.props.stack, (response) => {
+
+            const rawRows = response.data.fs_P594312B_W594312BA.data.gridData.rowset;
+            console.warn('data: ', rawRows);
+
+            const productsToConfirm = new Map();
+
+            const length = rawRows.length;
+
+            for (let i = 0; i < length; i++) {
+                const key = rawRows[i].mnShortItemNo_104.value;
+
+                const value = {
+                    key,
+                    rowId: rawRows[i].rowIndex,
+                    auxNumber: rawRows[i].s2ndItemNumber_103.value,
+                    qty: rawRows[i].mnQuantity_116.value,
+                    um: rawRows[i].sTransUOM_54.value,
+                    unitCost: rawRows[i].mnUnitCost_119.value,
+                    amount: rawRows[i].mnAmount_117.value,
+                    description: rawRows[i].sDescription_40.value,
+                    branch: rawRows[i].sBranchPlant_36.value,
+                    location: rawRows[i].sLocation_126.value,
+                    lote: rawRows[i].sLotSerial_46.value,
+                    orderType: rawRows[i].sOrTy_47.value,
+                    shortNumber: rawRows[i].mnShortItemNo_104.value,
+                }
+
+                productsToConfirm.set(key, value);
+            }
+
+            this.props.dispatch(actionSetArticlesMap(productsToConfirm));
+
+            this.setState({ isLoading: false, articles: productsToConfirm, lineas: length });
+
+            const stack = {
+                stackId: response.data.stackId,
+                stateId: response.data.stateId,
+                rid: response.data.rid,
+                currentApplication: "P594312B_W594312BA",
+            }
+
+            this.props.dispatch(actionUpdateStack(stack));
+        });
+    }
+
+    confirmShipment = () => {
+        Alert.alert('Articles ' , this.props.articles);
+    }
+
+    handleSelectRow = () => {
+        //No aplica.
     }
 
     render() {
@@ -147,6 +259,15 @@ class ConfirmTransfer extends React.Component {
         const iniciar = isConfirming ?
             <Button onPress={this.handleConfirmation} title="Iniciar Recepción" />
             : null;
+
+        const products = this.props.articles ? this.props.articles.values() : [];
+
+        const productsArray = (this.state.articles ?
+            Array.from(products)
+            :
+            [])
+            .filter((item) => item.qty);
+
 
         const orderView = order ?
             <ItemView index={1} >
@@ -166,6 +287,14 @@ class ConfirmTransfer extends React.Component {
                     </View>
                     <View style={{ width: "40%" }}>
                         <ItemLabel text={"Doc #: " + order.docNumber} />
+                    </View>
+                </View>
+                <View style={styles.linea}>
+                    <View style={{ width: "60%" }}>
+                        <ItemLabel text={"Estatus: " + order.status} />
+                    </View>
+                    <View style={{ width: "40%" }}>
+                        <ItemLabel text={''} />
                     </View>
                 </View>
                 {iniciar}
@@ -196,6 +325,38 @@ class ConfirmTransfer extends React.Component {
                         />
 
                         {orderView}
+
+                        {
+                            this.state.articles ?
+                                //Confirmar recepción
+                                <Button
+                                    title="Confirmar Recepción"
+                                    onPress={this.confirmShipment}
+                                />
+                                : null
+                        }
+
+                        <FlatList data={productsArray}
+                            renderItem={({ item, index }) =>
+                                <TouchableOpacity key={item.key} index={index} >
+                                    <ItemView index={index} >
+                                        <View style={styles.linea}>
+                                            <View style={{ width: "33%" }}>
+                                                <ItemLabel text={"No. " + item.auxNumber} />
+                                            </View>
+                                            <View style={{ width: "67%" }}>
+                                                <ItemLabel text={"Catálogo: " + item.shortNumber} />
+                                            </View>
+                                        </View>
+                                        <ItemLabel text={"Producto: " + item.description} />
+                                        <ItemLabel text={"Cantidad: " + item.qty + " " + item.um} />
+                                        <ItemLabel text={"Ubicación: " + item.location} />
+                                        <ItemLabel text={"Lote: " + item.lote} />
+
+                                    </ItemView>
+                                </TouchableOpacity>
+
+                            } />
                     </View>
                 </KeyboardAvoidingView>
 
@@ -209,6 +370,7 @@ const mapStateToProps = (state) => {
         user: state.user,
         token: state.user.token,
         stack: state.stack,
+        articles: state.articles,
     }
 
 }

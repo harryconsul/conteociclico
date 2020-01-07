@@ -78,8 +78,8 @@ class ProductsPickup extends React.Component {
                     {
                         component: {
                             name: screen,
-                            passProps:{
-                                qtyLabel:"Cantidad Pendiente por Recolectar",
+                            passProps: {
+                                qtyLabel: "Cantidad Pendiente por Recolectar",
                             }
                         },
                         options: {
@@ -190,7 +190,7 @@ class ProductsPickup extends React.Component {
                     return row.status === '540';
                 });
 
-                if(orders.length != 0){
+                if (orders.length != 0) {
                     //Usar el 1er item
                     const order = orders[0];
                     this.sucursal(order.sucursal).then((nombreSucursal) => {
@@ -206,8 +206,8 @@ class ProductsPickup extends React.Component {
                     }
                     this.props.dispatch(actionUpdateStack(stack));
 
-                }else{
-                    this.setState({orderNumber: ''})
+                } else {
+                    this.setState({ orderNumber: '' })
                     Alert.alert('Recolección ' + orderNumber + ' procesada o no existe');
                 }
 
@@ -244,7 +244,7 @@ class ProductsPickup extends React.Component {
                     location: rawRows[i].sLocation_36.value,
                     description: rawRows[i].sDescription_44.value,
                     qty: rawRows[i].mnQuantityShipped_71.value,
-                    qtyToPickUp:rawRows[i].mnQuantityShipped_71.value,
+                    qtyToPickUp: rawRows[i].mnQuantityShipped_71.value,
                     sucursal: rawRows[i].sBranchPlant_37.value,
                     prevStatus: rawRows[i].sLastStat_48.value,
                     nextStatus: rawRows[i].sNextStat_47.value,
@@ -336,7 +336,7 @@ class ProductsPickup extends React.Component {
     handleSelectRow = (key) => {
         //Se setea qty = 0, para indicar que ya fue recolectado.
         //El usuario pidio quitarlo, se comenta por si se requiere mas adelante.
-        
+
         /*
         const item = this.props.articles.get(key);
         this.props.dispatch(actionSetArticle({ ...item, qty: 0 }));
@@ -419,7 +419,7 @@ class ProductsPickup extends React.Component {
 
                         <FlatList data={productsArray}
                             renderItem={({ item, index }) =>
-                                <TouchableOpacity key={item.key} index={index} onPress={() => this.handleSelectRow(item.key)}>
+                                <TouchableOpacity key={item.key} index={index}>
                                     <ItemView index={index} >
                                         <View style={styles.linea}>
                                             <View style={{ width: "33%" }}>
@@ -431,14 +431,14 @@ class ProductsPickup extends React.Component {
                                         </View>
                                         <ItemHightLight text={"Producto: " + item.description} />
                                         <View style={styles.linea}>
-                                            <View style={{ width: "60%" }}>
-                                            <ItemHightLight text={"Pediente de Recolectar: " + item.qty + " " + item.um} />
+                                            <View style={{ width: "45%" }}>
+                                                <ItemHightLight text={"Pediente: " + item.qty + " " + item.um} />
                                             </View>
-                                            <View style={{ width: "40%" }}>
-                                                <ItemLabel text={"Recolectado: " + (item.qtyToPickUp - item.qty)} />
+                                            <View style={{ width: "55%" }}>
+                                                <ItemHightLight text={"Recolectado: " + (item.qtyToPickUp - item.qty + " " + item.um) } />
                                             </View>
                                         </View>
-                                        
+
                                         <ItemLabel text={"Ubicación: " + item.location} />
                                         <ItemLabel text={"Lote: " + item.lote} />
 

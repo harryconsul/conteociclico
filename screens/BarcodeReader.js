@@ -33,22 +33,22 @@ class BarcodeReader extends React.Component {
     }
   }
 
-  close=()=>{
+  close = () => {
 
-      Navigation.dismissModal(this.props.componentId);
-    
-    
+    Navigation.dismissModal(this.props.componentId);
+
+
   }
 
   navigationButtonPressed = ({ buttonId }) => {
-    switch(buttonId){
-           case 'close':
-               this.close();
-               break;              
-           default:
-                this.close();
-    } 
-}
+    switch (buttonId) {
+      case 'close':
+        this.close();
+        break;
+      default:
+        this.close();
+    }
+  }
   handleAccept = () => {
     const { editingItem, qty } = this.state;
     const item = { ...editingItem, qty };
@@ -80,12 +80,12 @@ class BarcodeReader extends React.Component {
           blur: false
         },
         visible: true,
-        rightButtons:[
+        rightButtons: [
           {
-              id:'close',
-              icon:closeIcon,
+            id: 'close',
+            icon: closeIcon,
           }
-      ]
+        ]
       },
     });
   }
@@ -116,6 +116,8 @@ class BarcodeReader extends React.Component {
         } else {
           if (editingItem.qty) {
             editingItem.qty--;
+          } else {
+            Alert.alert('Producto : ' + editingItem.description + ' terminado');
           }
         }
 
@@ -127,8 +129,8 @@ class BarcodeReader extends React.Component {
           isEditing: true,
         }, () => {
           if (!this.state.confirmMode) {
-            setTimeout(this.handleAccept,1000);
-            
+            setTimeout(this.handleAccept, 1000);
+
           }
         });
 
@@ -177,6 +179,7 @@ class BarcodeReader extends React.Component {
                 {item ? <View style={{ height: "80%", flexBasis: "80%" }}>
                   <ArticleCard handleAccept={this.handleAccept}
                     item={item} qty={qty}
+                    qtyLabel={this.props.qtyLabel}
                     setQty={(qty) => this.setState({ qty })} />
                 </View>
                   :
