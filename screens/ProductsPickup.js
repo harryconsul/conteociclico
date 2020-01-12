@@ -79,7 +79,7 @@ class ProductsPickup extends React.Component {
                         component: {
                             name: screen,
                             passProps: {
-                                qtyLabel: "Cantidad Pendiente por Recolectar",
+                                qtyLabel: "Cantidad Recolectada",
                             }
                         },
                         options: {

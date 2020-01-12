@@ -52,10 +52,28 @@ class BarcodeInput extends React.Component {
                 
             },
         });
+    
+        Alert.alert('Modo de Captura','Debes scanear cada articulo con tu dispositivo',
+        [
+           
+            {
+                text:'Quiero Capturar Cantidades',
+                onPress:()=>this.setState({confirmMode:true}),
+            },
+            {
+                text:'Aceptar',
+                onPress:()=>this.setState({confirmMode:false}),
+            },
+        ])
+
+        
     }
     handleAccept = () => {
         const { editingItem, qty } = this.state;
-        const item = { ...editingItem, qty };
+        const item = { ...editingItem,
+             qty:this.props.transactionMode === transactionModes.READ_SUBTRACT
+             ? editingItem.qtyToPickUp - qty
+             :qty, };
 
 
 
@@ -64,15 +82,17 @@ class BarcodeInput extends React.Component {
 
         this.setState(
             {
-                //editingItem: null,
+                editingItem: null,
                 searchCode: "",
                 isEditing: false,
-                //qty: 0,
+                qty: 0,
 
-            }
-        )
 
-        this.state.articleRef.current.focus();
+            },()=> this.state.articleRef.current.focus()
+        );
+       
+
+        
     }
     barCodeHandler = () => {
         //Get the item
@@ -99,25 +119,50 @@ class BarcodeInput extends React.Component {
                 if (this.props.transactionMode === transactionModes.READ_ADD) {
                     editingItem.qty++;
                 } else {
-                    if (editingItem.qty) {
+                    if (editingItem.qty>0) {
                         editingItem.qty--;
                     }else{
                         Alert.alert('Producto : ' + editingItem.description + ' terminado');
                     }
-                    this.state.articleRef.current.focus();
+                    
                 }
 
 
+                if(!this.state.confirmMode){
+                    
+                    this.setState({
+                        editingItem,
+                        qty: this.props.transactionMode === transactionModes.READ_SUBTRACT
+                            ? editingItem.qtyToPickUp - editingItem.qty
+                            :editingItem.qty,
+                        isEditing: false,
+                        searchCode: "",
+                    });
+                                        
+                    const item = { ...editingItem};
+    
+                    this.props.dispatch(actionSetArticle(item));    
+                    
+                    this.state.articleRef.current.focus();
 
-                this.setState({
-                    editingItem,
-                    qty: editingItem.qty,
-                    isEditing: true,
-                },()=>{
-                    if(!this.state.confirmMode){
-                        this.handleAccept();
-                    }
-                });
+
+                }else{
+
+                    this.setState({
+                        editingItem,
+                        qty: this.props.transactionMode === transactionModes.READ_SUBTRACT
+                            ? editingItem.qtyToPickUp - editingItem.qty
+                            :editingItem.qty,
+                        isEditing: true,
+                    });
+
+                }
+
+               
+                
+               
+
+
 
 
             } else {
@@ -154,7 +199,7 @@ class BarcodeInput extends React.Component {
                 <KeyboardAvoidingView
                     style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
                     <View style={componentstyles.containerView}>
-                       <ArticleScanMode confirmMode={confirmMode} changeMode={(confirmMode)=>this.setState({confirmMode})} />
+                       
                         <Field onChangeText={(text) => this.setState({ searchCode: text })}
                             onSubmitEditing={this.barCodeHandler}
                             autoFocus={true}
