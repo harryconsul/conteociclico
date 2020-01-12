@@ -174,7 +174,7 @@ class ProductsPickup extends React.Component {
             searchShipment(orderNumber, this.props.token, (response) => {
 
                 const rawRows = response.data.fs_P554205A_W554205AD.data.gridData.rowset;
-
+                console.warn('Buscar recolección: ', rawRows);
                 const rows = rawRows.map((item) => ({
                     rowId: item.rowIndex,
                     orden: item.mnOrderNumber_27.value,
@@ -183,7 +183,7 @@ class ProductsPickup extends React.Component {
                     fecha: item.dtOrderDate_36.value,
                     sucursal: item.sBusinessUnit_37.value,
                     status: item.sLastStat_38.value,
-                    ruta: 'PENDIENTE EN PD',
+                    ruta: item.sRuta_92.value,
                 }));
 
                 const orders = rows.filter(row => {
@@ -225,7 +225,8 @@ class ProductsPickup extends React.Component {
 
         startConfirmation(this.props.token, this.props.stack, (response) => {
             const rawRows = response.data.fs_P554205A_W554205AE.data.gridData.rowset;
-
+            console.warn('Iniciar recolección: ' , rawRows);
+            
             const productToPickup = new Map();
             const allArticles = new Map();
             let lineas = 0;
@@ -422,10 +423,10 @@ class ProductsPickup extends React.Component {
                                 <TouchableOpacity key={item.key} index={index}>
                                     <ItemView index={index} >
                                         <View style={styles.linea}>
-                                            <View style={{ width: "33%" }}>
-                                                <ItemLabel text={"No. " + item.articulo} />
+                                            <View style={{ width: "45%" }}>
+                                                <ItemHightLight text={"Etiqueta: " + item.articulo} />
                                             </View>
-                                            <View style={{ width: "67%" }}>
+                                            <View style={{ width: "55%" }}>
                                                 <ItemLabel text={"Catálogo: " + item.itemNumber} />
                                             </View>
                                         </View>
@@ -435,7 +436,7 @@ class ProductsPickup extends React.Component {
                                                 <ItemHightLight text={"Pediente: " + item.qty + " " + item.um} />
                                             </View>
                                             <View style={{ width: "55%" }}>
-                                                <ItemHightLight text={"Recolectado: " + (item.qtyToPickUp - item.qty + " " + item.um) } />
+                                                <ItemHightLight text={"Recolectado: " + (item.qtyToPickUp - item.qty + " " + item.um)} />
                                             </View>
                                         </View>
 

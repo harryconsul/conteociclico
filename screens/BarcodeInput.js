@@ -104,6 +104,7 @@ class BarcodeInput extends React.Component {
                     }else{
                         Alert.alert('Producto : ' + editingItem.description + ' terminado');
                     }
+                    this.state.articleRef.current.focus();
                 }
 
 
