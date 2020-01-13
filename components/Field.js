@@ -2,7 +2,7 @@ import React from 'react';
 import { componentstyles } from '../styles';
 import {View,Text,TextInput} from 'react-native';
 
-const Field = ({label,defaultValue,autoFocus,onSubmitEditing,onChangeText,placeholder,keyboardType,onBlur,inputRef,value})=>{
+const Field = ({label,defaultValue,autoFocus,onSubmitEditing,onChangeText,placeholder,keyboardType,onBlur,inputRef,value,blurOnSubmit})=>{
 
     return(
         <View style={{display:'flex'}}>
@@ -19,6 +19,7 @@ const Field = ({label,defaultValue,autoFocus,onSubmitEditing,onChangeText,placeh
                 placeholderTextColor={"#fffa"}
                 clearButtonMode='always'
                 ref={inputRef}
+                blurOnSubmit={blurOnSubmit?true:false}
                 style={componentstyles.textbox} />
         </View>
     )

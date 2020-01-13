@@ -1,7 +1,8 @@
 import React from 'react';
 import {
     View, StyleSheet, Alert, KeyboardAvoidingView
-    , ImageBackground } from 'react-native';
+    , ImageBackground
+} from 'react-native';
 import Field from '../components/Field';
 import { ArticleCard } from '../components'
 import { connect } from 'react-redux';
@@ -11,8 +12,6 @@ import { transactionModes } from '../constants';
 import backgroundImage from '../assets/labmicroBg.jpg';
 import closeIcon from '../assets/iconclose.png';
 import { componentstyles } from '../styles';
-import ArticleScanMode from '../components/ArticleScanMode';
-
 
 class BarcodeInput extends React.Component {
     constructor(props) {
@@ -24,7 +23,7 @@ class BarcodeInput extends React.Component {
             qty: 0,
             articleRef: React.createRef(),
             searchCode: "",
-            confirmMode:false,
+            confirmMode: false,
         }
 
     }
@@ -42,38 +41,40 @@ class BarcodeInput extends React.Component {
                     blur: false
                 },
                 visible: true,
-                rightButtons:[
+                rightButtons: [
                     {
-                        id:'close',
-                        icon:closeIcon,
+                        id: 'close',
+                        icon: closeIcon,
                     }
                 ]
 
-                
+
             },
         });
-    
-        Alert.alert('Modo de Captura','Debes scanear cada articulo con tu dispositivo',
-        [
-           
-            {
-                text:'Quiero Capturar Cantidades',
-                onPress:()=>this.setState({confirmMode:true}),
-            },
-            {
-                text:'Aceptar',
-                onPress:()=>this.setState({confirmMode:false}),
-            },
-        ])
 
-        
+        Alert.alert('Modo de Captura', 'Debes escanear cada artículo con tu dispositivo',
+            [
+
+                {
+                    text: 'Escanear e Ingresar cantidades',
+                    onPress: () => this.setState({ confirmMode: true }),
+                },
+                {
+                    text: 'Sólo Escanear',
+                    onPress: () => this.setState({ confirmMode: false }),
+                },
+            ])
+
+
     }
     handleAccept = () => {
         const { editingItem, qty } = this.state;
-        const item = { ...editingItem,
-             qty:this.props.transactionMode === transactionModes.READ_SUBTRACT
-             ? editingItem.qtyToPickUp - qty
-             :qty, };
+        const item = {
+            ...editingItem,
+            qty: this.props.transactionMode === transactionModes.READ_SUBTRACT
+                ? editingItem.qtyToPickUp - qty
+                : qty,
+        };
 
 
 
@@ -88,11 +89,11 @@ class BarcodeInput extends React.Component {
                 qty: 0,
 
 
-            },()=> this.state.articleRef.current.focus()
+            }, () => this.state.articleRef.current.focus()
         );
-       
 
-        
+
+
     }
     barCodeHandler = () => {
         //Get the item
@@ -119,48 +120,48 @@ class BarcodeInput extends React.Component {
                 if (this.props.transactionMode === transactionModes.READ_ADD) {
                     editingItem.qty++;
                 } else {
-                    if (editingItem.qty>0) {
+                    if (editingItem.qty > 0) {
                         editingItem.qty--;
-                    }else{
-                        Alert.alert('Producto : ' + editingItem.description + ' terminado');
+                    } else {
+                        Alert.alert('Producto terminado', editingItem.description);
                     }
-                    
+
                 }
 
 
-                if(!this.state.confirmMode){
-                    
+                if (!this.state.confirmMode) {
+
                     this.setState({
                         editingItem,
                         qty: this.props.transactionMode === transactionModes.READ_SUBTRACT
                             ? editingItem.qtyToPickUp - editingItem.qty
-                            :editingItem.qty,
+                            : editingItem.qty,
                         isEditing: false,
                         searchCode: "",
                     });
-                                        
-                    const item = { ...editingItem};
-    
-                    this.props.dispatch(actionSetArticle(item));    
-                    
+
+                    const item = { ...editingItem };
+
+                    this.props.dispatch(actionSetArticle(item));
+
                     this.state.articleRef.current.focus();
+                    console.warn('if');
 
-
-                }else{
-
+                } else {
+                    console.warn('else');
                     this.setState({
                         editingItem,
                         qty: this.props.transactionMode === transactionModes.READ_SUBTRACT
                             ? editingItem.qtyToPickUp - editingItem.qty
-                            :editingItem.qty,
+                            : editingItem.qty,
                         isEditing: true,
                     });
 
                 }
 
-               
-                
-               
+
+
+
 
 
 
@@ -171,7 +172,7 @@ class BarcodeInput extends React.Component {
                     [{
                         text: "Continuar",
                         onPress: () => {
-                            this.setState({ isEditing: false,searchCode:"" });
+                            this.setState({ isEditing: false, searchCode: "" });
                             this.state.articleRef.current.focus();
                         },
                     }]);
@@ -179,37 +180,39 @@ class BarcodeInput extends React.Component {
         }
 
     }
-    close=()=>{
+    close = () => {
         Navigation.dismissModal(this.props.componentId);
     }
     navigationButtonPressed = ({ buttonId }) => {
-        switch(buttonId){
-               case 'close':
-                   this.close();
-                   break;              
-               default:
-                    this.close();
-        } 
-   }
+        switch (buttonId) {
+            case 'close':
+                this.close();
+                break;
+            default:
+                this.close();
+        }
+    }
     render() {
         const item = this.state.editingItem;
-        const {qty,confirmMode}=  this.state;
+        const { qty, confirmMode } = this.state;
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
                 <KeyboardAvoidingView
                     style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
                     <View style={componentstyles.containerView}>
-                       
+
                         <Field onChangeText={(text) => this.setState({ searchCode: text })}
                             onSubmitEditing={this.barCodeHandler}
                             autoFocus={true}
                             value={this.state.searchCode}
                             inputRef={this.state.articleRef}
-                            placeholder="#####" label="Busqueda por Handheld" />
+                            keyboardType={"numeric"}
+                            blurOnSubmit={false}
+                            placeholder="#####" label="Búsqueda por Handheld" />
                         {
 
                             item ?
-                                <ArticleCard handleAccept={confirmMode?this.handleAccept:null}
+                                <ArticleCard handleAccept={confirmMode ? this.handleAccept : null}
                                     item={item} qty={qty}
                                     qtyLabel={this.props.qtyLabel}
                                     setQty={(qty) => this.setState({ qty })} />
