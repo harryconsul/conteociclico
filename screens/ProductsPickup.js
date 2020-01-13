@@ -226,7 +226,7 @@ class ProductsPickup extends React.Component {
         startConfirmation(this.props.token, this.props.stack, (response) => {
             const rawRows = response.data.fs_P554205A_W554205AE.data.gridData.rowset;
             console.warn('Iniciar recolección: ' , rawRows);
-            
+
             const productToPickup = new Map();
             const allArticles = new Map();
             let lineas = 0;
