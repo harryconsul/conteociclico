@@ -4,4 +4,7 @@ export {ItemLabel} from './ItemLabel';
 export {ArticleCard} from './ArticleCard';
 import ClientField from './ClientField';
 import ArticleSearch,{searchArticle} from './ArticleSearch';
-export {ArticleSearch,searchArticle,ClientField}; 
+import ArticleScanMode from './ArticleScanMode';
+export {ArticleSearch,searchArticle,ClientField,ArticleScanMode}; 
+
+

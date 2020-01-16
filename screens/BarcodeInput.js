@@ -4,7 +4,7 @@ import {
     , ImageBackground
 } from 'react-native';
 import Field from '../components/Field';
-import { ArticleCard } from '../components'
+import { ArticleCard,ArticleScanMode } from '../components'
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import { actionSetArticle } from '../store/actions/actions.creators';
@@ -52,18 +52,6 @@ class BarcodeInput extends React.Component {
             },
         });
 
-        Alert.alert('Modo de Captura', 'Debes escanear cada artículo con tu dispositivo',
-            [
-
-                {
-                    text: 'Escanear e Ingresar cantidades',
-                    onPress: () => this.setState({ confirmMode: true }),
-                },
-                {
-                    text: 'Sólo Escanear',
-                    onPress: () => this.setState({ confirmMode: false }),
-                },
-            ])
 
 
     }
@@ -200,7 +188,7 @@ class BarcodeInput extends React.Component {
                 <KeyboardAvoidingView
                     style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
                     <View style={componentstyles.containerView}>
-
+                    <ArticleScanMode confirmMode={confirmMode} changeMode={(confirmMode)=>this.setState({confirmMode})} />
                         <Field onChangeText={(text) => this.setState({ searchCode: text })}
                             onSubmitEditing={this.barCodeHandler}
                             autoFocus={true}
