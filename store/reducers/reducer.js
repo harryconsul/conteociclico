@@ -11,15 +11,16 @@ const initialState = {
     currentScreen: null,
     products: null,
     transactionMode: transactionModes.READ_ADD,
-    stack:{
+    stack: {
 
     },
-    countRealm:null,
+    countRealm: null,
+    sucursal:'',
 
 }
 const updateArticle = (articles, article) => {
-    const articlesMap = new Map( [...articles ]);
-    articlesMap.set(article.key,{ ...article });
+    const articlesMap = new Map([...articles]);
+    articlesMap.set(article.key, { ...article });
     return articlesMap;
 }
 const reducer = (state = initialState, action) => {
@@ -48,7 +49,7 @@ const reducer = (state = initialState, action) => {
         case actionTypes.SET_ARTICLE:
             return {
                 ...state,
-                articles: updateArticle(state.articles,action.article),
+                articles: updateArticle(state.articles, action.article),
             }
         case actionTypes.SET_CURRENT_SCREEN:
             return {
@@ -66,6 +67,12 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 countRealm: action.countRealm,
+            }
+        case actionTypes.SET_SUCURSAL:
+
+            return {
+                ...state,
+                sucursal: action.sucursal,
             }
 
     }

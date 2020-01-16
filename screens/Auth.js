@@ -92,7 +92,7 @@ class Auth extends Component {
         username: "", password: "", passwordRef: React.createRef(),
         rememberMe: false, realm: null, userInDB: null,
         isLoading: false,
-        environment: "PY",
+        environment: "PD",
     }
 
     componentDidMount() {

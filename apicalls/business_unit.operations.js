@@ -5,19 +5,24 @@
 import axios from 'axios';
 
 export const businessUnit = (number, token, callback) => {
-    const _formAction = formAction(token, number);
+    const _formAction = formActionBU(token, number);
     formServiceRequest(_formAction, callback);
+}
+
+export const unidadMedida = (producto, token, callback) => {
+    const _formAction = formActionUM(token,producto);
+    formServiceRequest(_formAction,callback);
 }
 
 const formServiceRequest = (formAction, callback) => {
     axios.post("formservice", formAction)
-    .then((response) => {
-        callback(response.data);
-    })
-    .catch((error) => console.warn("ERROR al buscar la unidad de negocio", error));
+        .then((response) => {
+            callback(response.data);
+        })
+        .catch((error) => console.warn("ERROR al buscar la unidad de negocio", error));
 }
 
-const formAction = (token , number) => (
+const formActionBU = (token, number) => (
     {
         token,
         version: "",
@@ -35,5 +40,26 @@ const formAction = (token , number) => (
         ],
         "deviceName": "RESTclient",
         "formName": "P0006S_W0006SA"
+    }
+)
+
+const formActionUM = (token, producto) => (
+    {
+        token,
+        version: "",
+        "formActions": [
+
+            {
+                command: "SetControlValue",
+                value: producto,
+                "controlID": "41"
+            },
+            {
+                "command": "DoAction",
+                "controlID": "29"
+            }
+        ],
+        "deviceName": "RESTclient",
+        "formName": "P41002_W41002A"
     }
 )

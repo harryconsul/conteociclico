@@ -55,3 +55,10 @@ export const actionSetCountRealm = (countRealm)=>{
         countRealm,
     }
 }
+
+export const actionSetSucursal = (sucursal)=>{
+    return{
+        type:actionTypes.SET_SUCURSAL,
+        sucursal,
+    }
+}
