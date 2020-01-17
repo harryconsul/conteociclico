@@ -130,9 +130,9 @@ class ProductsPickup extends React.Component {
         });
     }
 
-    unidadMedida = (catalogo) => {
+    unidadMedida = (itemNumber) => {
         return new Promise((resolve, reject) => {
-            unidadMedida(catalogo, this.props.token, (data) => {
+            unidadMedida(itemNumber, this.props.token, (data) => {
                 const rawRows = data.fs_P41002_W41002A.data.gridData.rowset;
 
                 const conversiones = new Map();
@@ -209,12 +209,12 @@ class ProductsPickup extends React.Component {
                     alias: item.sShipToNumber_90.value,
                     fecha: item.dtOrderDate_36.value,
                     sucursal: item.sBusinessUnit_37.value,
-                    status: item.sLastStat_38.value,
+                    status: item.sNextStat_39.value,
                     ruta: item.sRuta_92.value,
                 }));
 
                 const orders = rows.filter(row => {
-                    return row.status === '540';
+                    return row.status === '560';
                 });
 
                 if (orders.length != 0) {
@@ -265,17 +265,17 @@ class ProductsPickup extends React.Component {
                 const prevStatus = rawRows[i].sLastStat_48.value;
                 const nextStatus = rawRows[i].sNextStat_47.value;
                 const lote = rawRows[i].sLotSerial_50.value;
-                const catalogo = rawRows[i].sItemNumber_35.value;
+                const itemNumber = rawRows[i].sItemNumber_35.value;
                 const um = rawRows[i].sUnitofMeasure_178.value;
 
                 const value = {
                     key,
                     rowId: rawRows[i].rowIndex,
                     etiqueta: rawRows[i].mnNmeronico_253.value,
-                    catalogo: rawRows[i].sItemNumber_35.value,
+                    itemNumber: rawRows[i].sItemNumber_35.value,
                     lote: rawRows[i].sLotSerial_50.value,
                     um: rawRows[i].sUnitofMeasure_178.value,
-                    ubicacion: rawRows[i].sLocation_36.value,
+                    location: rawRows[i].sLocation_36.value,
                     producto: rawRows[i].sDescription_44.value,
                     qty: rawRows[i].mnQuantityShipped_71.value,
                     qtyToPickUp: rawRows[i].mnQuantityShipped_71.value,
@@ -285,8 +285,8 @@ class ProductsPickup extends React.Component {
                     ordenTipo: rawRows[i].sOrTy_77.value,
                 }
                 //Sólo mostrar productos que esten en 540 - 560 y que tenga número de lote.
-                if (prevStatus === '540' && nextStatus === '560' && lote !== '') {
-                    this.unidadMedida(catalogo).then((conversiones) => {
+                if (nextStatus === '560' && lote !== '') {
+                    this.unidadMedida(itemNumber).then((conversiones) => {
                         value.conversiones = conversiones;
                     });
 
@@ -442,6 +442,7 @@ class ProductsPickup extends React.Component {
                             onChangeText={(text) => this.setState({ orderNumber: text })}
                             defaultValue={this.state.orderNumber}
                             onSubmitEditing={this.searchOrder}
+                            blurOnSubmit={true}
                         />
                         {orderView}
                         {
@@ -463,7 +464,7 @@ class ProductsPickup extends React.Component {
                                                 <ItemHightLight text={"Etiqueta: " + item.etiqueta} />
                                             </View>
                                             <View style={{ width: "55%" }}>
-                                                <ItemLabel text={"Catálogo: " + item.catalogo} />
+                                                <ItemLabel text={"Catálogo: " + item.itemNumber} />
                                             </View>
                                         </View>
                                         <ItemHightLight text={"Producto: " + item.producto} />
@@ -476,7 +477,7 @@ class ProductsPickup extends React.Component {
                                             </View>
                                         </View>
 
-                                        <ItemLabel text={"Ubicación: " + item.ubicacion} />
+                                        <ItemLabel text={"Ubicación: " + item.location} />
                                         <ItemLabel text={"Lote: " + item.lote} />
 
                                     </ItemView>

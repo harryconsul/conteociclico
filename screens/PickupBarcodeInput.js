@@ -25,6 +25,7 @@ class PickupBarcodInput extends React.Component {
             articleRef: React.createRef(),
             searchCode: "",
             confirmMode: false,
+            etiqueta:'',
         }
 
     }
@@ -84,35 +85,34 @@ class PickupBarcodInput extends React.Component {
 
     }
 
-    producto = (etiqueta) => {
+    producto = () => {
         return new Promise((resolve, reject) => {
             queryArticle(this.props.sucursal, this.state.searchCode, this.props.user.token, (data) => {
                 const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
-
+                
+                this.setState({searchCode:''});
                 const productos = rawRows.map((item, index) => ({
                     key: index,
                     etiqueta: item.mnNmeronico_24.value,
                     producto: item.sDescription_38.value,
                     unidadNegocio: item.sBusinessUnit_48.value,
-                    ubicacion: item.sLocation_55.value,
+                    location: item.sLocation_55.value,
                     disponible: item.mnQuantityOnHand_46.value,
                     existencia: item.mnQuantitySinCalcular_57.value,
                     comprometido: item.mnQuantityHardCommitted_58.value,
                     caducidad: item.dtExpirationDateMonth_53.value,
                     lote: item.sLotSerialNumber_37.value,
                     um: item.sUM_54.value,
-                    catalogo: item.s2ndItemNumber_33.value,
+                    itemNumber: item.s2ndItemNumber_33.value,
                 }));
 
                 if (productos.length > 0) {
                     const producto = productos[0];
+                    this.setState({etiqueta:producto.etiqueta});
                     resolve(producto);
                 } else {
                     resolve([]);
                 }
-
-
-
             });
         }, (reason) => reject(reason));
     }
@@ -136,10 +136,11 @@ class PickupBarcodInput extends React.Component {
                     Array.from(products)
                     :
                     [])
-                    .filter((item) => item.catalogo === producto.catalogo && item.lote === producto.lote);
+                    .filter((item) => item.itemNumber === producto.itemNumber && item.lote === producto.lote);
 
-                //lote,um,catalogo
+                //lote,um,itemNumber
                 console.warn('filtrados', filtrados);
+                let encontrado = false;
                 for (let i = 0; i < filtrados.length; i++) {
                     const linea = filtrados[i];
 
@@ -161,10 +162,9 @@ class PickupBarcodInput extends React.Component {
                             } else {
                                 if (editingItem.qty > 0) {
                                     editingItem.qty--;
-                                } else {
-                                    Alert.alert('Producto terminado', editingItem.description);
+                                    producto = [];
+                                    encontrado = true;
                                 }
-
                             }
 
                             if (!this.state.confirmMode) {
@@ -224,10 +224,9 @@ class PickupBarcodInput extends React.Component {
                                 } else {
                                     if (editingItem.qty >= conversion) {
                                         editingItem.qty -= conversion;
-                                    } else {
-                                        Alert.alert('Producto terminado', editingItem.description);
+                                        producto = [];
+                                        encontrado = true;
                                     }
-
                                 }
 
                                 if (!this.state.confirmMode) {
@@ -261,83 +260,14 @@ class PickupBarcodInput extends React.Component {
                             }
                         }
                         console.warn('UM Filtradas: ', umFiltradas);
-                    }
+                    
+                    } //else
+                } //for
+            
+                if(!encontrado){
+                    Alert.alert(producto.producto + ' ('+ producto.um +')','No se ubica en la lista o excede el limite');
                 }
-
-            });
-            /*
-            const item = this.props.list.get(this.state.searchCode);
-
-            if (item) {
-
-                const editingItem = { ...item };
-
-
-
-                if (!editingItem.qty) {
-                    editingItem.qty = 0;
-                }
-                if (this.props.transactionMode === transactionModes.READ_ADD) {
-                    editingItem.qty++;
-                } else {
-                    if (editingItem.qty > 0) {
-                        editingItem.qty--;
-                    } else {
-                        Alert.alert('Producto terminado', editingItem.description);
-                    }
-
-                }
-
-
-                if (!this.state.confirmMode) {
-
-                    this.setState({
-                        editingItem,
-                        qty: this.props.transactionMode === transactionModes.READ_SUBTRACT
-                            ? editingItem.qtyToPickUp - editingItem.qty
-                            : editingItem.qty,
-                        isEditing: false,
-                        searchCode: "",
-                    });
-
-                    const item = { ...editingItem };
-
-                    this.props.dispatch(actionSetArticle(item));
-
-                    this.state.articleRef.current.focus();
-                    console.warn('if');
-
-                } else {
-                    console.warn('else');
-                    this.setState({
-                        editingItem,
-                        qty: this.props.transactionMode === transactionModes.READ_SUBTRACT
-                            ? editingItem.qtyToPickUp - editingItem.qty
-                            : editingItem.qty,
-                        isEditing: true,
-                    });
-
-                }
-
-
-
-
-
-
-
-
-            } else {
-                this.setState({ isEditing: true });
-                Alert.alert("No encontrado ", "No hemos podido encontrar " + this.state.searchCode,
-                    [{
-                        text: "Continuar",
-                        onPress: () => {
-                            this.setState({ isEditing: false, searchCode: "" });
-                            this.state.articleRef.current.focus();
-                        },
-                    }]);
-            }
-            */
+            }); //producto
         }
 
     }
@@ -355,7 +285,7 @@ class PickupBarcodInput extends React.Component {
     }
     render() {
         const item = this.state.editingItem;
-        const { qty, confirmMode } = this.state;
+        const { qty, confirmMode,etiqueta } = this.state;
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
                 <KeyboardAvoidingView
@@ -369,12 +299,12 @@ class PickupBarcodInput extends React.Component {
                             inputRef={this.state.articleRef}
                             keyboardType={"numeric"}
                             blurOnSubmit={false}
-                            placeholder="#####" label="Búsqueda por Handheld---" />
+                            placeholder="#####" label="Lectura de etiqueta" />
                         {
 
                             item ?
                                 <ArticleCard handleAccept={confirmMode ? this.handleAccept : null}
-                                    item={item} qty={qty}
+                                    item={item} qty={qty} etiqueta={etiqueta}
                                     qtyLabel={this.props.qtyLabel}
                                     setQty={(qty) => this.setState({ qty })} />
                                 : null

@@ -3,10 +3,10 @@ import { Button, View, TextInput, KeyboardAvoidingView, ShadowPropTypesIOS } fro
 import { ItemView, ItemHightLight, ItemLabel } from '../components';
 import Field from './Field';
 
-export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, setLocation, location,qtyLabel }) => {
+export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, setLocation, location, qtyLabel, etiqueta }) => {
     let size = setPrice ? 150 : 100;
     size += setLocation ? 150 : 100;
-
+    const numero = etiqueta ? etiqueta : item.key;
     return (
 
         <ItemView index={0}>
@@ -18,7 +18,7 @@ export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, 
                     justifyContent: "space-between"
                 }}>
                     <View style={{ width: "40%" }}>
-                        <ItemLabel text={"No.: " + item.key} />
+                        <ItemLabel text={"No.: " + numero} />
                     </View>
                     <View style={{ width: "60%" }}>
                         <ItemLabel text={"Catálogo : " + item.itemNumber} />
@@ -45,10 +45,10 @@ export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, 
 
                 <View style={{ height: size, marginTop: 15, marginBottom: 10 }}>
                     {
-                        handleAccept?
-                        <Field label={qtyLabel?qtyLabel:"Cantidad"} placeholder="#" defaultValue={String(qty)}
-                            onChangeText={(text) => setQty(text)} keyboardType="numeric" />
-                        : <ItemHightLight text={(qtyLabel?qtyLabel:"Cantidad") + ' : ' +  qty} />
+                        handleAccept ?
+                            <Field label={qtyLabel ? qtyLabel : "Cantidad"} placeholder="#" defaultValue={String(qty)}
+                                onChangeText={(text) => setQty(text)} keyboardType="numeric" />
+                            : <ItemHightLight text={(qtyLabel ? qtyLabel : "Cantidad") + ' : ' + qty + ' ' + item.um} />
                     }
                     {setPrice ?
                         <Field label="Precio" placeholder="$$" defaultValue={price}
@@ -62,12 +62,12 @@ export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, 
                     }
                 </View>
                 {
-                    handleAccept?
-                    <Button onPress={handleAccept}
-                    title="Aceptar" />
-                    :null
+                    handleAccept ?
+                        <Button onPress={handleAccept}
+                            title="Aceptar" />
+                        : null
                 }
-                
+
             </KeyboardAvoidingView>
         </ItemView>
     )
