@@ -199,6 +199,7 @@ class PickupBarcodInput extends React.Component {
                     } else {
                         //2do paso el producto NO coincide con los filtrados, usar las conversiones.
                         const conversiones = linea.conversiones ? linea.conversiones.values() : [];
+                        console.warn(conversiones);
 
                         const umFiltradas = (linea.conversiones ?
                             Array.from(conversiones)
@@ -206,8 +207,10 @@ class PickupBarcodInput extends React.Component {
                             [])
                             .filter((item) => item.unidad === producto.um);
 
+                        
+                        console.warn(umFiltradas);
                         if (umFiltradas.length != 0) {
-                            const conversion = umFiltradas[0].valorConversion;
+                            const conversion = parseInt(umFiltradas[0].valorConversion);
 
                             const key = linea.key;
 
@@ -259,7 +262,6 @@ class PickupBarcodInput extends React.Component {
 
                             }
                         }
-                        console.warn('UM Filtradas: ', umFiltradas);
                     
                     } //else
                 } //for

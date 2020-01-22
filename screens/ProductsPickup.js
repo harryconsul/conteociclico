@@ -80,7 +80,7 @@ class ProductsPickup extends React.Component {
                         component: {
                             name: screen,
                             passProps: {
-                                qtyLabel: "Cantidad Recolectada",
+                                qtyLabel: "Recolectado",
                             }
                         },
                         options: {
@@ -262,7 +262,6 @@ class ProductsPickup extends React.Component {
             for (let i = 0; i < rawRows.length; i++) {
 
                 const key = rawRows[i].rowIndex;
-                const prevStatus = rawRows[i].sLastStat_48.value;
                 const nextStatus = rawRows[i].sNextStat_47.value;
                 const lote = rawRows[i].sLotSerial_50.value;
                 const itemNumber = rawRows[i].sItemNumber_35.value;
@@ -284,12 +283,13 @@ class ProductsPickup extends React.Component {
                     nextStatus: rawRows[i].sNextStat_47.value,
                     ordenTipo: rawRows[i].sOrTy_77.value,
                 }
-                //Sólo mostrar productos que esten en 540 - 560 y que tenga número de lote.
+                //Sólo mostrar productos que esten en 560 y que tenga número de lote.
                 if (nextStatus === '560' && lote !== '') {
                     this.unidadMedida(itemNumber).then((conversiones) => {
                         value.conversiones = conversiones;
+                        console.warn(itemNumber, conversiones);
                     });
-
+                    
                     toPickup.set(key, value);
 
                     lineas += 1;

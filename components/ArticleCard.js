@@ -7,6 +7,7 @@ export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, 
     let size = setPrice ? 150 : 100;
     size += setLocation ? 150 : 100;
     const numero = etiqueta ? etiqueta : item.key;
+    const total = item.qtyToPickUp ? item.qtyToPickUp : null;
     return (
 
         <ItemView index={0}>
@@ -48,7 +49,11 @@ export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, 
                         handleAccept ?
                             <Field label={qtyLabel ? qtyLabel : "Cantidad"} placeholder="#" defaultValue={String(qty)}
                                 onChangeText={(text) => setQty(text)} keyboardType="numeric" />
-                            : <ItemHightLight text={(qtyLabel ? qtyLabel : "Cantidad") + ' : ' + qty + ' ' + item.um} />
+                            :
+                            <View>
+                                <ItemHightLight text={(qtyLabel ? qtyLabel : "Cantidad") + ' : ' + qty + ' ' + item.um} />
+                                <ItemHightLight text={" de " + (total ? total : '') + ' ' + item.um} />
+                            </View>
                     }
                     {setPrice ?
                         <Field label="Precio" placeholder="$$" defaultValue={price}
