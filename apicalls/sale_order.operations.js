@@ -79,7 +79,7 @@ const actionConfirmDetail = () => {
     }
 }
 
-const actionSetSaleDetail = (rows,businessUnit) => {
+const actionSetSaleDetail = (rows,businessUnit,fromCyclicCount) => {
     return {
         formOID: "W574210FA",
         formActions: [
@@ -119,6 +119,11 @@ const actionSetSaleDetail = (rows,businessUnit) => {
                                     "command": "SetGridCellValue",
                                     "columnID": "35"
                                 },
+                                fromCyclicCount?{
+                                    "value": "Z",
+                                    "command": "SetGridCellValue",
+                                    "columnID": "44"
+                                }:null
 
                             ]
                         })
@@ -164,9 +169,9 @@ export const fillOrderHeader = (token, stack, form, callback) => {
 
 }
 
-export const fillOrderDetail = (token, stack, rows,businessUnit, callback) => {
+export const fillOrderDetail = (token, stack, rows,businessUnit,fromCyclicCount, callback) => {
 
-    const action = pushStack(token, actionSetSaleDetail(rows,businessUnit), stack);
+    const action = pushStack(token, actionSetSaleDetail(rows,businessUnit,fromCyclicCount), stack);
     callStackService(action, (response) => {
 
         if (!errorHelpers.handleErrors(response.data.fs_P574210F_W574210FA)) {

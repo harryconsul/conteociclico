@@ -198,7 +198,7 @@ class SaleOrder extends React.Component {
         const { token, stack, clienteEntrega, fromCyclicCount } = this.props;
         const articlesBusinessUnit = fromCyclicCount ? clienteEntrega : ""
 
-        fillOrderDetail(token, stack, list, articlesBusinessUnit, (response) => {
+        fillOrderDetail(token, stack, list, articlesBusinessUnit,fromCyclicCount ,(response) => {
             this.setState({ isLoading: false })
             if (response) {
                 Alert.alert("Operación Exitosa", "Se ha guardado la orden de venta #" +

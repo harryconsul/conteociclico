@@ -32,6 +32,7 @@ const searchCyclicCount = (businessUnit) => {
 const actionEnterCyclicCount=(rows)=>{
     return{
         formOID:"W4141A",
+        maxPageSize:1000,
         formActions:[
             {
                
@@ -64,6 +65,7 @@ const actionEnterCyclicCount=(rows)=>{
 const actionSelectCyclicCount=(rowId)=>{
     return{
             formOID: "W5541240A",
+            maxPageSize:1000,
             formActions: [
                 {
                     ".type": "com.oracle.e1.jdemf.FormAction",
@@ -81,6 +83,7 @@ const actionSelectCyclicCount=(rowId)=>{
 const actionReviewCyclicCount=(rowId)=>{
     return{
             formOID: "W5541240A",
+            maxPageSize:1000,
             formActions: [
                 {
                     ".type": "com.oracle.e1.jdemf.FormAction",

@@ -133,10 +133,10 @@ class BarcodeInput extends React.Component {
                     this.props.dispatch(actionSetArticle(item));
 
                     this.state.articleRef.current.focus();
-                    console.warn('if');
+                    
 
                 } else {
-                    console.warn('else');
+                   
                     this.setState({
                         editingItem,
                         qty: this.props.transactionMode === transactionModes.READ_SUBTRACT
