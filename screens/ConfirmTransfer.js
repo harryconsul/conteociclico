@@ -132,6 +132,7 @@ class ConfirmTransfer extends React.Component {
         if (parseInt(this.state.number) > 0) {
             this.setState({ isLoading: true });
             searchOrder(this.state.number, this.props.token, (response) => {
+                console.warn(response);
                 const rawRows = response.data.fs_P594312B_W594312BD.data.gridData.rowset;
 
                 const rows = rawRows.map((item) => ({
@@ -200,53 +201,74 @@ class ConfirmTransfer extends React.Component {
         this.setState({ isConfirming: false, isLoading: true });
 
         startConfirmation(this.props.token, this.props.stack, (response) => {
+            console.warn(response);
+            const errors = response.data.fs_P594312B_W594312BA.errors;
 
-            const rawRows = response.data.fs_P594312B_W594312BA.data.gridData.rowset;
-            console.warn('data: ', rawRows);
+            //if (errors.count = 0) {
+            if(true){
+                const rawRows = response.data.fs_P594312B_W594312BA.data.gridData.rowset;
 
-            const productsToConfirm = new Map();
+                const productsToConfirm = new Map();
+                const length = rawRows.length;
 
-            const length = rawRows.length;
+                for (let i = 0; i < length; i++) {
+                    const key = rawRows[i].rowIndex;
 
-            for (let i = 0; i < length; i++) {
-                const key = rawRows[i].mnShortItemNo_104.value;
+                    const value = {
+                        key,
+                        rowId: rawRows[i].rowIndex,
+                        auxNumber: rawRows[i].s2ndItemNumber_103.value,
+                        qty: rawRows[i].mnQuantity_116.value,
+                        um: rawRows[i].sTransUOM_54.value,
+                        unitCost: rawRows[i].mnUnitCost_119.value,
+                        amount: rawRows[i].mnAmount_117.value,
+                        description: rawRows[i].sDescription_40.value,
+                        branch: rawRows[i].sBranchPlant_36.value,
+                        location: rawRows[i].sLocation_126.value,
+                        lote: rawRows[i].sLotSerial_46.value,
+                        orderType: rawRows[i].sOrTy_47.value,
+                        shortNumber: rawRows[i].mnShortItemNo_104.value,
+                    }
 
-                const value = {
-                    key,
-                    rowId: rawRows[i].rowIndex,
-                    auxNumber: rawRows[i].s2ndItemNumber_103.value,
-                    qty: rawRows[i].mnQuantity_116.value,
-                    um: rawRows[i].sTransUOM_54.value,
-                    unitCost: rawRows[i].mnUnitCost_119.value,
-                    amount: rawRows[i].mnAmount_117.value,
-                    description: rawRows[i].sDescription_40.value,
-                    branch: rawRows[i].sBranchPlant_36.value,
-                    location: rawRows[i].sLocation_126.value,
-                    lote: rawRows[i].sLotSerial_46.value,
-                    orderType: rawRows[i].sOrTy_47.value,
-                    shortNumber: rawRows[i].mnShortItemNo_104.value,
+                    productsToConfirm.set(key, value);
                 }
 
-                productsToConfirm.set(key, value);
-            }
+                this.props.dispatch(actionSetArticlesMap(productsToConfirm));
 
-            this.props.dispatch(actionSetArticlesMap(productsToConfirm));
+                this.setState({ isLoading: false, articles: productsToConfirm, lineas: length });
 
-            this.setState({ isLoading: false, articles: productsToConfirm, lineas: length });
+                const stack = {
+                    stackId: response.data.stackId,
+                    stateId: response.data.stateId,
+                    rid: response.data.rid,
+                    currentApplication: "P594312B_W594312BA",
+                }
 
-            const stack = {
-                stackId: response.data.stackId,
-                stateId: response.data.stateId,
-                rid: response.data.rid,
-                currentApplication: "P594312B_W594312BA",
-            }
+                this.props.dispatch(actionUpdateStack(stack));
+            } /*else {
+                this.setState({ isLoading: false });
 
-            this.props.dispatch(actionUpdateStack(stack));
+                let mensaje = ''
+                for (let error of errors)
+                    mensaje += mensaje !== '' ? ', ' + error.TITLE : error.TITLE;
+
+                //se usa el siguiente alert, porque algunas veces viene vacío aunque tiene valor
+                const alert = mensaje !== '' ? mensaje : 'La orden tiene errores, no puede ser procesada';
+                Alert.alert('No. de Orden ' + this.state.number,
+                    alert, [
+                    {
+                        text: "Aceptar",
+                        onPress: () => {
+                            this.refreshScreen();
+                        }
+                    }
+                ]);
+            }*/
         });
     }
 
     confirmShipment = () => {
-        Alert.alert('Articles ' , this.props.articles);
+        Alert.alert('Articles ', this.props.articles);
     }
 
     handleSelectRow = () => {
@@ -322,6 +344,7 @@ class ConfirmTransfer extends React.Component {
                             onChangeText={(text) => this.setState({ number: text })}
                             defaultValue={this.state.number}
                             onSubmitEditing={this.handleSearchOrder}
+                            blurOnSubmit={true}
                         />
 
                         {orderView}

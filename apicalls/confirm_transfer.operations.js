@@ -17,6 +17,11 @@ const actionSearchOrder = (number) => {
                 "controlID": "9"
             },
             {
+                command: "SetControlValue",
+                value: "*",
+                "controlID": "37"
+            },
+            {
                 command: "DoAction",
                 controlID: "21",
             }
