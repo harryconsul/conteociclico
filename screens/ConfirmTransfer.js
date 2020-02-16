@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import Field from '../components/Field';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
-import { searchOrder, startConfirmation } from '../apicalls/confirm_transfer.operations';
+import { searchOrder, startConfirmation, transferConfirmation } from '../apicalls/confirm_transfer.operations';
 import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, actionSetArticle } from '../store/actions/actions.creators';
 import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
@@ -21,7 +21,6 @@ const initialState = {
     articles: null,
     number: 0,
     isConfirming: true,
-    lineas: 0,
 };
 
 class ConfirmTransfer extends React.Component {
@@ -203,9 +202,8 @@ class ConfirmTransfer extends React.Component {
         startConfirmation(this.props.token, this.props.stack, (response) => {
             console.warn(response);
             const errors = response.data.fs_P594312B_W594312BA.errors;
-
-            //if (errors.count = 0) {
-            if(true){
+            console.warn('Errores: ', errors);
+            if (errors.length === 0) {
                 const rawRows = response.data.fs_P594312B_W594312BA.data.gridData.rowset;
 
                 const productsToConfirm = new Map();
@@ -228,6 +226,7 @@ class ConfirmTransfer extends React.Component {
                         lote: rawRows[i].sLotSerial_46.value,
                         orderType: rawRows[i].sOrTy_47.value,
                         shortNumber: rawRows[i].mnShortItemNo_104.value,
+                        confirmed: 0,
                     }
 
                     productsToConfirm.set(key, value);
@@ -235,7 +234,7 @@ class ConfirmTransfer extends React.Component {
 
                 this.props.dispatch(actionSetArticlesMap(productsToConfirm));
 
-                this.setState({ isLoading: false, articles: productsToConfirm, lineas: length });
+                this.setState({ isLoading: false, articles: productsToConfirm });
 
                 const stack = {
                     stackId: response.data.stackId,
@@ -245,7 +244,7 @@ class ConfirmTransfer extends React.Component {
                 }
 
                 this.props.dispatch(actionUpdateStack(stack));
-            } /*else {
+            } else {
                 this.setState({ isLoading: false });
 
                 let mensaje = ''
@@ -263,12 +262,42 @@ class ConfirmTransfer extends React.Component {
                         }
                     }
                 ]);
-            }*/
+            }
         });
     }
 
-    confirmShipment = () => {
-        Alert.alert('Articles ', this.props.articles);
+    confirmTransfer = () => {
+        const products = this.props.articles ? this.props.articles.values() : [];
+
+        //Sólo pasarían las lineas que confirmed es > a 0
+        const confirmed = (this.state.articles ?
+            Array.from(products)
+            :
+            []);
+        //.filter((item) => !item.confirmed);
+
+        const list = [];
+        for (let article of confirmed) {
+            list.push({ ...article, set: "0" });
+        }
+
+        if (list.length > 0) {
+            this.setState({ isLoading: true });
+
+            transferConfirmation(this.props.token, this.props.stack, list, (response) => {
+                Alert.alert('Proceso terminado',
+                    alert, [
+                    {
+                        text: "Aceptar",
+                        onPress: () => {
+                            this.refreshScreen();
+                        }
+                    }
+                ]);
+            });
+        } else {
+            Alert.alert("No ha confirmado al menos un artículo.");
+        }
     }
 
     handleSelectRow = () => {
@@ -276,7 +305,7 @@ class ConfirmTransfer extends React.Component {
     }
 
     render() {
-        const { order, isConfirming, articles, lineas } = this.state;
+        const { order, isConfirming, articles } = this.state;
 
         const iniciar = isConfirming ?
             <Button onPress={this.handleConfirmation} title="Iniciar Recepción" />
@@ -354,7 +383,7 @@ class ConfirmTransfer extends React.Component {
                                 //Confirmar recepción
                                 <Button
                                     title="Confirmar Recepción"
-                                    onPress={this.confirmShipment}
+                                    onPress={this.confirmTransfer}
                                 />
                                 : null
                         }
@@ -372,7 +401,7 @@ class ConfirmTransfer extends React.Component {
                                             </View>
                                         </View>
                                         <ItemLabel text={"Producto: " + item.description} />
-                                        <ItemLabel text={"Cantidad: " + item.qty + " " + item.um} />
+                                        <ItemHightLight text={"Confirmado: " + item.confirmed + ' de ' + item.qty + " " + item.um} />
                                         <ItemLabel text={"Ubicación: " + item.location} />
                                         <ItemLabel text={"Lote: " + item.lote} />
 

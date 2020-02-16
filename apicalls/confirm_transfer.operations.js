@@ -53,6 +53,79 @@ export const startConfirmation = (token, stack, callback) => {
     callStackService(action, callback, (reason) => console.warn(reason));
 }
 
+export const transferConfirmation = (token, stack, rows, callback) => {
+    const formAction = actionTransferConfirmation(rows);
+
+    const action = pushStack(token, formAction, stack);
+    callStackService(action, (response) => {
+        if (response.data.fs_P594312B_W594312BA) {
+
+            const stackConfirm = {
+                stackId: response.data.stackId,
+                stateId: response.data.stateId,
+                rid: response.data.rid,
+
+            }
+            const actionConfirm = pushStack(token, actionClickOk(), stackConfirm);
+            callStackService(actionConfirm, callback);
+
+        } else {
+            callback(response)
+        }
+    }, (reason) => console.warn(reason));
+}
+
+const actionTransferConfirmation = (rows) => (
+    {
+        formOID: "W594312BA",
+        formActions: [
+            {
+
+                "gridAction": {
+                    "gridID": "1",
+                    "gridRowUpdateEvents": rows.map(row => (
+                        {
+                            "rowNumber": Number(row.rowId),
+                            "gridColumnEvents": [
+                                {
+                                    "value": "1",
+                                    "command": "SetGridCellValue",
+                                    "columnID": "382"
+                                },
+                                {
+                                    "value": row.confirmed,
+                                    "command": "SetGridCellValue",
+                                    "columnID": "116"
+                                },
+
+                            ]
+                        })
+                    ),
+                }
+
+            },
+            {
+                ".type": "com.oracle.e1.jdemf.FormAction",
+                command: "DoAction",
+                controlID: "12"
+            }
+        ]
+    }
+)
+
+const actionClickOk = () => (
+    {
+        formOID: "W594312BA",
+        formActions: [
+            {
+                ".type": "com.oracle.e1.jdemf.FormAction",
+                command: "DoAction",
+                controlID: "4"
+            }
+        ]
+    }
+)
+
 const createStack = (token,formRequest) => {
     return {
         token,
