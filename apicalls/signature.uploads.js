@@ -65,4 +65,23 @@ export const uploadSignature = (key, path, token, fileName, callback, realm, sig
 
 }
 
+export const uploadComments = (token,key,comment,callback) =>{
+    
+    const data = {
+        "token": token,
+        "deviceName": "RESTclient",       
+        "moStructure": "GT4301",
+        "moKey": [
+            key
+        ],
+        "formName": "P594312B_W594312BA",
+        "version": "DICIPA01",
+        "inputText": comment,
+        "appendText": true,
+    }
+    
+    axios.post("file/updatetext", data)
+    .then(callback)
+    .catch((error) => console.warn("Error en la petición", error));
+}
 

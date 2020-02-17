@@ -98,19 +98,19 @@ class SaleOrder extends React.Component {
         const form = {
             clienteEntrega,
             clienteVenta,
-            contrato,
+            contrato:contrato?contrato:"",
             fechaEntrega: dateHelpers.dateToLatinString(fechaEntrega),
             sucursal:this.props.fromCyclicCount?clienteEntrega:" ",
         };
         this.setState({ isLoading: true });
-
+       
         fillOrderHeader(token, stack, form, (response) => {
             const data = response.data.fs_P574210F_W574210FA.data;
-
+           
             const cabecera = {
                 numeroOrden: data.txtOrderNumber_17.value,
-                sucursal: this.props.fromCyclicCount ? this.props.clienteEntrega : data.txtBusinessUnit_11.value,
-                saldo: data.txtmnSdo_AA_1070.value,
+                sucursal: this.props.fromCyclicCount ? this.props.clienteEntrega : data.txtBusinessUnit_11.value,  
+                saldo : data.txtmnSdo_AA_1070 ? data.txtmnSdo_AA_1070.value : 0,              
                 moneda: data.txtBaseCurrencyCode_516.value,
             };
             this.setState({ cabecera, isOnDetail: true });
@@ -180,6 +180,8 @@ class SaleOrder extends React.Component {
             } else {
                 this.setState({ isLoading: false });
             }
+        },()=>{
+            this.setState({ isLoading: false });
         })
 
     }
@@ -277,7 +279,7 @@ class SaleOrder extends React.Component {
 
 
             }
-        })
+        });
 
     }
     handleSelectRow = (key) => {

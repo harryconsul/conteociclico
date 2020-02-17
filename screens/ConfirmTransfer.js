@@ -53,6 +53,7 @@ class ConfirmTransfer extends React.Component {
     refreshScreen = () => {
         this.setState({ ...initialState });
         this.props.dispatch(actionSetArticlesMap(new Map()));
+        this.moKey="";
         this.setState({ isLoading: false });
     }
 
@@ -127,11 +128,44 @@ class ConfirmTransfer extends React.Component {
         });
     }
 
+    showPlaceAgreement = () =>{
+        
+
+        Navigation.showModal({
+            stack: {
+                children: [
+                    {
+                        component: {
+                            name: "PlaceAgreement",
+                            passProps: {
+                                itemKey: this.moKey ,
+                            }
+                        },
+                        options: {
+                            topBar: {
+                                title: {
+                                    text: 'Comentarios y Firma de Recepción'
+                                },
+                                drawBehind: true,
+                                background: {
+                                    color: '#8c30f1c7',
+                                    translucent: true,
+                                    blur: false
+                                },
+
+                            }
+                        }
+                    }
+                ]
+            }
+        });
+    }
+
     handleSearchOrder = () => {
         if (parseInt(this.state.number) > 0) {
             this.setState({ isLoading: true });
             searchOrder(this.state.number, this.props.token, (response) => {
-                console.warn(response);
+                
                 const rawRows = response.data.fs_P594312B_W594312BD.data.gridData.rowset;
 
                 const rows = rawRows.map((item) => ({
@@ -200,7 +234,7 @@ class ConfirmTransfer extends React.Component {
         this.setState({ isConfirming: false, isLoading: true });
 
         startConfirmation(this.props.token, this.props.stack, (response) => {
-            console.warn(response);
+            
             const errors = response.data.fs_P594312B_W594312BA.errors;
             console.warn('Errores: ', errors);
             if (errors.length === 0) {
@@ -211,7 +245,7 @@ class ConfirmTransfer extends React.Component {
 
                 for (let i = 0; i < length; i++) {
                     const key = rawRows[i].rowIndex;
-
+                    
                     const value = {
                         key,
                         rowId: rawRows[i].rowIndex,
@@ -228,13 +262,17 @@ class ConfirmTransfer extends React.Component {
                         shortNumber: rawRows[i].mnShortItemNo_104.value,
                         confirmed: 0,
                     }
-
                     productsToConfirm.set(key, value);
+                    if(i===0){ // 0 for the first row
+                        //This moKey is for upload comments and signature
+                        this.moKey = this.state.number +'|' + value.orderType 
+                         + '|'+ rawRows[i].sOrdCo_43.value + '|' + rawRows[i].sOrdSuf_411.value;
+                    }
                 }
 
                 this.props.dispatch(actionSetArticlesMap(productsToConfirm));
 
-                this.setState({ isLoading: false, articles: productsToConfirm });
+                this.setState({ isLoading: false, articles: productsToConfirm  });
 
                 const stack = {
                     stackId: response.data.stackId,
@@ -290,6 +328,7 @@ class ConfirmTransfer extends React.Component {
                     {
                         text: "Aceptar",
                         onPress: () => {
+                            this.showPlaceAgreement();
                             this.refreshScreen();
                         }
                     }

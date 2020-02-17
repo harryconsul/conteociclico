@@ -146,7 +146,7 @@ export const startSaleOrder = (token,fromCyclicCount=false,callback) => {
 
 }
 
-export const fillOrderHeader = (token, stack, form, callback) => {
+export const fillOrderHeader = (token, stack, form, callback,errorHandler=null) => {
 
     const action = pushStack(token, actionFillForm(form), stack);
     callStackService(action, (response) => {
@@ -159,17 +159,28 @@ export const fillOrderHeader = (token, stack, form, callback) => {
     
             }
             const actionConfirm = pushStack(token, actionConfirmHeader(), stackConfirm);
-            callStackService(actionConfirm, callback);
+            callStackService(actionConfirm, callback,errorHandler);
             
+        }else{
+           
+            if(errorHandler){
+                const stackError = {
+                    stackId: response.data.stackId,
+                    stateId: response.data.stateId,
+                    rid: response.data.rid,
+        
+                }
+                errorHandler(stackError);
+            }
         }
         
 
-    });
+    },errorHandler);
 
 
 }
 
-export const fillOrderDetail = (token, stack, rows,businessUnit,fromCyclicCount, callback) => {
+export const fillOrderDetail = (token, stack, rows,businessUnit,fromCyclicCount, callback,errorHandler=null) => {
 
     const action = pushStack(token, actionSetSaleDetail(rows,businessUnit,fromCyclicCount), stack);
     callStackService(action, (response) => {
@@ -185,10 +196,22 @@ export const fillOrderDetail = (token, stack, rows,businessUnit,fromCyclicCount,
             const actionConfirm = pushStack(token, actionConfirmDetail(), stackConfirm);
             callStackService(actionConfirm, callback);
         }else{
-            callback(null)
+            if(errorHandler){
+                const stackError = {
+                    stackId: response.data.stackId,
+                    stateId: response.data.stateId,
+                    rid: response.data.rid,
+    
+                }
+                errorHandler(stackError);    
+            
+            }else{
+                callback(null);
+            }
+           
         }
 
-    });
+    },callback);
 
 
 }
@@ -210,9 +233,14 @@ const pushStack = (token, actionRequest, stack) => {
         deviceName: "RESTclient",
     }
 }
-const callStackService = (action, callback) => {
+const callStackService = (action, callback,errorHandler=null) => {
 
     axios.post("appstack", action)
         .then(callback)
-        .catch((error) => console.warn("Error en la petición", error));
+        .catch((error) =>{
+            console.warn("Error en la petición", error);
+            if(errorHandler){
+                errorHandler(null);
+            }
+        } );
 }

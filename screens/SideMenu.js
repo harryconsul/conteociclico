@@ -88,9 +88,13 @@ class SideMenu extends React.Component {
                         optionClickHandle={() =>
                             this.optionClickHandle("ConfirmTransfer", "Confirmar Recepción", true)}
                     />
-                    <SideMenuItem optionName="Orden de Venta"
+                    <SideMenuItem optionName="Orden de Venta*"
                         optionClickHandle={() =>
                             this.optionClickHandle("SaleOrder", "Orden de Venta", false)}
+                    />
+                     <SideMenuItem optionName="Orden de Transferencia**"
+                        optionClickHandle={() =>
+                            this.optionClickHandle("TransferOrder", "Orden de Transferencia", false)}
                     />
                 </View>
                 <View style={{ height: '20%' }}>

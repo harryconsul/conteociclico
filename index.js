@@ -23,6 +23,7 @@ import QueryArticles from './screens/QueryArticles';
 import QueryAvailableArticles from './screens/QueryAvailableArticles';
 import ProductsPickup from './screens/ProductsPickup';
 import PlaceSign from './screens/PlaceSign';
+import PlaceAgreement from './screens/PlaceAgreement';
 import ArticleSetup from './screens/ArticleSetup';
 import TransferOrder from './screens/TransferOrder';
 import ConfirmTransfer from './screens/ConfirmTransfer';
@@ -99,6 +100,12 @@ Navigation.registerComponent("ArticleSetup", () => (props) => (
 Navigation.registerComponent("PlaceSign", () => (props) => (
   <Provider store={store}>
     <PlaceSign  {...props} />
+  </Provider>
+));
+
+Navigation.registerComponent("PlaceAgreement", () => (props) => (
+  <Provider store={store}>
+    <PlaceAgreement  {...props} />
   </Provider>
 ));
 
