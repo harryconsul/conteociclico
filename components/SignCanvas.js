@@ -17,7 +17,13 @@ class SignCanvas extends React.Component {
                     permissionDialogMessage="Permiso para guardar firmas en tu telefono"
                     onSketchSaved={(success, path) => {
                         if(success){
-                            uploadSignature(this.props.itemKey,path,this.props.token,this.props.fileName,this.props.close,this.props.realm,this.props.signatureType);
+                            if(this.props.onSave){
+                                this.props.onSave(path);
+
+                            }else{
+                                uploadSignature(this.props.itemKey,path,this.props.token,this.props.fileName,this.props.close,this.props.realm,this.props.signatureType);
+                            }
+                            
                         }else{
                             Alert.alert("Error al guardar la firma");
                         }

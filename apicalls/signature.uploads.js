@@ -85,3 +85,63 @@ export const uploadComments = (token,key,comment,callback) =>{
     .catch((error) => console.warn("Error en la petición", error));
 }
 
+export const uploadAgreementSignature = (key, path, token, fileName, callback ) => {
+
+    const pathJson = RNFS.DocumentDirectoryPath + '/' + fileName + '.txt';
+
+    const finalPath = 'file://' + path;
+   
+    const data = {
+        "token": token,
+        "deviceName": "RESTclient",
+        "ssoEnabled": false,
+        "moStructure": "GT4301",
+        "moKey": [
+            key
+        ],
+        "formName": "P594312B_W594312BA",
+        "version": "DICIPA01",
+        "file": {
+            "fileLocation": finalPath,
+            "fileName": fileName + ".png",
+            "itemName": fileName,
+            "sequence": 0
+        }
+    }
+
+    const json = JSON.stringify(data);
+
+    if (token) {       
+
+        RNFS.writeFile(pathJson, json, 'utf8').then(() => {
+
+            const formData = new FormData();
+            formData.append('file', {
+                uri: finalPath,
+                type: 'image/png',
+                name: fileName + ".png",
+            }, fileName + ".png");
+
+
+            formData.append("moAdd", {
+                uri: 'file://' + pathJson,
+                type: 'application/json',
+                name: fileName + ".txt",
+            });
+
+            const config = {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
+
+            axios.post("file/upload", formData, config).then((response) => callback(response))
+                .catch(error => console.warn("Error en la peticion",error));
+
+        });
+    } 
+
+
+
+
+}

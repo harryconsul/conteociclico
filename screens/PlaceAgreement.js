@@ -1,6 +1,6 @@
 import React from 'react';
 import SignCanvas from '../components/SignCanvas';
-import {uploadComments} from '../apicalls/signature.uploads'
+import {uploadComments,uploadAgreementSignature} from '../apicalls/signature.uploads'
 import {Navigation} from 'react-native-navigation'
 import {View,TextInput, Text,Button} from 'react-native';
 import {connect} from 'react-redux';
@@ -11,16 +11,21 @@ class PlaceAgreement extends React.Component{
         comments:"",
     }
     close=(response)=>{
-        
-        if(this.props.closeOnSave){
+              
             Navigation.dismissModal(this.props.componentId);
-        }
+    
     }
     saveComments=()=>{
         uploadComments(this.props.user.token,this.props.itemKey,this.state.comments,(response)=>{
             console.warn(response);
             this.setState({savingComments:false});
         });
+    }
+    onSaveSignature = (filepath)=>{
+        uploadAgreementSignature(this.props.itemKey,filepath, this.props.user.token,"rececibido",
+        (response)=>{
+            this.close();
+        })
     }
     componentDidMount(){
         Navigation.mergeOptions(this.props.componentId, {
@@ -50,13 +55,16 @@ class PlaceAgreement extends React.Component{
                         this.state.savingComments
                             ? 
                             <View>
-                                <TextInput value={this.state.comments} 
+                                <TextInput style={{borderColor:"#000",borderStyle:"solid",borderWidth:1}} value={this.state.comments} 
+                                multiline={true}
+                                numberOfLines={4}
                                 onChangeText={(comments)=>this.setState({comments})}/>
                                 <Button title="Guardar Comentarios" onPress={this.saveComments} />
                             </View>
                             :<SignCanvas itemKey={this.props.itemKey}
                             fileName={this.props.fileName}
-                            close={this.close}                    
+                            close={this.close} 
+                            onSave={this.onSaveSignature}                   
                             token={this.props.user.token}
                             signatureType={this.props.signatureType}
                             realm={this.props.realm}
