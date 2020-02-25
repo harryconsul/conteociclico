@@ -13,7 +13,7 @@ import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, acti
 import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
 import backgroundImage from '../assets/labmicroBg.jpg';
-import { businessUnit } from '../apicalls/business_unit.operations';
+import { businessUnit ,unidadMedida} from '../apicalls/business_unit.operations';
 
 const initialState = {
     isLoading: false,
@@ -46,7 +46,7 @@ class ConfirmTransfer extends React.Component {
                 this.refreshScreen();
                 break;
             default:
-                this.openBarcode('BarcodeInput');
+                this.openBarcode('PickupBarcodeInput');
         }
     }
 
@@ -80,7 +80,7 @@ class ConfirmTransfer extends React.Component {
                         component: {
                             name: screen,
                             passProps: {
-                                qtyLabel: "Cantidad Pendiente por Recibir",
+                                qtyLabel: "Recibir",
                             }
                         },
                         options: {
@@ -123,6 +123,31 @@ class ConfirmTransfer extends React.Component {
             businessUnit(sucursal, this.props.token, (data) => {
                 const rawRows = data.fs_P0006S_W0006SA.data.gridData.rowset;
                 resolve(rawRows[0].sDescription_41.value);
+
+            }, (reason) => reject(reason));
+        });
+    }
+
+    unidadMedida = (itemNumber) => {
+        return new Promise((resolve, reject) => {
+            unidadMedida(itemNumber, this.props.token, (data) => {
+                const rawRows = data.fs_P41002_W41002A.data.gridData.rowset;
+
+                const conversiones = new Map();
+                for (let i = 0; i < rawRows.length; i++) {
+                    const keyConversion = rawRows[i].rowIndex;
+
+                    const umConversion = {
+                        valor: rawRows[i].chVC_38.value,
+                        unidad: rawRows[i].sFromUOM_6.value,
+                        valorConversion: rawRows[i].mnConversionFactor_7.value,
+                        valorUnidad: rawRows[i].sToUOM_8.value,
+                    }
+
+                    conversiones.set(keyConversion, umConversion);
+                }
+
+                resolve(conversiones);
 
             }, (reason) => reject(reason));
         });
@@ -236,21 +261,25 @@ class ConfirmTransfer extends React.Component {
         startConfirmation(this.props.token, this.props.stack, (response) => {
             
             const errors = response.data.fs_P594312B_W594312BA.errors;
-            console.warn('Errores: ', errors);
+            
             if (errors.length === 0) {
                 const rawRows = response.data.fs_P594312B_W594312BA.data.gridData.rowset;
-
+                console.warn('Confirm',rawRows);
                 const productsToConfirm = new Map();
                 const length = rawRows.length;
 
                 for (let i = 0; i < length; i++) {
                     const key = rawRows[i].rowIndex;
                     
+                    const etiqueta = rawRows[i].mnNmeronico_598.value;
+                    const itemNumber = rawRows[i].s2ndItemNumber_103.value;
                     const value = {
                         key,
                         rowId: rawRows[i].rowIndex,
-                        auxNumber: rawRows[i].s2ndItemNumber_103.value,
+                        etiqueta: etiqueta !=="0"? etiqueta: 'FALTA',
+                        itemNumber: rawRows[i].s2ndItemNumber_103.value,
                         qty: rawRows[i].mnQuantity_116.value,
+                        qtyToPickUp: rawRows[i].mnQuantity_116.value,
                         um: rawRows[i].sTransUOM_54.value,
                         unitCost: rawRows[i].mnUnitCost_119.value,
                         amount: rawRows[i].mnAmount_117.value,
@@ -260,8 +289,12 @@ class ConfirmTransfer extends React.Component {
                         lote: rawRows[i].sLotSerial_46.value,
                         orderType: rawRows[i].sOrTy_47.value,
                         shortNumber: rawRows[i].mnShortItemNo_104.value,
-                        confirmed: 0,
                     }
+
+                    this.unidadMedida(itemNumber).then((conversiones) => {
+                        value.conversiones = conversiones;
+                    });
+
                     productsToConfirm.set(key, value);
                     if(i===0){ // 0 for the first row
                         //This moKey is for upload comments and signature
@@ -432,15 +465,22 @@ class ConfirmTransfer extends React.Component {
                                 <TouchableOpacity key={item.key} index={index} >
                                     <ItemView index={index} >
                                         <View style={styles.linea}>
-                                            <View style={{ width: "33%" }}>
-                                                <ItemLabel text={"No. " + item.auxNumber} />
+                                            <View style={{ width: "50%" }}>
+                                                <ItemHightLight text={"Etiqueta: " + item.etiqueta} />
                                             </View>
-                                            <View style={{ width: "67%" }}>
+                                            <View style={{ width: "50%" }}>
                                                 <ItemLabel text={"Catálogo: " + item.shortNumber} />
                                             </View>
                                         </View>
                                         <ItemLabel text={"Producto: " + item.description} />
-                                        <ItemHightLight text={"Confirmado: " + item.confirmed + ' de ' + item.qty + " " + item.um} />
+                                        <View style={styles.linea}>
+                                            <View style={{ width: "45%" }}>
+                                                <ItemHightLight text={"Pendiente: " + item.qty + " " + item.um} />
+                                            </View>
+                                            <View style={{ width: "55%" }}>
+                                                <ItemHightLight text={"Confirmado: " + (item.qtyToPickUp - item.qty + " " + item.um)} />
+                                            </View>
+                                        </View>
                                         <ItemLabel text={"Ubicación: " + item.location} />
                                         <ItemLabel text={"Lote: " + item.lote} />
 

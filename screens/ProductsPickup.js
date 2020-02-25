@@ -253,7 +253,6 @@ class ProductsPickup extends React.Component {
 
         startConfirmation(this.props.token, this.props.stack, (response) => {
             const rawRows = response.data.fs_P554205A_W554205AE.data.gridData.rowset;
-            console.warn('Iniciar recolección: ', rawRows);
 
             const toPickup = new Map();
             const allProducts = new Map();
@@ -266,11 +265,12 @@ class ProductsPickup extends React.Component {
                 const lote = rawRows[i].sLotSerial_50.value;
                 const itemNumber = rawRows[i].sItemNumber_35.value;
                 const um = rawRows[i].sUnitofMeasure_178.value;
+                const etiqueta = rawRows[i].mnNmeronico_253.value;
 
                 const value = {
                     key,
                     rowId: rawRows[i].rowIndex,
-                    etiqueta: rawRows[i].mnNmeronico_253.value,
+                    etiqueta: etiqueta !=="0"? etiqueta: 'FALTA',
                     itemNumber: rawRows[i].sItemNumber_35.value,
                     lote: rawRows[i].sLotSerial_50.value,
                     um: rawRows[i].sUnitofMeasure_178.value,
@@ -470,7 +470,7 @@ class ProductsPickup extends React.Component {
                                         <ItemHightLight text={"Producto: " + item.producto} />
                                         <View style={styles.linea}>
                                             <View style={{ width: "45%" }}>
-                                                <ItemHightLight text={"Pediente: " + item.qty + " " + item.um} />
+                                                <ItemHightLight text={"Pendiente: " + item.qty + " " + item.um} />
                                             </View>
                                             <View style={{ width: "55%" }}>
                                                 <ItemHightLight text={"Recolectado: " + (item.qtyToPickUp - item.qty + " " + item.um)} />
