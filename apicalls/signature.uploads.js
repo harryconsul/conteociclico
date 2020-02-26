@@ -19,7 +19,7 @@ export const uploadSignature = (key, path, token, fileName, callback, realm, sig
         "version": "",
         "file": {
             "fileLocation": finalPath,
-            "fileName": fileName + ".png",
+            "fileName": fileName + ".jpg",
             "itemName": fileName,
             "sequence": 0
         }
@@ -34,9 +34,9 @@ export const uploadSignature = (key, path, token, fileName, callback, realm, sig
             const formData = new FormData();
             formData.append('file', {
                 uri: finalPath,
-                type: 'image/png',
-                name: fileName + ".png",
-            }, fileName + ".png");
+                type: 'image/jpg',
+                name: fileName + ".jpg",
+            }, fileName + ".jpg");
 
 
             formData.append("moAdd", {
@@ -103,7 +103,7 @@ export const uploadAgreementSignature = (key, path, token, fileName, callback ) 
         "version": "DICIPA01",
         "file": {
             "fileLocation": finalPath,
-            "fileName": fileName + ".png",
+            "fileName": fileName + ".jpg",
             "itemName": fileName,
             "sequence": 0
         }
@@ -118,9 +118,9 @@ export const uploadAgreementSignature = (key, path, token, fileName, callback ) 
             const formData = new FormData();
             formData.append('file', {
                 uri: finalPath,
-                type: 'image/png',
-                name: fileName + ".png",
-            }, fileName + ".png");
+                type: 'image/jpg',
+                name: fileName + ".jpg",
+            }, fileName + ".jpg");
 
 
             formData.append("moAdd", {

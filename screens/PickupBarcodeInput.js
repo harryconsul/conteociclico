@@ -53,7 +53,7 @@ class PickupBarcodInput extends React.Component {
 
             },
         });
-
+       
         
     }
     handleAccept = () => {
@@ -129,17 +129,31 @@ class PickupBarcodInput extends React.Component {
 
         } else {
             //Buscar el producto en JD
+            
             this.producto().then((producto) => {
                 const products = this.props.list ? this.props.list.values() : [];
+                
+                let filtrados=[];
+                if(this.props.hasSerial){
+                    
+                    filtrados = (this.props.list ?
+                        Array.from(products)
+                        :
+                        [])
+                        .filter((item) => item.itemNumber === producto.itemNumber && item.serial === producto.lote);
+    
 
-                const filtrados = (this.props.list ?
-                    Array.from(products)
-                    :
-                    [])
-                    .filter((item) => item.itemNumber === producto.itemNumber && item.lote === producto.lote);
-
+                }else{
+                    filtrados = (this.props.list ?
+                        Array.from(products)
+                        :
+                        [])
+                        .filter((item) => item.itemNumber === producto.itemNumber && item.lote === producto.lote);
+    
+                }
+                
                 //lote,um,itemNumber
-                console.warn('filtrados', filtrados);
+                
                 let encontrado = false;
                 for (let i = 0; i < filtrados.length; i++) {
                     const linea = filtrados[i];
@@ -159,6 +173,8 @@ class PickupBarcodInput extends React.Component {
                             }
                             if (this.props.transactionMode === transactionModes.READ_ADD) {
                                 editingItem.qty++;
+                                producto = [];
+                                encontrado = true;
                             } else {
                                 if (editingItem.qty > 0) {
                                     editingItem.qty--;
@@ -199,16 +215,25 @@ class PickupBarcodInput extends React.Component {
                     } else {
                         //2do paso el producto NO coincide con los filtrados, usar las conversiones.
                         const conversiones = linea.conversiones ? linea.conversiones.values() : [];
-                        console.warn(conversiones);
-
-                        const umFiltradas = (linea.conversiones ?
-                            Array.from(conversiones)
-                            :
-                            [])
-                            .filter((item) => item.unidad === producto.um);
+                        //console.warn(conversiones);
+                        let umFiltradas=[];
+                        if(this.props.hasSerial){
+                            umFiltradas = (linea.conversiones ?
+                                Array.from(conversiones)
+                                :
+                                [])
+                                .filter((item) => item.um === producto.um);
+                        }else{
+                            umFiltradas = (linea.conversiones ?
+                                Array.from(conversiones)
+                                :
+                                [])
+                                .filter((item) => item.unidad === producto.um);
+                        }
+                        
 
                         
-                        console.warn(umFiltradas);
+                        //console.warn(umFiltradas);
                         if (umFiltradas.length != 0) {
                             const conversion = parseInt(umFiltradas[0].valorConversion);
 
@@ -223,7 +248,9 @@ class PickupBarcodInput extends React.Component {
                                     editingItem.qty = 0;
                                 }
                                 if (this.props.transactionMode === transactionModes.READ_ADD) {
-                                    editingItem.qty++;
+                                    editingItem.qty += conversion;
+                                    producto = [];
+                                    encontrado = true;
                                 } else {
                                     if (editingItem.qty >= conversion) {
                                         editingItem.qty -= conversion;

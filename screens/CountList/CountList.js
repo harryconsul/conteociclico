@@ -214,7 +214,7 @@ class CountList extends React.Component {
 
                     return previous;
                 }, new Map());
-               
+                
                 this.startCount(articlesMap,row.number);
 
             }
@@ -262,6 +262,7 @@ class CountList extends React.Component {
                 passProps: {
                     cycleCountNumber,
                     businessUnit:this.state.businessUnit,
+                    conteoSucursal:this.props.conteoSucursal,
                 },
                 options: {
                     topBar: {

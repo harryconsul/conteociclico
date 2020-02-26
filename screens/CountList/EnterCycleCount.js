@@ -6,7 +6,7 @@ import { Navigation } from 'react-native-navigation'
 import { enterCyclicCount, processReview } from '../../apicalls/count.operations'
 import { componentstyles } from '../../styles';
 import backgroundImage from '../../assets/labmicroBg.jpg';
-import { actionSetTransactionMode, actionUpdateStack, actionSetArticlesMap, actionSetCountRealm } from '../../store/actions/actions.creators';
+import { actionSetTransactionMode, actionUpdateStack, actionSetArticlesMap, actionSetSucursal } from '../../store/actions/actions.creators';
 import { transactionModes, topBarButtons } from '../../constants/';
 import { mapHelpers,offlineCount } from '../../helpers';
 
@@ -24,6 +24,10 @@ class EnterCycleCount extends React.Component {
 
         }
     }
+    componentDidMount(){
+        this.props.dispatch(actionSetSucursal(this.props.businessUnit));
+        
+    }
 
     navigationButtonPressed = ({ buttonId }) => {
         switch (buttonId) {
@@ -34,7 +38,7 @@ class EnterCycleCount extends React.Component {
                 this.openBarcode('BarcodeReader');
                 break;
             default:
-                this.openBarcode('BarcodeInput');
+                this.openBarcode(this.props.conteoSucursal?'PickupBarcodeInput':'BarcodeInput');
         }
     }
     openSideBar = () => {
@@ -56,7 +60,11 @@ class EnterCycleCount extends React.Component {
                 children: [
                     {
                         component: {
-                            name: screen,
+                            name: screen,  
+                            passProps:{
+                                hasSerial:this.props.conteoSucursal,
+                            },
+                                                   
                         },
                         options: {
                             topBar: {
@@ -191,11 +199,13 @@ class EnterCycleCount extends React.Component {
     registerAutorization = () => {
         if(this.props.user.token){
         Alert.alert("Aviso", "Conteo Ciclico Autorizado", [
-            {
-                text: "Crear Orden de Venta",
-                onPress: this.createSaleOrder
+            this.props.conteoSucursal
+                ?null
+                :{
+                    text: "Crear Orden de Venta",
+                    onPress: this.createSaleOrder
 
-            },
+                },
             {
                 text: "Cerrar",
                 onPress: () => Navigation.pop(this.props.componentId)

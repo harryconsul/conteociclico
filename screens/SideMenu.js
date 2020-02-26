@@ -14,7 +14,7 @@ class SideMenu extends React.Component {
     state = {
         isLoading: false,
     }
-    optionClickHandle = (option, title, showBarcodeButtons) => {
+    optionClickHandle = (option, title, showBarcodeButtons,optionProps) => {
         let rightButtons = null;
         if (showBarcodeButtons) {
             rightButtons = { ...topBarButtons.rightButtons }
@@ -23,6 +23,7 @@ class SideMenu extends React.Component {
             component: {
                 id: option,
                 name: option,
+                passProps:optionProps?{...optionProps}:null,
                 options: {
                     topBar: {
                         title: {
@@ -65,7 +66,10 @@ class SideMenu extends React.Component {
                 <View style={{ height: '80%' }}>
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false)}
                         optionName="Conteo Ciclico" />
-                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false)}
+                    <SideMenuItem 
+                        optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false,{
+                                conteoSucursal:true
+                         })}
                         optionName="Conteo Ciclico - Sucursal" />
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("QueryArticles", "Consulta de Existensias", true)}
                         optionName="Consulta de Existensias" />

@@ -7,7 +7,7 @@ import {uploadSignature} from '../apicalls/signature.uploads';
 
 class SignCanvas extends React.Component {
     handleSave = () => {
-        this.canvas.save("png",false,"firmas",this.props.fileName,false,false,false);
+        this.canvas.save("jpg",false,"firmas",this.props.fileName,false,false,false);
     }
     render() {
         return (
