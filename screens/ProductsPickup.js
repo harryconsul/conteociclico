@@ -457,11 +457,11 @@ class ProductsPickup extends React.Component {
 
                         <FlatList data={productsArray}
                             renderItem={({ item, index }) =>
-                                <TouchableOpacity key={item.key} index={index}>
+                                <TouchableOpacity key={item.key} index={index.toString()}>
                                     <ItemView index={index} >
                                         <View style={styles.linea}>
                                             <View style={{ width: "45%" }}>
-                                                <ItemHightLight text={"Etiqueta: " + item.etiqueta} />
+                                                <ItemHightLight text={"No.: " + item.etiqueta} />
                                             </View>
                                             <View style={{ width: "55%" }}>
                                                 <ItemLabel text={"Catálogo: " + item.itemNumber} />

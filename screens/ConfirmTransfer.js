@@ -13,13 +13,13 @@ import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, acti
 import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
 import backgroundImage from '../assets/labmicroBg.jpg';
-import { businessUnit ,unidadMedida} from '../apicalls/business_unit.operations';
+import { businessUnit, unidadMedida } from '../apicalls/business_unit.operations';
 
 const initialState = {
     isLoading: false,
     order: null,
     articles: null,
-    number: 0,
+    number: '',
     isConfirming: true,
 };
 
@@ -53,7 +53,7 @@ class ConfirmTransfer extends React.Component {
     refreshScreen = () => {
         this.setState({ ...initialState });
         this.props.dispatch(actionSetArticlesMap(new Map()));
-        this.moKey="";
+        this.moKey = "";
         this.setState({ isLoading: false });
     }
 
@@ -153,8 +153,8 @@ class ConfirmTransfer extends React.Component {
         });
     }
 
-    showPlaceAgreement = () =>{
-        
+    showPlaceAgreement = () => {
+
 
         Navigation.showModal({
             stack: {
@@ -163,7 +163,7 @@ class ConfirmTransfer extends React.Component {
                         component: {
                             name: "PlaceAgreement",
                             passProps: {
-                                itemKey: this.moKey ,
+                                itemKey: this.moKey,
                             }
                         },
                         options: {
@@ -190,7 +190,7 @@ class ConfirmTransfer extends React.Component {
         if (parseInt(this.state.number) > 0) {
             this.setState({ isLoading: true });
             searchOrder(this.state.number, this.props.token, (response) => {
-                
+
                 const rawRows = response.data.fs_P594312B_W594312BD.data.gridData.rowset;
 
                 const rows = rawRows.map((item) => ({
@@ -259,24 +259,24 @@ class ConfirmTransfer extends React.Component {
         this.setState({ isConfirming: false, isLoading: true });
 
         startConfirmation(this.props.token, this.props.stack, (response) => {
-            
+
             const errors = response.data.fs_P594312B_W594312BA.errors;
-            
+
             if (errors.length === 0) {
                 const rawRows = response.data.fs_P594312B_W594312BA.data.gridData.rowset;
-                console.warn('Confirm',rawRows);
+                
                 const productsToConfirm = new Map();
                 const length = rawRows.length;
 
                 for (let i = 0; i < length; i++) {
                     const key = rawRows[i].rowIndex;
-                    
+
                     const etiqueta = rawRows[i].mnNmeronico_598.value;
                     const itemNumber = rawRows[i].s2ndItemNumber_103.value;
                     const value = {
                         key,
                         rowId: rawRows[i].rowIndex,
-                        etiqueta: etiqueta !=="0"? etiqueta: 'FALTA',
+                        etiqueta: etiqueta !== "0" ? etiqueta : 'FALTA',
                         itemNumber: rawRows[i].s2ndItemNumber_103.value,
                         qty: rawRows[i].mnQuantity_116.value,
                         qtyToPickUp: rawRows[i].mnQuantity_116.value,
@@ -296,16 +296,16 @@ class ConfirmTransfer extends React.Component {
                     });
 
                     productsToConfirm.set(key, value);
-                    if(i===0){ // 0 for the first row
+                    if (i === 0) { // 0 for the first row
                         //This moKey is for upload comments and signature
-                        this.moKey = this.state.number +'|' + value.orderType 
-                         + '|'+ rawRows[i].sOrdCo_43.value + '|' + rawRows[i].sOrdSuf_411.value;
+                        this.moKey = this.state.number + '|' + value.orderType
+                            + '|' + rawRows[i].sOrdCo_43.value + '|' + rawRows[i].sOrdSuf_411.value;
                     }
                 }
 
                 this.props.dispatch(actionSetArticlesMap(productsToConfirm));
 
-                this.setState({ isLoading: false, articles: productsToConfirm  });
+                this.setState({ isLoading: false, articles: productsToConfirm });
 
                 const stack = {
                     stackId: response.data.stackId,
@@ -344,14 +344,15 @@ class ConfirmTransfer extends React.Component {
         const confirmed = (this.state.articles ?
             Array.from(products)
             :
-            []);
-        //.filter((item) => !item.confirmed);
+            [])
+        .filter((item) => parseInt(item.qty) !== parseInt(item.qtyToPickUp));
 
+        
         const list = [];
         for (let article of confirmed) {
-            list.push({ ...article, set: "0" });
+            list.push({ ...article,confirmed:parseInt(article.qtyToPickUp) -  parseInt(article.qty), set: "0" });
         }
-
+        
         if (list.length > 0) {
             this.setState({ isLoading: true });
 
@@ -389,7 +390,7 @@ class ConfirmTransfer extends React.Component {
             Array.from(products)
             :
             [])
-            .filter((item) => item.qty);
+            .filter((item) => item.qty !== '0' && item.qty !== 0);
 
 
         const orderView = order ?
@@ -466,7 +467,7 @@ class ConfirmTransfer extends React.Component {
                                     <ItemView index={index} >
                                         <View style={styles.linea}>
                                             <View style={{ width: "50%" }}>
-                                                <ItemHightLight text={"Etiqueta: " + item.etiqueta} />
+                                                <ItemHightLight text={"No.: " + item.etiqueta } />
                                             </View>
                                             <View style={{ width: "50%" }}>
                                                 <ItemLabel text={"Catálogo: " + item.shortNumber} />
