@@ -13,7 +13,7 @@ import backgroundImage from '../assets/labmicroBg.jpg';
 import closeIcon from '../assets/iconclose.png';
 import { componentstyles } from '../styles';
 import { queryArticle } from '../apicalls/query.operation';
-
+import {buscarConversiones} from '../apicalls/business_unit.operations';
 class PickupBarcodInput extends React.Component {
     constructor(props) {
         super(props);
@@ -117,7 +117,7 @@ class PickupBarcodInput extends React.Component {
         }, (reason) => reject(reason));
     }
 
-    barCodeHandler = () => {
+    barCodeHandler =  () => {
         //Get the item
         if (this.props.transactionMode === transactionModes.READ_RETURN) {
             const item = {
@@ -130,7 +130,7 @@ class PickupBarcodInput extends React.Component {
         } else {
             //Buscar el producto en JD
             
-            this.producto().then((producto) => {
+            this.producto().then(async (producto) => {
                 const products = this.props.list ? this.props.list.values() : [];
                 
                 let filtrados=[];
@@ -214,16 +214,19 @@ class PickupBarcodInput extends React.Component {
                         }
                     } else {
                         //2do paso el producto NO coincide con los filtrados, usar las conversiones.
-                        const conversiones = linea.conversiones ? linea.conversiones.values() : [];
+                        let conversiones = [];
                         //console.warn(conversiones);
                         let umFiltradas=[];
                         if(this.props.hasSerial){
-                            umFiltradas = (linea.conversiones ?
-                                Array.from(conversiones)
+                            conversiones = await buscarConversiones(producto.itemNumber,this.props.token);
+                            
+                            umFiltradas = (conversiones ?
+                                conversiones
                                 :
                                 [])
-                                .filter((item) => item.um === producto.um);
+                                .filter((item) => item.unidad === producto.um);
                         }else{
+                            conversiones = linea.conversiones ? linea.conversiones.values() : [];
                             umFiltradas = (linea.conversiones ?
                                 Array.from(conversiones)
                                 :

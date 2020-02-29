@@ -63,3 +63,24 @@ const formActionUM = (token, producto) => (
         "formName": "P41002_W41002A"
     }
 )
+
+
+export const buscarConversiones = (itemNumber,token) => {
+    const _itemNumber = itemNumber;
+    const _token = token
+    return new Promise((resolve, reject) => {
+        unidadMedida(_itemNumber, _token, (data) => {
+            const rawRows = data.fs_P41002_W41002A.data.gridData.rowset;
+            
+            const conversiones =rawRows.map((row)=>({
+                valor: row.chVC_38.value,
+                unidad: row.sFromUOM_6.value,
+                valorConversion: row.mnConversionFactor_7.value,
+                valorUnidad: row.sToUOM_8.value,
+            }));
+            
+            resolve(conversiones);
+
+        }, (reason) => reject(reason));
+    });
+}
