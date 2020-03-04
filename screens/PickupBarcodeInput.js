@@ -1,10 +1,10 @@
 import React from 'react';
 import {
     View, StyleSheet, Alert, KeyboardAvoidingView
-    , ImageBackground
+    , ImageBackground,ActivityIndicator
 } from 'react-native';
 import Field from '../components/Field';
-import { ArticleCard,ArticleScanMode } from '../components'
+import { ArticleCard, ArticleScanMode } from '../components'
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import { actionSetArticle } from '../store/actions/actions.creators';
@@ -13,7 +13,7 @@ import backgroundImage from '../assets/labmicroBg.jpg';
 import closeIcon from '../assets/iconclose.png';
 import { componentstyles } from '../styles';
 import { queryArticle } from '../apicalls/query.operation';
-import {buscarConversiones} from '../apicalls/business_unit.operations';
+import { buscarConversiones } from '../apicalls/business_unit.operations';
 class PickupBarcodInput extends React.Component {
     constructor(props) {
         super(props);
@@ -25,7 +25,8 @@ class PickupBarcodInput extends React.Component {
             articleRef: React.createRef(),
             searchCode: "",
             confirmMode: false,
-            etiqueta:'',
+            etiqueta: '',
+            isLoading: false,
         }
 
     }
@@ -53,8 +54,8 @@ class PickupBarcodInput extends React.Component {
 
             },
         });
-       
-        
+
+
     }
     handleAccept = () => {
         const { editingItem, qty } = this.state;
@@ -87,10 +88,11 @@ class PickupBarcodInput extends React.Component {
 
     producto = () => {
         return new Promise((resolve, reject) => {
+            this.setState({ isLoading: true });
             queryArticle(this.props.sucursal, this.state.searchCode, this.props.user.token, (data) => {
                 const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
-                
-                this.setState({searchCode:''});
+
+                this.setState({ searchCode: '' });
                 const productos = rawRows.map((item, index) => ({
                     key: index,
                     etiqueta: item.mnNmeronico_24.value,
@@ -108,16 +110,18 @@ class PickupBarcodInput extends React.Component {
 
                 if (productos.length > 0) {
                     const producto = productos[0];
-                    this.setState({etiqueta:producto.etiqueta});
+                    this.setState({ etiqueta: producto.etiqueta });
                     resolve(producto);
                 } else {
                     resolve([]);
                 }
+
+                this.setState({ isLoading: false });
             });
         }, (reason) => reject(reason));
     }
 
-    barCodeHandler =  () => {
+    barCodeHandler = () => {
         //Get the item
         if (this.props.transactionMode === transactionModes.READ_RETURN) {
             const item = {
@@ -129,31 +133,31 @@ class PickupBarcodInput extends React.Component {
 
         } else {
             //Buscar el producto en JD
-            
+
             this.producto().then(async (producto) => {
                 const products = this.props.list ? this.props.list.values() : [];
-                
-                let filtrados=[];
-                if(this.props.hasSerial){
-                    
+
+                let filtrados = [];
+                if (this.props.hasSerial) {
+
                     filtrados = (this.props.list ?
                         Array.from(products)
                         :
                         [])
                         .filter((item) => item.itemNumber === producto.itemNumber && item.serial === producto.lote);
-    
 
-                }else{
+
+                } else {
                     filtrados = (this.props.list ?
                         Array.from(products)
                         :
                         [])
                         .filter((item) => item.itemNumber === producto.itemNumber && item.lote === producto.lote);
-    
+
                 }
-                
+
                 //lote,um,itemNumber
-                
+
                 let encontrado = false;
                 for (let i = 0; i < filtrados.length; i++) {
                     const linea = filtrados[i];
@@ -216,16 +220,16 @@ class PickupBarcodInput extends React.Component {
                         //2do paso el producto NO coincide con los filtrados, usar las conversiones.
                         let conversiones = [];
                         //console.warn(conversiones);
-                        let umFiltradas=[];
-                        if(this.props.hasSerial){
-                            conversiones = await buscarConversiones(producto.itemNumber,this.props.token);
-                            
+                        let umFiltradas = [];
+                        if (this.props.hasSerial) {
+                            conversiones = await buscarConversiones(producto.itemNumber, this.props.token);
+
                             umFiltradas = (conversiones ?
                                 conversiones
                                 :
                                 [])
                                 .filter((item) => item.unidad === producto.um);
-                        }else{
+                        } else {
                             conversiones = linea.conversiones ? linea.conversiones.values() : [];
                             umFiltradas = (linea.conversiones ?
                                 Array.from(conversiones)
@@ -233,9 +237,9 @@ class PickupBarcodInput extends React.Component {
                                 [])
                                 .filter((item) => item.unidad === producto.um);
                         }
-                        
 
-                        
+
+
                         //console.warn(umFiltradas);
                         if (umFiltradas.length != 0) {
                             const conversion = parseInt(umFiltradas[0].valorConversion);
@@ -292,12 +296,12 @@ class PickupBarcodInput extends React.Component {
 
                             }
                         }
-                    
+
                     } //else
                 } //for
-            
-                if(!encontrado){
-                    Alert.alert(producto.producto + ' ('+ producto.um +')','No se ubica en la lista o excede el limite');
+
+                if (!encontrado) {
+                    Alert.alert(producto.producto + ' (' + producto.um + ')', 'No se ubica en la lista o excede el limite');
                 }
             }); //producto
         }
@@ -317,13 +321,20 @@ class PickupBarcodInput extends React.Component {
     }
     render() {
         const item = this.state.editingItem;
-        const { qty, confirmMode,etiqueta } = this.state;
+        const { qty, confirmMode, etiqueta } = this.state;
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
                 <KeyboardAvoidingView
                     style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
                     <View style={componentstyles.containerView}>
-                    <ArticleScanMode confirmMode={confirmMode} changeMode={(confirmMode)=>this.setState({confirmMode})} />
+                        <ArticleScanMode confirmMode={confirmMode} changeMode={(confirmMode) => this.setState({ confirmMode })} />
+                        {
+                            this.state.isLoading ?
+                                <ActivityIndicator color="#ffffff"
+                                    animating={true} size={"large"} />
+                                :
+                                null
+                        }
                         <Field onChangeText={(text) => this.setState({ searchCode: text })}
                             onSubmitEditing={this.barCodeHandler}
                             autoFocus={true}

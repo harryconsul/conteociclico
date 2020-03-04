@@ -85,7 +85,7 @@ const actionTransferConfirmation = (rows) => (
                     "gridID": "1",
                     "gridRowUpdateEvents": rows.map(row => (
                         {
-                            "rowNumber": Number(row.rowId),
+                            "rowNumber": parseInt(row.rowId),
                             "gridColumnEvents": [
                                 {
                                     "value": "1",
@@ -93,7 +93,7 @@ const actionTransferConfirmation = (rows) => (
                                     "columnID": "382"
                                 },
                                 {
-                                    "value": row.confirmed,
+                                    "value": parseInt(row.confirmed),
                                     "command": "SetGridCellValue",
                                     "columnID": "116"
                                 },

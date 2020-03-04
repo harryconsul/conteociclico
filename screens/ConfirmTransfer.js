@@ -264,7 +264,7 @@ class ConfirmTransfer extends React.Component {
 
             if (errors.length === 0) {
                 const rawRows = response.data.fs_P594312B_W594312BA.data.gridData.rowset;
-                
+
                 const productsToConfirm = new Map();
                 const length = rawRows.length;
 
@@ -295,7 +295,9 @@ class ConfirmTransfer extends React.Component {
                         value.conversiones = conversiones;
                     });
 
+                    //Set MAP
                     productsToConfirm.set(key, value);
+
                     if (i === 0) { // 0 for the first row
                         //This moKey is for upload comments and signature
                         this.moKey = this.state.number + '|' + value.orderType
@@ -345,28 +347,51 @@ class ConfirmTransfer extends React.Component {
             Array.from(products)
             :
             [])
-        .filter((item) => parseInt(item.qty) !== parseInt(item.qtyToPickUp));
+            .filter((item) => parseInt(item.qty) !== parseInt(item.qtyToPickUp));
 
-        
         const list = [];
         for (let article of confirmed) {
-            list.push({ ...article,confirmed:parseInt(article.qtyToPickUp) -  parseInt(article.qty), set: "0" });
+            list.push({ ...article, confirmed: parseInt(article.qtyToPickUp) - parseInt(article.qty), set: "0" });
         }
-        
+
         if (list.length > 0) {
             this.setState({ isLoading: true });
 
             transferConfirmation(this.props.token, this.props.stack, list, (response) => {
-                Alert.alert('Proceso terminado',
-                    alert, [
-                    {
-                        text: "Aceptar",
-                        onPress: () => {
-                            this.showPlaceAgreement();
-                            this.refreshScreen();
+                const errors = response.data.fs_P594312B_W594312BA.errors;
+
+                if (errors.length === 0) {
+                    //Success
+                    Alert.alert('Proceso terminado',
+                        alert, [
+                        {
+                            text: "Aceptar",
+                            onPress: () => {
+                                //TEMPORAL: this.showPlaceAgreement();
+                                this.refreshScreen();
+                            }
                         }
-                    }
-                ]);
+                    ]);
+
+                } else {
+                    this.setState({ isLoading: false });
+
+                    let mensaje = ''
+                    for (let error of errors)
+                        mensaje += mensaje !== '' ? ', ' + error.TITLE : error.TITLE;
+
+                    //se usa el siguiente alert, porque algunas veces viene vacío aunque tiene valor
+                    const alert = mensaje !== '' ? mensaje : 'La orden tiene errores, no puede ser procesada';
+                    Alert.alert('No. de Orden ' + this.state.number,
+                        alert, [
+                        {
+                            text: "Aceptar",
+                            onPress: () => {
+                                this.refreshScreen();
+                            }
+                        }
+                    ]);
+                }
             });
         } else {
             Alert.alert("No ha confirmado al menos un artículo.");
@@ -466,10 +491,10 @@ class ConfirmTransfer extends React.Component {
                                 <TouchableOpacity key={item.key} index={index} >
                                     <ItemView index={index} >
                                         <View style={styles.linea}>
-                                            <View style={{ width: "50%" }}>
-                                                <ItemHightLight text={"No.: " + item.etiqueta } />
+                                            <View style={{ width: "55%" }}>
+                                                <ItemHightLight text={"Etiqueta: " + item.etiqueta} />
                                             </View>
-                                            <View style={{ width: "50%" }}>
+                                            <View style={{ width: "45%" }}>
                                                 <ItemLabel text={"Catálogo: " + item.shortNumber} />
                                             </View>
                                         </View>

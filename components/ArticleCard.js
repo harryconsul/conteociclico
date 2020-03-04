@@ -18,11 +18,11 @@ export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, 
                     display: "flex", flexDirection: "row",
                     justifyContent: "space-between"
                 }}>
-                    <View style={{ width: "40%" }}>
-                        <ItemLabel text={"No.: " + numero} />
+                    <View style={{ width: "45%" }}>
+                        <ItemLabel text={"Etiqueta: " + numero} />
                     </View>
-                    <View style={{ width: "60%" }}>
-                        <ItemLabel text={"Catálogo : " + item.itemNumber} />
+                    <View style={{ width: "55%" }}>
+                        <ItemLabel text={"Catálogo: " + item.itemNumber} />
                     </View>
                 </View>
                 <ItemHightLight text={item.description} />
@@ -50,9 +50,15 @@ export const ArticleCard = ({ item, handleAccept, qty, setQty, setPrice, price, 
                             <Field label={qtyLabel ? qtyLabel : "Cantidad"} placeholder="#" defaultValue={String(qty)}
                                 onChangeText={(text) => setQty(text)} keyboardType="numeric" />
                             :
-                            <View>
-                                <ItemHightLight text={(qtyLabel ? qtyLabel : "Cantidad") + ' : ' + qty + ' ' + item.um} />
-                                <ItemHightLight text={" de " + (total ? total : '') + ' ' + item.um} />
+                            <View style={{
+                                display: "flex", flexDirection: "row",
+                                justifyContent: "space-between"
+                            }}>
+                                <View style={{ width: "100%" }}>
+                                    <ItemHightLight text={(qtyLabel ? qtyLabel : "Cantidad") + ': ' + qty + ' ' + item.um
+                                + " de " + (total ? total : '') + ' ' + item.um} />
+                                </View>
+                                
                             </View>
                     }
                     {setPrice ?
