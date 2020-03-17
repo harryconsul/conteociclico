@@ -5,7 +5,7 @@ const actionSearchShipment = (orderNumber) => {
     return {
         formName: "P554205A_W554205AD",
         version: "DICIPA25",
-        maxPageSize:500,
+        maxPageSize: 500,
         formActions: [
             {
                 command: "SetControlValue",
@@ -24,6 +24,61 @@ const actionSearchShipment = (orderNumber) => {
         ]
     }
 }
+
+//Buscar en la pantalla respaldo de RECOLECCION.
+const actionSearchBackup = (orderNumber) => {
+    return {
+        formName: "P574211U_W574211UA",
+        version: "",
+        maxPageSize: 500,
+        formActions: [
+            {
+                command: "SetControlValue",
+                value: orderNumber,
+                "controlID": "46"
+            },
+            {
+                command: "DoAction",
+                controlID: "15",
+            }
+        ]
+    }
+}
+
+//el arreglo rows, se prepara desde donde se invoco.
+const actionDeleteBackup = (rows) => (
+    {
+        formOID: "W574211UA",
+        formActions: [
+            ...rows
+            ,
+            {
+                ".type": "com.oracle.e1.jdemf.FormAction",
+                command: "DoAction",
+                controlID: "44"
+            }
+        ]
+    }
+);
+
+const actionAddBackup = (orderNumber) => {
+    return {
+        formName: "P574211U_W574211UB",
+        version: "",
+        maxPageSize: 500,
+        formActions: [
+            {
+                command: "SetControlValue",
+                value: orderNumber,
+                "controlID": "15"
+            },
+            {
+                command: "DoAction",
+                controlID: "17",
+            }
+        ]
+    }
+};
 
 const actionStartConfirmation = (rowId) => {
     return {
@@ -101,7 +156,7 @@ const actionClickPrint = (rows) => (
     }
 )
 
-export const printShipment = (token, stack , rows, callback) => {
+export const printShipment = (token, stack, rows, callback) => {
     const actionPrint = pushStack(token, actionClickPrint(rows), stack);
     callStackService(actionPrint, callback);
 }
@@ -132,11 +187,23 @@ export const searchShipment = (orderNumber, token, callback, errorHandler) => {
     callStackService(createStack(token, actionSearchShipment(orderNumber)), callback, errorHandler);
 
 }
+
+export const searchShipmentBackup = (orderNumber, token, callback, errorHandler) => {
+    callStackService(createStack(token, actionSearchBackup(orderNumber)), callback, errorHandler);
+}
+
+export const addShipmentBackup = (orderNumber, token, callback, errorHandler) => {
+    callStackService(createStack(token, actionAddBackup(orderNumber )), callback, errorHandler);
+}
+
 export const startConfirmation = (token, stack, callback) => {
     const action = pushStack(token, actionStartConfirmation(), stack);
     callStackService(action, callback, (reason) => console.warn(reason));
+}
 
-
+export const deleteBackup = (token, stack, rows, callback) => {
+    const deleteBackup = pushStack(token, actionDeleteBackup(rows), stack);
+    callStackService(deleteBackup, callback);
 }
 
 const createStack = (token, formRequest) => {

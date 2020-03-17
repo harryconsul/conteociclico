@@ -8,7 +8,10 @@ import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import Field from '../components/Field';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
-import { searchShipment, startConfirmation, shipmentConfirmation, printShipment } from '../apicalls/pickup.operations';
+import {
+    searchShipment, startConfirmation, shipmentConfirmation, printShipment,
+    searchShipmentBackup, deleteBackup, addShipmentBackup,
+} from '../apicalls/pickup.operations';
 import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, actionSetSucursal } from '../store/actions/actions.creators';
 import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
@@ -22,7 +25,9 @@ const initialState = {
     orderNumber: 0,
     isConfirming: true,
     lineas: 0,
-    sucursal:'',
+    sucursal: '',
+    rowsBackup: null,
+    stackBackup: null,
 };
 class ProductsPickup extends React.Component {
 
@@ -194,14 +199,61 @@ class ProductsPickup extends React.Component {
         });
     }
 
+    deleteBackup = (stack, rows) => {
+        return new Promise((resolve, reject) => {
+            deleteBackup(this.props.token, stack, rows, (response) => {
+                resolve(response);
+            }, (reason) => reject(reason));
+        });
+    }
+
     searchOrder = () => {
         const { orderNumber } = this.state;
         if (orderNumber != '') {
             this.setState({ isLoading: true });
+
+            const addBackup = new Promise((resolve, reject) => {
+                addShipmentBackup(orderNumber, this.props.token, (response) => {
+                    resolve(response);
+
+                }, (reason) => reject(reason));
+            });
+
+            const searchBackup = new Promise((resolve, reject) => {
+                searchShipmentBackup(orderNumber, this.props.token, (response) => {
+                    resolve(response);
+                }, (reason) => reject(reason));
+            });
+
+            Promise.all([addBackup, searchBackup]).then((results) => {
+
+                if (results.length === 2) {
+                    const filasBackup = results[1];
+
+                    const rawRows = filasBackup.data.fs_P574211U_W574211UA.data.gridData.rowset;
+
+                    const rowsBackup = rawRows.map(row => ({
+                        "command": "SelectRow",
+                        "controlID": "1." + String(row.rowIndex)
+                    }));
+
+                    const stackBackup = {
+                        stackId: filasBackup.data.stackId,
+                        stateId: filasBackup.data.stateId,
+                        rid: filasBackup.data.rid,
+                        currentApplication: "P574211U_W574211UA",
+                    }
+
+                    if (rowsBackup.length > 0)
+                        this.setState({ rowsBackup, stackBackup });
+
+                }
+            });
+
             searchShipment(orderNumber, this.props.token, (response) => {
 
                 const rawRows = response.data.fs_P554205A_W554205AD.data.gridData.rowset;
-                console.warn('Buscar recolección: ', rawRows);
+
                 const rows = rawRows.map((item) => ({
                     rowId: item.rowIndex,
                     orden: item.mnOrderNumber_27.value,
@@ -252,63 +304,87 @@ class ProductsPickup extends React.Component {
         this.setState({ isConfirming: false, isLoading: true });
 
         startConfirmation(this.props.token, this.props.stack, (response) => {
-            const rawRows = response.data.fs_P554205A_W554205AE.data.gridData.rowset;
 
-            const toPickup = new Map();
-            const allProducts = new Map();
-            let lineas = 0;
+            const errors = response.data.fs_P554205A_W554205AE.errors;
 
-            for (let i = 0; i < rawRows.length; i++) {
+            if (errors.length === 0) {
 
-                const key = rawRows[i].rowIndex;
-                const nextStatus = rawRows[i].sNextStat_47.value;
-                const lote = rawRows[i].sLotSerial_50.value;
-                const itemNumber = rawRows[i].sItemNumber_35.value;
-                const um = rawRows[i].sUnitofMeasure_178.value;
-                const etiqueta = rawRows[i].mnNmeronico_253.value;
+                const rawRows = response.data.fs_P554205A_W554205AE.data.gridData.rowset;
 
-                const value = {
-                    key,
-                    rowId: rawRows[i].rowIndex,
-                    etiqueta: etiqueta !=="0"? etiqueta: 'FALTA',
-                    itemNumber: rawRows[i].sItemNumber_35.value,
-                    lote: rawRows[i].sLotSerial_50.value,
-                    um: rawRows[i].sUnitofMeasure_178.value,
-                    location: rawRows[i].sLocation_36.value,
-                    producto: rawRows[i].sDescription_44.value,
-                    qty: rawRows[i].mnQuantityShipped_71.value,
-                    qtyToPickUp: rawRows[i].mnQuantityShipped_71.value,
-                    sucursal: rawRows[i].sBranchPlant_37.value,
-                    prevStatus: rawRows[i].sLastStat_48.value,
-                    nextStatus: rawRows[i].sNextStat_47.value,
-                    ordenTipo: rawRows[i].sOrTy_77.value,
+                const toPickup = new Map();
+                const allProducts = new Map();
+                let lineas = 0;
+
+                for (let i = 0; i < rawRows.length; i++) {
+
+                    const key = rawRows[i].rowIndex;
+                    const nextStatus = rawRows[i].sNextStat_47.value;
+                    const lote = rawRows[i].sLotSerial_50.value;
+                    const itemNumber = rawRows[i].sItemNumber_35.value;
+                    const um = rawRows[i].sUnitofMeasure_178.value;
+                    const etiqueta = rawRows[i].mnNmeronico_253.value;
+
+                    const value = {
+                        key,
+                        rowId: rawRows[i].rowIndex,
+                        etiqueta: etiqueta !== "0" ? etiqueta : 'FALTA',
+                        itemNumber: rawRows[i].sItemNumber_35.value,
+                        lote: rawRows[i].sLotSerial_50.value,
+                        um: rawRows[i].sUnitofMeasure_178.value,
+                        location: rawRows[i].sLocation_36.value,
+                        producto: rawRows[i].sDescription_44.value,
+                        qty: rawRows[i].mnQuantityShipped_71.value,
+                        qtyToPickUp: rawRows[i].mnQuantityShipped_71.value,
+                        sucursal: rawRows[i].sBranchPlant_37.value,
+                        prevStatus: rawRows[i].sLastStat_48.value,
+                        nextStatus: rawRows[i].sNextStat_47.value,
+                        ordenTipo: rawRows[i].sOrTy_77.value,
+                    }
+                    //Sólo mostrar productos que esten en 560 y que tenga número de lote.
+                    if (nextStatus === '560' && lote !== '') {
+                        this.unidadMedida(itemNumber).then((conversiones) => {
+                            value.conversiones = conversiones;
+                        });
+
+                        toPickup.set(key, value);
+
+                        lineas += 1;
+                    }
+
+                    allProducts.set(key, value);
                 }
-                //Sólo mostrar productos que esten en 560 y que tenga número de lote.
-                if (nextStatus === '560' && lote !== '') {
-                    this.unidadMedida(itemNumber).then((conversiones) => {
-                        value.conversiones = conversiones;
-                        console.warn(itemNumber, conversiones);
-                    });
-                    
-                    toPickup.set(key, value);
 
-                    lineas += 1;
+                this.props.dispatch(actionSetArticlesMap(toPickup));
+
+                this.setState({ isLoading: false, articles: toPickup, allProducts, lineas });
+
+                const stack = {
+                    stackId: response.data.stackId,
+                    stateId: response.data.stateId,
+                    rid: response.data.rid,
+                    currentApplication: "P554205A_W554205AE",
                 }
+                this.props.dispatch(actionUpdateStack(stack));
+            } else {
+                const { orderNumber } = this.state;
+                this.setState({ isLoading: false });
 
-                allProducts.set(key, value);
+                let mensaje = ''
+                for (let error of errors)
+                    mensaje += mensaje !== '' ? ', ' + error.TITLE : error.TITLE;
+
+                //se usa el siguiente alert, porque algunas veces viene vacío aunque tiene valor
+                const alert = mensaje !== '' ? mensaje : 'La orden tiene errores, no puede ser procesada';
+                Alert.alert('No. de Orden ' + orderNumber,
+                    alert, [
+                    {
+                        text: "Aceptar",
+                        onPress: () => {
+                            this.refreshScreen();
+                        }
+                    }
+                ]);
             }
-
-            this.props.dispatch(actionSetArticlesMap(toPickup));
-
-            this.setState({ isLoading: false, articles: toPickup, allProducts, lineas });
-
-            const stack = {
-                stackId: response.data.stackId,
-                stateId: response.data.stateId,
-                rid: response.data.rid,
-                currentApplication: "P554205A_W554205AE",
-            }
-            this.props.dispatch(actionUpdateStack(stack));
         })
     }
 
@@ -336,35 +412,63 @@ class ProductsPickup extends React.Component {
         if (collected.length > 0) {
             this.setState({ isLoading: true });
             shipmentConfirmation(this.props.token, this.props.stack, list, (response) => {
+                const errors = response.data.fs_P554205A_W554205AD.errors;
 
-                Alert.alert(
-                    'Proceso terminado',
-                    '¿Imprimir documento?',
-                    [
-                        {
-                            text: 'No',
-                            onPress: () => {
-                                this.setState({ ...initialState });
-                                this.props.dispatch(actionSetArticlesMap(new Map()));
-                                this.setState({ isLoading: false });
+                if (errors.length === 0) {
+                    //Eliminar en tabla Backup
+                    const { stackBackup, rowsBackup } = this.state;
+                    this.deleteBackup(stackBackup, rowsBackup).then((response) => {
+                    }, (error) => { console.warn('Error al eliminar backup ', error) });
+
+                    Alert.alert(
+                        'Proceso terminado',
+                        '¿Imprimir documento?',
+                        [
+                            {
+                                text: 'No',
+                                onPress: () => {
+                                    this.setState({ ...initialState });
+                                    this.props.dispatch(actionSetArticlesMap(new Map()));
+                                    this.setState({ isLoading: false });
+                                }
+                            },
+                            {
+                                text: 'Si',
+                                onPress: () => {
+                                    this.printOrder().then((respuesta) => {
+                                        if (respuesta) {
+                                            this.setState({ ...initialState });
+                                            this.props.dispatch(actionSetArticlesMap(new Map()));
+                                            this.setState({ isLoading: false });
+                                        }
+                                    }, (error) => { Alert.alert('Error al imprimir documento ', error) });
+                                }
                             }
-                        },
+                        ],
+                        { cancelable: false },
+                    );
+                }else {
+                    const { orderNumber } = this.state;
+                    this.setState({ isLoading: false });
+    
+                    let mensaje = ''
+                    for (let error of errors)
+                        mensaje += mensaje !== '' ? ', ' + error.TITLE : error.TITLE;
+    
+                    //se usa el siguiente alert, porque algunas veces viene vacío aunque tiene valor
+                    const alert = mensaje !== '' ? mensaje : 'La orden tiene errores, no puede ser procesada';
+                    Alert.alert('No. de Orden ' + orderNumber,
+                        alert, [
                         {
-                            text: 'Si',
+                            text: "Aceptar",
                             onPress: () => {
-                                this.printOrder().then((respuesta) => {
-                                    if (respuesta) {
-                                        this.setState({ ...initialState });
-                                        this.props.dispatch(actionSetArticlesMap(new Map()));
-                                        this.setState({ isLoading: false });
-                                    }
-                                }, (error) => { Alert.alert('Error al imprimir documento ', error) });
+                                this.refreshScreen();
                             }
                         }
-                    ],
-                    { cancelable: false },
-                );
-            })
+                    ]);
+                }
+
+            });
         } else {
             Alert.alert("Recolecte almenos un artículo.");
         }
@@ -461,7 +565,7 @@ class ProductsPickup extends React.Component {
                                     <ItemView index={index} >
                                         <View style={styles.linea}>
                                             <View style={{ width: "45%" }}>
-                                                <ItemHightLight text={"No.: " + item.etiqueta} />
+                                                <ItemHightLight text={"Etiqueta: " + item.etiqueta} />
                                             </View>
                                             <View style={{ width: "55%" }}>
                                                 <ItemLabel text={"Catálogo: " + item.itemNumber} />
