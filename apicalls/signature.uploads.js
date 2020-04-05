@@ -34,7 +34,7 @@ export const uploadSignature = (key, path, token, fileName, callback, realm, sig
             const formData = new FormData();
             formData.append('file', {
                 uri: finalPath,
-                type: 'image/jpg',
+                type: 'image/jpeg',
                 name: fileName + ".jpg",
             }, fileName + ".jpg");
 
@@ -60,9 +60,6 @@ export const uploadSignature = (key, path, token, fileName, callback, realm, sig
         callback("");
     }
 
-
-
-
 }
 
 export const uploadComments = (token,key,comment,callback) =>{
@@ -79,11 +76,30 @@ export const uploadComments = (token,key,comment,callback) =>{
         "inputText": comment,
         "appendText": true,
     }
+    uploadText(data,callback);
     
+}
+export const uploadCyclicCountErrors =  (token,key,errorText,callback) =>{
+    const data = {
+        "token": token,
+        "deviceName": "RESTclient",       
+        "moStructure": "GT5541240",
+        "moKey": [
+            key
+        ],
+        "formName": "P5541240_W5541240A",
+        "version": "",
+        "inputText": errorText,
+        "appendText": true,
+    }
+    uploadText(data,callback);
+
+}
+const uploadText = (data,callback)=>{
     axios.post("file/updatetext", data)
     .then(callback)
     .catch((error) => console.warn("Error en la petición", error));
-}
+};
 
 export const uploadAgreementSignature = (key, path, token, fileName, callback ) => {
 

@@ -10,7 +10,7 @@ import Field from '../components/Field';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
 import {
     searchShipment, startConfirmation, shipmentConfirmation, printShipment,
-    searchShipmentBackup, deleteBackup, addShipmentBackup,
+    searchShipmentBackup, deleteBackup, addShipmentBackup,confirmLineBackup,
 } from '../apicalls/pickup.operations';
 import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, actionSetSucursal } from '../store/actions/actions.creators';
 import { transactionModes } from '../constants'
@@ -72,6 +72,21 @@ class ProductsPickup extends React.Component {
         });
     }
 
+    confirmLineBackupCallback = (row) =>{
+         
+         const rows = this.state.rowsBackup.filter(item=>item.lineNumber===row.lineNumber);
+         confirmLineBackup(this.props.token,this.state.stackBackup,rows,(response)=>{
+
+            const stackBackup = {
+                stackId: response.data.stackId,
+                stateId: response.data.stateId,
+                rid: response.data.rid,
+                currentApplication: "P574211U_W574211UA",
+            };
+            
+            this.setState({stackBackup});
+         });
+    }
     openBarcode = (screen) => {
         if (this.state.articles) {
             this.props.dispatch(actionSetTransactionMode(transactionModes.READ_SUBTRACT));
@@ -86,6 +101,7 @@ class ProductsPickup extends React.Component {
                             name: screen,
                             passProps: {
                                 qtyLabel: "Recolectado",
+                                confirmLineBackupCallback : this.confirmLineBackupCallback,
                             }
                         },
                         options: {
@@ -212,43 +228,7 @@ class ProductsPickup extends React.Component {
         if (orderNumber != '') {
             this.setState({ isLoading: true });
 
-            const addBackup = new Promise((resolve, reject) => {
-                addShipmentBackup(orderNumber, this.props.token, (response) => {
-                    resolve(response);
-
-                }, (reason) => reject(reason));
-            });
-
-            const searchBackup = new Promise((resolve, reject) => {
-                searchShipmentBackup(orderNumber, this.props.token, (response) => {
-                    resolve(response);
-                }, (reason) => reject(reason));
-            });
-
-            Promise.all([addBackup, searchBackup]).then((results) => {
-
-                if (results.length === 2) {
-                    const filasBackup = results[1];
-
-                    const rawRows = filasBackup.data.fs_P574211U_W574211UA.data.gridData.rowset;
-
-                    const rowsBackup = rawRows.map(row => ({
-                        "command": "SelectRow",
-                        "controlID": "1." + String(row.rowIndex)
-                    }));
-
-                    const stackBackup = {
-                        stackId: filasBackup.data.stackId,
-                        stateId: filasBackup.data.stateId,
-                        rid: filasBackup.data.rid,
-                        currentApplication: "P574211U_W574211UA",
-                    }
-
-                    if (rowsBackup.length > 0)
-                        this.setState({ rowsBackup, stackBackup });
-
-                }
-            });
+           
 
             searchShipment(orderNumber, this.props.token, (response) => {
 
@@ -272,10 +252,41 @@ class ProductsPickup extends React.Component {
                 if (orders.length != 0) {
                     //Usar el 1er item
                     const order = orders[0];
+                    
+                    addShipmentBackup(orderNumber,order.sucursal, this.props.token, () => {
+                        searchShipmentBackup(orderNumber, this.props.token, (response) => {
+                            const filasBackup = response;
+        
+                            const rawRows = filasBackup.data.fs_P574211U_W574211UA.data.gridData.rowset;
+                           
+                            const rowsBackup = rawRows.map(row => ({
+                                "recoleccionCompletada":row.chOneWorldEventPoint01_56.value,
+                                "controlID": "1." + String(row.rowIndex),
+                                "lineNumber":row.mnLineNumber_20.value,
+                            }));
+        
+                            const stackBackup = {
+                                stackId: filasBackup.data.stackId,
+                                stateId: filasBackup.data.stateId,
+                                rid: filasBackup.data.rid,
+                                currentApplication: "P574211U_W574211UA",
+                            }
+        
+                            if (rowsBackup.length > 0){
+                                this.setState({ rowsBackup, stackBackup });
+                            }
+                                
+                           
+                            
+                        },null);
+    
+                    },null);
+                    
                     this.sucursal(order.sucursal).then((nombreSucursal) => {
                         order.nombreSucursal = nombreSucursal;
                         this.setState({ order, isLoading: false, isConfirming: true });
                     });
+
                     this.props.dispatch(actionSetSucursal(order.sucursal));
 
                     const stack = {
@@ -285,7 +296,7 @@ class ProductsPickup extends React.Component {
                         currentApplication: "P554205A_W554205AD",
                     }
                     this.props.dispatch(actionUpdateStack(stack));
-
+        
                 } else {
                     this.setState({ orderNumber: '' })
                     Alert.alert('Recolección ' + orderNumber + ' procesada o no existe');
@@ -302,9 +313,10 @@ class ProductsPickup extends React.Component {
     startPickup = () => {
         //Se ejecuta al dar tap sobre INICIAR RECOLECCIÓN.
         this.setState({ isConfirming: false, isLoading: true });
+        const {rowsBackup} = this.state;
 
         startConfirmation(this.props.token, this.props.stack, (response) => {
-
+           
             const errors = response.data.fs_P554205A_W554205AE.errors;
 
             if (errors.length === 0) {
@@ -324,7 +336,11 @@ class ProductsPickup extends React.Component {
                     const um = rawRows[i].sUnitofMeasure_178.value;
                     const etiqueta = rawRows[i].mnNmeronico_253.value;
 
-                    const value = {
+                    let recoleccionCompletada = "";
+                    
+                    
+
+                    let value = {
                         key,
                         rowId: rawRows[i].rowIndex,
                         etiqueta: etiqueta !== "0" ? etiqueta : 'FALTA',
@@ -339,9 +355,20 @@ class ProductsPickup extends React.Component {
                         prevStatus: rawRows[i].sLastStat_48.value,
                         nextStatus: rawRows[i].sNextStat_47.value,
                         ordenTipo: rawRows[i].sOrTy_77.value,
+                        lineNumber:rawRows[i].mnLineNumber_177.value,
                     }
+                    const rowBackup = rowsBackup.find(item=>item.lineNumber===value.lineNumber);
+                    if(rowBackup){
+                        recoleccionCompletada = rowBackup.recoleccionCompletada; 
+                    }
+
+                    if(recoleccionCompletada==="X"){
+                        //si ya tiene una X no tiene que recolectar
+                        value.qty=0;
+                    } 
                     //Sólo mostrar productos que esten en 560 y que tenga número de lote.
-                    if (nextStatus === '560' && lote !== '') {
+                    // y que su orderBackup no sea X
+                    if (nextStatus === '560' && lote !== '' && recoleccionCompletada!=="X") {
                         this.unidadMedida(itemNumber).then((conversiones) => {
                             value.conversiones = conversiones;
                         });
@@ -353,7 +380,7 @@ class ProductsPickup extends React.Component {
 
                     allProducts.set(key, value);
                 }
-
+               
                 this.props.dispatch(actionSetArticlesMap(toPickup));
 
                 this.setState({ isLoading: false, articles: toPickup, allProducts, lineas });
@@ -390,13 +417,21 @@ class ProductsPickup extends React.Component {
 
     confirmShipment = () => {
         //this.setState({ isLoading: true });
-        const products = this.props.articles ? this.props.articles.values() : [];
+        const products = this.props.articles ? Array.from(this.props.articles.values()) : [];
 
         const collected = (this.state.articles ?
-            Array.from(products)
+           [...products]
             :
             [])
             .filter((item) => !item.qty);
+
+        const missingToCollect = (products ?
+        [...products]
+        :
+        [])
+        .filter((item) => item.qty>0);
+
+       
 
         const list = [];
         const { allProducts } = this.state;
@@ -406,11 +441,14 @@ class ProductsPickup extends React.Component {
         }
 
         for (let article of allProducts.values()) {
-            list.push({ ...article, set: "0" });
+            if(article.nextStatus!=='560'){ // desmarcar los articulos que fueron parcialemente recolectados
+                list.push({ ...article, set: "0" });
+            }
         }
 
-        if (collected.length > 0) {
+        if (missingToCollect.length===0 )  { 
             this.setState({ isLoading: true });
+           
             shipmentConfirmation(this.props.token, this.props.stack, list, (response) => {
                 const errors = response.data.fs_P554205A_W554205AD.errors;
 
@@ -470,7 +508,7 @@ class ProductsPickup extends React.Component {
 
             });
         } else {
-            Alert.alert("Recolecte almenos un artículo.");
+            Alert.alert("Debe recolectar todos los articulos para confirmar");
         }
     }
 

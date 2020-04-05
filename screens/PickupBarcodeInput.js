@@ -200,6 +200,12 @@ class PickupBarcodInput extends React.Component {
 
                                 const item = { ...editingItem };
 
+                                
+                                if(this.props.confirmLineBackupCallback && editingItem.qty===0 && encontrado){
+                                    
+                                    this.props.confirmLineBackupCallback(editingItem);
+                                }
+
                                 this.props.dispatch(actionSetArticle(item));
 
                                 this.state.articleRef.current.focus();
@@ -213,6 +219,10 @@ class PickupBarcodInput extends React.Component {
                                     isEditing: true,
                                 });
 
+                            }
+
+                            if(encontrado){ // si encontrado , sal del ciclo for
+                                break;
                             }
 
                         }
@@ -278,6 +288,12 @@ class PickupBarcodInput extends React.Component {
                                     });
 
                                     const item = { ...editingItem };
+                                    
+                                   
+                                    if(this.props.confirmLineBackupCallback && editingItem.qty===0 && encontrado){
+                                        
+                                        this.props.confirmLineBackupCallback(editingItem);
+                                    }
 
                                     this.props.dispatch(actionSetArticle(item));
 
@@ -293,6 +309,11 @@ class PickupBarcodInput extends React.Component {
                                     });
 
                                 }
+
+                                if(encontrado){ // si encontrado , sal del ciclo for
+                                    break;
+                                }
+    
 
                             }
                         }

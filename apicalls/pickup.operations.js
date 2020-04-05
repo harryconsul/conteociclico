@@ -33,10 +33,22 @@ const actionSearchBackup = (orderNumber) => {
         maxPageSize: 500,
         formActions: [
             {
-                command: "SetControlValue",
+                command: "SetQBEValue",
                 value: orderNumber,
-                "controlID": "46"
-            },
+                "controlID": "1[24]"
+            },            
+            {
+                command: "DoAction",
+                controlID: "15",
+            }
+        ]
+    }
+}
+const actionPressSearchBackup = () => {
+    return {
+        formOID: "W574211UA",       
+        maxPageSize: 500,
+        formActions: [                      
             {
                 command: "DoAction",
                 controlID: "15",
@@ -45,12 +57,16 @@ const actionSearchBackup = (orderNumber) => {
     }
 }
 
+
 //el arreglo rows, se prepara desde donde se invoco.
 const actionDeleteBackup = (rows) => (
     {
         formOID: "W574211UA",
         formActions: [
-            ...rows
+            ...rows.map(row=>({
+                "command": "SelectRow",
+                "controlID" : row.controlID
+            }))
             ,
             {
                 ".type": "com.oracle.e1.jdemf.FormAction",
@@ -61,12 +77,17 @@ const actionDeleteBackup = (rows) => (
     }
 );
 
-const actionAddBackup = (orderNumber) => {
+const actionAddBackup = (orderNumber,bussinesUnit) => {
     return {
         formName: "P574211U_W574211UB",
         version: "",
         maxPageSize: 500,
         formActions: [
+            {
+                command: "SetControlValue",
+                value: bussinesUnit,
+                "controlID": "13"
+            },
             {
                 command: "SetControlValue",
                 value: orderNumber,
@@ -79,6 +100,27 @@ const actionAddBackup = (orderNumber) => {
         ]
     }
 };
+
+
+//el arreglo rows, se prepara desde donde se invoco.
+const actionConfirmLineBackup = (rows) => (
+    {
+        formOID: "W574211UA",
+        formActions: [
+            ...rows.map(row=>({
+                "command": "SelectRow",
+                "controlID" : row.controlID
+            }))
+            ,
+            {
+                ".type": "com.oracle.e1.jdemf.FormAction",
+                command: "DoAction",
+                controlID: "63"
+            }
+        ]
+    }
+);
+
 
 const actionStartConfirmation = (rowId) => {
     return {
@@ -192,8 +234,8 @@ export const searchShipmentBackup = (orderNumber, token, callback, errorHandler)
     callStackService(createStack(token, actionSearchBackup(orderNumber)), callback, errorHandler);
 }
 
-export const addShipmentBackup = (orderNumber, token, callback, errorHandler) => {
-    callStackService(createStack(token, actionAddBackup(orderNumber )), callback, errorHandler);
+export const addShipmentBackup = (orderNumber,bussinesUnit, token, callback, errorHandler) => {
+    callStackService(createStack(token, actionAddBackup(orderNumber,bussinesUnit )), callback, errorHandler);
 }
 
 export const startConfirmation = (token, stack, callback) => {
@@ -206,6 +248,22 @@ export const deleteBackup = (token, stack, rows, callback) => {
     callStackService(deleteBackup, callback);
 }
 
+export const confirmLineBackup = (token,stack,rows,callback) => {
+    const confirmLine = pushStack(token,actionConfirmLineBackup(rows),stack);    
+    callStackService(confirmLine,(response)=>{
+        //necesitamos dar click en buscar para limpiar seleccion
+        
+        const stackSearch = {
+            stackId: response.data.stackId,
+            stateId: response.data.stateId,
+            rid: response.data.rid,
+            
+        }
+        const pushSearch = pushStack(token,actionPressSearchBackup(),stackSearch);
+        
+        callStackService(pushSearch,callback);
+    });
+}
 const createStack = (token, formRequest) => {
     return {
         token,
