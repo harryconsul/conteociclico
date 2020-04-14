@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     View, StyleSheet, Alert, KeyboardAvoidingView
-    , ImageBackground,ActivityIndicator
+    , ImageBackground, ActivityIndicator, Vibration,
 } from 'react-native';
 import Field from '../components/Field';
 import { ArticleCard, ArticleScanMode } from '../components'
@@ -28,7 +28,6 @@ class PickupBarcodInput extends React.Component {
             etiqueta: '',
             isLoading: false,
         }
-
     }
 
     componentDidMount = () => {
@@ -84,6 +83,11 @@ class PickupBarcodInput extends React.Component {
 
 
 
+    }
+
+    StartVibrationFunction = () => {
+        // Device Will Vibrate for 10 seconds.
+        Vibration.vibrate(1000);
     }
 
     producto = () => {
@@ -200,9 +204,9 @@ class PickupBarcodInput extends React.Component {
 
                                 const item = { ...editingItem };
 
-                                
-                                if(this.props.confirmLineBackupCallback && editingItem.qty===0 && encontrado){
-                                    
+
+                                if (this.props.confirmLineBackupCallback && editingItem.qty === 0 && encontrado) {
+
                                     this.props.confirmLineBackupCallback(editingItem);
                                 }
 
@@ -221,7 +225,7 @@ class PickupBarcodInput extends React.Component {
 
                             }
 
-                            if(encontrado){ // si encontrado , sal del ciclo for
+                            if (encontrado) { // si encontrado , sal del ciclo for
                                 break;
                             }
 
@@ -288,10 +292,10 @@ class PickupBarcodInput extends React.Component {
                                     });
 
                                     const item = { ...editingItem };
-                                    
-                                   
-                                    if(this.props.confirmLineBackupCallback && editingItem.qty===0 && encontrado){
-                                        
+
+
+                                    if (this.props.confirmLineBackupCallback && editingItem.qty === 0 && encontrado) {
+
                                         this.props.confirmLineBackupCallback(editingItem);
                                     }
 
@@ -310,10 +314,10 @@ class PickupBarcodInput extends React.Component {
 
                                 }
 
-                                if(encontrado){ // si encontrado , sal del ciclo for
+                                if (encontrado) { // si encontrado , sal del ciclo for
                                     break;
                                 }
-    
+
 
                             }
                         }
@@ -322,6 +326,7 @@ class PickupBarcodInput extends React.Component {
                 } //for
 
                 if (!encontrado) {
+                    this.StartVibrationFunction();
                     Alert.alert(producto.producto + ' (' + producto.um + ')', 'No se ubica en la lista o excede el limite');
                 }
             }); //producto

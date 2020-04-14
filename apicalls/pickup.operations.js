@@ -25,6 +25,25 @@ const actionSearchShipment = (orderNumber) => {
     }
 }
 
+const actionSearchAlmacenista = (orderNumber) => {
+    return {
+        formName: "P554211C_W554211CA",
+        version: "",
+        maxPageSize: 500,
+        formActions: [
+            {
+                command: "SetControlValue",
+                value: orderNumber,
+                controlID: "17"
+            },
+            {
+                command: "DoAction",
+                controlID: "15",
+            }
+        ]
+    }
+}
+
 //Buscar en la pantalla respaldo de RECOLECCION.
 const actionSearchBackup = (orderNumber) => {
     return {
@@ -36,7 +55,7 @@ const actionSearchBackup = (orderNumber) => {
                 command: "SetQBEValue",
                 value: orderNumber,
                 "controlID": "1[24]"
-            },            
+            },
             {
                 command: "DoAction",
                 controlID: "15",
@@ -46,9 +65,9 @@ const actionSearchBackup = (orderNumber) => {
 }
 const actionPressSearchBackup = () => {
     return {
-        formOID: "W574211UA",       
+        formOID: "W574211UA",
         maxPageSize: 500,
-        formActions: [                      
+        formActions: [
             {
                 command: "DoAction",
                 controlID: "15",
@@ -63,9 +82,9 @@ const actionDeleteBackup = (rows) => (
     {
         formOID: "W574211UA",
         formActions: [
-            ...rows.map(row=>({
+            ...rows.map(row => ({
                 "command": "SelectRow",
-                "controlID" : row.controlID
+                "controlID": row.controlID
             }))
             ,
             {
@@ -77,7 +96,27 @@ const actionDeleteBackup = (rows) => (
     }
 );
 
-const actionAddBackup = (orderNumber,bussinesUnit) => {
+const actionConfirmAlmacenista = (rows,user) => (
+    {
+        formOID: "W554211CA",
+        formActions: [
+            ...rows.map(row => ({
+                "command": "SelectRow",
+                "controlID": row.controlID
+            })),
+            {
+                "command": "SetControlValue",
+                "value": user,
+                "controlID": "38"
+            },
+            {
+                "command": "DoAction",
+                "controlID": "35"
+            }
+        ]
+    }
+);
+const actionAddBackup = (orderNumber, bussinesUnit) => {
     return {
         formName: "P574211U_W574211UB",
         version: "",
@@ -107,9 +146,9 @@ const actionConfirmLineBackup = (rows) => (
     {
         formOID: "W574211UA",
         formActions: [
-            ...rows.map(row=>({
+            ...rows.map(row => ({
                 "command": "SelectRow",
-                "controlID" : row.controlID
+                "controlID": row.controlID
             }))
             ,
             {
@@ -230,12 +269,16 @@ export const searchShipment = (orderNumber, token, callback, errorHandler) => {
 
 }
 
+export const searchAlmacenista = (orderNumber, token, callback, errorHandler) => {
+    callStackService(createStack(token, actionSearchAlmacenista(orderNumber)), callback, errorHandler);
+}
+
 export const searchShipmentBackup = (orderNumber, token, callback, errorHandler) => {
     callStackService(createStack(token, actionSearchBackup(orderNumber)), callback, errorHandler);
 }
 
-export const addShipmentBackup = (orderNumber,bussinesUnit, token, callback, errorHandler) => {
-    callStackService(createStack(token, actionAddBackup(orderNumber,bussinesUnit )), callback, errorHandler);
+export const addShipmentBackup = (orderNumber, bussinesUnit, token, callback, errorHandler) => {
+    callStackService(createStack(token, actionAddBackup(orderNumber, bussinesUnit)), callback, errorHandler);
 }
 
 export const startConfirmation = (token, stack, callback) => {
@@ -248,20 +291,25 @@ export const deleteBackup = (token, stack, rows, callback) => {
     callStackService(deleteBackup, callback);
 }
 
-export const confirmLineBackup = (token,stack,rows,callback) => {
-    const confirmLine = pushStack(token,actionConfirmLineBackup(rows),stack);    
-    callStackService(confirmLine,(response)=>{
+export const confirmAlmacenista = (token, stack, rows, callback) => {
+    const confirmAlmacenista = pushStack(token, actionConfirmAlmacenista(rows,token.username), stack);
+    callStackService(confirmAlmacenista, callback);
+}
+
+export const confirmLineBackup = (token, stack, rows, callback) => {
+    const confirmLine = pushStack(token, actionConfirmLineBackup(rows), stack);
+    callStackService(confirmLine, (response) => {
         //necesitamos dar click en buscar para limpiar seleccion
-        
+
         const stackSearch = {
             stackId: response.data.stackId,
             stateId: response.data.stateId,
             rid: response.data.rid,
-            
+
         }
-        const pushSearch = pushStack(token,actionPressSearchBackup(),stackSearch);
-        
-        callStackService(pushSearch,callback);
+        const pushSearch = pushStack(token, actionPressSearchBackup(), stackSearch);
+
+        callStackService(pushSearch, callback);
     });
 }
 const createStack = (token, formRequest) => {

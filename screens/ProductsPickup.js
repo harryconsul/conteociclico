@@ -10,7 +10,8 @@ import Field from '../components/Field';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
 import {
     searchShipment, startConfirmation, shipmentConfirmation, printShipment,
-    searchShipmentBackup, deleteBackup, addShipmentBackup,confirmLineBackup,
+    searchShipmentBackup, deleteBackup, addShipmentBackup, confirmLineBackup,
+    searchAlmacenista,confirmAlmacenista
 } from '../apicalls/pickup.operations';
 import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, actionSetSucursal } from '../store/actions/actions.creators';
 import { transactionModes } from '../constants'
@@ -72,10 +73,10 @@ class ProductsPickup extends React.Component {
         });
     }
 
-    confirmLineBackupCallback = (row) =>{
-         
-         const rows = this.state.rowsBackup.filter(item=>item.lineNumber===row.lineNumber);
-         confirmLineBackup(this.props.token,this.state.stackBackup,rows,(response)=>{
+    confirmLineBackupCallback = (row) => {
+
+        const rows = this.state.rowsBackup.filter(item => item.lineNumber === row.lineNumber);
+        confirmLineBackup(this.props.token, this.state.stackBackup, rows, (response) => {
 
             const stackBackup = {
                 stackId: response.data.stackId,
@@ -83,9 +84,9 @@ class ProductsPickup extends React.Component {
                 rid: response.data.rid,
                 currentApplication: "P574211U_W574211UA",
             };
-            
-            this.setState({stackBackup});
-         });
+
+            this.setState({ stackBackup });
+        });
     }
     openBarcode = (screen) => {
         if (this.state.articles) {
@@ -101,7 +102,7 @@ class ProductsPickup extends React.Component {
                             name: screen,
                             passProps: {
                                 qtyLabel: "Recolectado",
-                                confirmLineBackupCallback : this.confirmLineBackupCallback,
+                                confirmLineBackupCallback: this.confirmLineBackupCallback,
                             }
                         },
                         options: {
@@ -223,12 +224,20 @@ class ProductsPickup extends React.Component {
         });
     }
 
+    confirmAlmacenista = (stack, rows) => {
+        return new Promise((resolve, reject) => {
+            confirmAlmacenista(this.props.token, stack, rows, (response) => {
+                resolve(response);
+            }, (reason) => reject(reason));
+        });
+    }
+
     searchOrder = () => {
         const { orderNumber } = this.state;
         if (orderNumber != '') {
             this.setState({ isLoading: true });
 
-           
+
 
             searchShipment(orderNumber, this.props.token, (response) => {
 
@@ -252,36 +261,60 @@ class ProductsPickup extends React.Component {
                 if (orders.length != 0) {
                     //Usar el 1er item
                     const order = orders[0];
-                    
-                    addShipmentBackup(orderNumber,order.sucursal, this.props.token, () => {
+
+                    addShipmentBackup(orderNumber, order.sucursal, this.props.token, () => {
                         searchShipmentBackup(orderNumber, this.props.token, (response) => {
                             const filasBackup = response;
-        
+
                             const rawRows = filasBackup.data.fs_P574211U_W574211UA.data.gridData.rowset;
-                           
+
                             const rowsBackup = rawRows.map(row => ({
-                                "recoleccionCompletada":row.chOneWorldEventPoint01_56.value,
+                                "recoleccionCompletada": row.chOneWorldEventPoint01_56.value,
                                 "controlID": "1." + String(row.rowIndex),
-                                "lineNumber":row.mnLineNumber_20.value,
+                                "lineNumber": row.mnLineNumber_20.value,
                             }));
-        
+
                             const stackBackup = {
                                 stackId: filasBackup.data.stackId,
                                 stateId: filasBackup.data.stateId,
                                 rid: filasBackup.data.rid,
                                 currentApplication: "P574211U_W574211UA",
                             }
-        
-                            if (rowsBackup.length > 0){
+
+                            if (rowsBackup.length > 0) {
                                 this.setState({ rowsBackup, stackBackup });
                             }
-                                
-                           
-                            
-                        },null);
-    
-                    },null);
-                    
+
+
+
+                        }, null);
+
+                    }, null);
+
+                    //Al confirmar la recolección, se va a guardar el almacenista por linea.
+                    searchAlmacenista(orderNumber, this.props.token, (response) => {
+                        const filasAlmacenista = response;
+
+                        const rawRows = response.data.fs_P554211C_W554211CA.data.gridData.rowset;
+
+                        const rowsAlmacenista = rawRows.map((row) => ({
+                            "controlID": "1." + String(row.rowIndex),
+                            "lineNumber": row.mnLineNumber_47.value,
+                        }));
+
+                        const stackAlmacenista = {
+                            stackId: filasAlmacenista.data.stackId,
+                            stateId: filasAlmacenista.data.stateId,
+                            rid: filasAlmacenista.data.rid,
+                            currentApplication: "P554211C_W554211CA",
+                        }
+
+                        if (rowsAlmacenista.length > 0) {
+                            this.setState({ rowsAlmacenista, stackAlmacenista });
+                        }
+
+                    }, null);
+
                     this.sucursal(order.sucursal).then((nombreSucursal) => {
                         order.nombreSucursal = nombreSucursal;
                         this.setState({ order, isLoading: false, isConfirming: true });
@@ -296,7 +329,7 @@ class ProductsPickup extends React.Component {
                         currentApplication: "P554205A_W554205AD",
                     }
                     this.props.dispatch(actionUpdateStack(stack));
-        
+
                 } else {
                     this.setState({ orderNumber: '' })
                     Alert.alert('Recolección ' + orderNumber + ' procesada o no existe');
@@ -313,10 +346,10 @@ class ProductsPickup extends React.Component {
     startPickup = () => {
         //Se ejecuta al dar tap sobre INICIAR RECOLECCIÓN.
         this.setState({ isConfirming: false, isLoading: true });
-        const {rowsBackup} = this.state;
+        const { rowsBackup } = this.state;
 
         startConfirmation(this.props.token, this.props.stack, (response) => {
-           
+
             const errors = response.data.fs_P554205A_W554205AE.errors;
 
             if (errors.length === 0) {
@@ -337,8 +370,8 @@ class ProductsPickup extends React.Component {
                     const etiqueta = rawRows[i].mnNmeronico_253.value;
 
                     let recoleccionCompletada = "";
-                    
-                    
+
+
 
                     let value = {
                         key,
@@ -355,20 +388,20 @@ class ProductsPickup extends React.Component {
                         prevStatus: rawRows[i].sLastStat_48.value,
                         nextStatus: rawRows[i].sNextStat_47.value,
                         ordenTipo: rawRows[i].sOrTy_77.value,
-                        lineNumber:rawRows[i].mnLineNumber_177.value,
+                        lineNumber: rawRows[i].mnLineNumber_177.value,
                     }
-                    const rowBackup = rowsBackup.find(item=>item.lineNumber===value.lineNumber);
-                    if(rowBackup){
-                        recoleccionCompletada = rowBackup.recoleccionCompletada; 
+                    const rowBackup = rowsBackup.find(item => item.lineNumber === value.lineNumber);
+                    if (rowBackup) {
+                        recoleccionCompletada = rowBackup.recoleccionCompletada;
                     }
 
-                    if(recoleccionCompletada==="X"){
+                    if (recoleccionCompletada === "X") {
                         //si ya tiene una X no tiene que recolectar
-                        value.qty=0;
-                    } 
+                        value.qty = 0;
+                    }
                     //Sólo mostrar productos que esten en 560 y que tenga número de lote.
                     // y que su orderBackup no sea X
-                    if (nextStatus === '560' && lote !== '' && recoleccionCompletada!=="X") {
+                    if (nextStatus === '560' && lote !== '' && recoleccionCompletada !== "X") {
                         this.unidadMedida(itemNumber).then((conversiones) => {
                             value.conversiones = conversiones;
                         });
@@ -380,7 +413,7 @@ class ProductsPickup extends React.Component {
 
                     allProducts.set(key, value);
                 }
-               
+
                 this.props.dispatch(actionSetArticlesMap(toPickup));
 
                 this.setState({ isLoading: false, articles: toPickup, allProducts, lineas });
@@ -420,18 +453,18 @@ class ProductsPickup extends React.Component {
         const products = this.props.articles ? Array.from(this.props.articles.values()) : [];
 
         const collected = (this.state.articles ?
-           [...products]
+            [...products]
             :
             [])
             .filter((item) => !item.qty);
 
         const missingToCollect = (products ?
-        [...products]
-        :
-        [])
-        .filter((item) => item.qty>0);
+            [...products]
+            :
+            [])
+            .filter((item) => item.qty > 0);
 
-       
+
 
         const list = [];
         const { allProducts } = this.state;
@@ -441,14 +474,14 @@ class ProductsPickup extends React.Component {
         }
 
         for (let article of allProducts.values()) {
-            if(article.nextStatus!=='560'){ // desmarcar los articulos que fueron parcialemente recolectados
+            if (article.nextStatus !== '560') { // desmarcar los articulos que fueron parcialemente recolectados
                 list.push({ ...article, set: "0" });
             }
         }
-
-        if (missingToCollect.length===0 )  { 
+        
+        if (missingToCollect.length === 0) {
             this.setState({ isLoading: true });
-           
+
             shipmentConfirmation(this.props.token, this.props.stack, list, (response) => {
                 const errors = response.data.fs_P554205A_W554205AD.errors;
 
@@ -457,6 +490,11 @@ class ProductsPickup extends React.Component {
                     const { stackBackup, rowsBackup } = this.state;
                     this.deleteBackup(stackBackup, rowsBackup).then((response) => {
                     }, (error) => { console.warn('Error al eliminar backup ', error) });
+
+                    //Marcar el almacenista
+                    const { rowsAlmacenista, stackAlmacenista } = this.state;
+                    this.confirmAlmacenista(stackAlmacenista, rowsAlmacenista).then((response) => {
+                    }, (error) => { console.warn('Error al confirmar almacenista ', error) });
 
                     Alert.alert(
                         'Proceso terminado',
@@ -485,14 +523,14 @@ class ProductsPickup extends React.Component {
                         ],
                         { cancelable: false },
                     );
-                }else {
+                } else {
                     const { orderNumber } = this.state;
                     this.setState({ isLoading: false });
-    
+
                     let mensaje = ''
                     for (let error of errors)
                         mensaje += mensaje !== '' ? ', ' + error.TITLE : error.TITLE;
-    
+
                     //se usa el siguiente alert, porque algunas veces viene vacío aunque tiene valor
                     const alert = mensaje !== '' ? mensaje : 'La orden tiene errores, no puede ser procesada';
                     Alert.alert('No. de Orden ' + orderNumber,
@@ -510,6 +548,7 @@ class ProductsPickup extends React.Component {
         } else {
             Alert.alert("Debe recolectar todos los articulos para confirmar");
         }
+        
     }
 
     handleSelectRow = (key) => {
