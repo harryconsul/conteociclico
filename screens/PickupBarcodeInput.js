@@ -256,7 +256,8 @@ class PickupBarcodInput extends React.Component {
 
                         //console.warn(umFiltradas);
                         if (umFiltradas.length != 0) {
-                            const conversion = parseInt(umFiltradas[0].valorConversion);
+                            const conversion_texto = umFiltradas[0].valorConversion.replace(',','');
+                            const conversion = parseInt(conversion_texto);
 
                             const key = linea.key;
 
