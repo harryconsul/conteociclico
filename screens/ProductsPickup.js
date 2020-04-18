@@ -11,7 +11,7 @@ import { ItemView, ItemHightLight, ItemLabel } from '../components'
 import {
     searchShipment, startConfirmation, shipmentConfirmation, printShipment,
     searchShipmentBackup, deleteBackup, addShipmentBackup, confirmLineBackup,
-    searchAlmacenista,confirmAlmacenista
+    searchAlmacenista, confirmAlmacenista
 } from '../apicalls/pickup.operations';
 import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, actionSetSucursal } from '../store/actions/actions.creators';
 import { transactionModes } from '../constants'
@@ -177,9 +177,9 @@ class ProductsPickup extends React.Component {
         });
     }
 
-    printOrder = () => {
+    printOrder = (orderNumber) => {
         return new Promise((resolve, reject) => {
-            searchShipment(this.state.orderNumber, this.props.token, (response) => {
+            searchShipment(orderNumber, this.props.token, (response) => {
                 const rawRows = response.data.fs_P554205A_W554205AD.data.gridData.rowset;
 
                 const stack = {
@@ -478,7 +478,7 @@ class ProductsPickup extends React.Component {
                 list.push({ ...article, set: "0" });
             }
         }
-        
+
         if (missingToCollect.length === 0) {
             this.setState({ isLoading: true });
 
@@ -495,6 +495,8 @@ class ProductsPickup extends React.Component {
                     const { rowsAlmacenista, stackAlmacenista } = this.state;
                     this.confirmAlmacenista(stackAlmacenista, rowsAlmacenista).then((response) => {
                     }, (error) => { console.warn('Error al confirmar almacenista ', error) });
+                    
+                    const orden = this.state.orderNumber;
 
                     Alert.alert(
                         'Proceso terminado',
@@ -503,26 +505,22 @@ class ProductsPickup extends React.Component {
                             {
                                 text: 'No',
                                 onPress: () => {
-                                    this.setState({ ...initialState });
-                                    this.props.dispatch(actionSetArticlesMap(new Map()));
-                                    this.setState({ isLoading: false });
                                 }
                             },
                             {
                                 text: 'Si',
                                 onPress: () => {
-                                    this.printOrder().then((respuesta) => {
-                                        if (respuesta) {
-                                            this.setState({ ...initialState });
-                                            this.props.dispatch(actionSetArticlesMap(new Map()));
-                                            this.setState({ isLoading: false });
-                                        }
+                                    this.printOrder(orden).then((respuesta) => {
                                     }, (error) => { Alert.alert('Error al imprimir documento ', error) });
                                 }
                             }
                         ],
                         { cancelable: false },
                     );
+                    //Limpiar variables. 
+                    this.setState({ ...initialState });
+                    this.props.dispatch(actionSetArticlesMap(new Map()));
+                    this.setState({ isLoading: false });
                 } else {
                     const { orderNumber } = this.state;
                     this.setState({ isLoading: false });
@@ -548,7 +546,7 @@ class ProductsPickup extends React.Component {
         } else {
             Alert.alert("Debe recolectar todos los articulos para confirmar");
         }
-        
+
     }
 
     handleSelectRow = (key) => {
