@@ -486,16 +486,14 @@ class ProductsPickup extends React.Component {
                 const errors = response.data.fs_P554205A_W554205AD.errors;
 
                 if (errors.length === 0) {
-                    //Eliminar en tabla Backup
+                    //recuperar datos para eliminar respaldo
                     const { stackBackup, rowsBackup } = this.state;
-                    this.deleteBackup(stackBackup, rowsBackup).then((response) => {
-                    }, (error) => { console.warn('Error al eliminar backup ', error) });
 
                     //Marcar el almacenista
                     const { rowsAlmacenista, stackAlmacenista } = this.state;
                     this.confirmAlmacenista(stackAlmacenista, rowsAlmacenista).then((response) => {
                     }, (error) => { console.warn('Error al confirmar almacenista ', error) });
-                    
+
                     const orden = this.state.orderNumber;
 
                     Alert.alert(
@@ -511,6 +509,11 @@ class ProductsPickup extends React.Component {
                                 text: 'Si',
                                 onPress: () => {
                                     this.printOrder(orden).then((respuesta) => {
+                                        if (respuesta) {
+                                            //Eliminar en tabla Backup
+                                            this.deleteBackup(stackBackup, rowsBackup).then((response) => {
+                                            }, (error) => { console.warn('Error al eliminar backup ', error) });
+                                        }
                                     }, (error) => { Alert.alert('Error al imprimir documento ', error) });
                                 }
                             }
