@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {Alert} from 'react-native';
-
+import {clearAllJDEScreens} from './clean_jde.operations';
 const userLogin=(username,password,environment,callback,fallback)=>{
     if(environment==="PY"){
         axios.defaults.baseURL="http://hh.dicipa.xlynk.mx:91/jderest/";
@@ -12,7 +12,10 @@ const userLogin=(username,password,environment,callback,fallback)=>{
         password,
         "deviceName": "RESTclient",
         "role": "*ALL"
-    }).then(callback).catch(()=>{
+    }).then((response)=>{
+        clearAllJDEScreens(response.data.userInfo.token,username);
+        callback(response);
+    }).catch(()=>{
         if(fallback){
             fallback();
         }else{
