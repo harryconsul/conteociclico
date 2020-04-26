@@ -10,6 +10,7 @@ import { actionLogin } from '../store/actions/actions.creators';
 
 import Realm from 'realm';
 import userLogin from '../apicalls/user.login';
+import userLogout from '../apicalls/user.logout';
 import backgroundImage from '../assets/mainBg.jpg';
 import menuIcon from '../assets/iconmenu.png'
 
@@ -25,6 +26,14 @@ const UserSchema = {
 
     }
 
+}
+const TokenSchema = {
+    name: "token",
+    primaryKey: 'token',
+    properties: {
+        token: 'string',
+        environment:'string',
+    }
 }
 const callMainApp = () => {
     Navigation.setRoot({
@@ -96,7 +105,34 @@ class Auth extends Component {
     }
 
     componentDidMount() {
-        Realm.open({ schema: [UserSchema] }).then((realm) => this.setState({ realm }));
+        Realm.open({ schema: [UserSchema,TokenSchema] }).then((realm) => {
+
+            realm.write(()=>{
+                const tokens = realm.objects('token');
+                
+                if(tokens.length){
+                    const tokensToClose = [];
+                    for(let i = 0; i<tokens.length;i++){
+                        tokensToClose.push({...tokens[i]});
+                    }
+                    tokensToClose.forEach(token=>{
+                        
+                        userLogout(token.token,(response)=>{
+                            //Notificar al usuario que cerramos su sesion anterior ?
+                    
+                        },token.environment,()=>{
+                            //informar que no se puedo cerrar?
+                            
+                        });
+                    });
+
+                }
+                
+                realm.delete(tokens);
+            });
+
+            this.setState({ realm })
+        });
 
 
     }
@@ -146,6 +182,12 @@ class Auth extends Component {
                         username,
                         name: responseInfo.alphaName,
                         token: responseInfo.token,
+                    });
+                    this.state.realm.write(() => {
+                        this.state.realm.create('token', { 
+                            "token":responseInfo.token,
+                            "environment": this.state.environment,
+                         }, true);
                     });
                     this.state.realm.close();
                     callMainApp();
