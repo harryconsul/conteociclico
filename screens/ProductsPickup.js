@@ -401,12 +401,15 @@ class ProductsPickup extends React.Component {
                     }
                     //Sólo mostrar productos que esten en 560 y que tenga número de lote.
                     // y que su orderBackup no sea X
-                    if (nextStatus === '560' && lote !== '' && recoleccionCompletada !== "X") {
-                        this.unidadMedida(itemNumber).then((conversiones) => {
-                            value.conversiones = conversiones;
-                        });
+                    if (nextStatus === '560' && lote !== '') {
+                        //Interesa saber el total, incluso las que ya estan con X por esa razón se agrega este if y se quito el AND
+                        if (recoleccionCompletada !== "X") {
+                            this.unidadMedida(itemNumber).then((conversiones) => {
+                                value.conversiones = conversiones;
+                            });
 
-                        toPickup.set(key, value);
+                            toPickup.set(key, value);
+                        }
 
                         lineas += 1;
                     }
