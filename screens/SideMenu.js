@@ -62,10 +62,10 @@ class SideMenu extends React.Component {
     }
     render() {
         return (
-            <View style={{ paddingTop: 50, height: "100%", backgroundColor: '#8c30f1' }} >
+            <View style={{ paddingTop: 50, paddingLeft:15, height: "100%", backgroundColor: '#8c30f1' }} >
                 <View style={{ height: '80%' }}>
-                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false)}
-                        optionName="Conteo Ciclico" />
+                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Administra Inventarios", false)}
+                        optionName="Administra Inventarios" />
                     <SideMenuItem 
                         optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false,{
                                 conteoSucursal:true
@@ -75,8 +75,6 @@ class SideMenu extends React.Component {
                         optionName="Consulta de Existensias" />
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("QueryAvailableArticles", "Artículos Disponibles", false)}
                         optionName="Artículos Disponibles" />
-                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("PlaceSign", "Firma", false)}
-                        optionName="Firma Algo" />
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("ProductsPickup", "Recolección", true)}
                         optionName="Recoleccion de Producto" />
                     <SideMenuItem
