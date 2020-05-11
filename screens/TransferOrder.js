@@ -1,5 +1,6 @@
 import React from 'react';
 import { ClientField,ItemView,ItemHightLight,ItemLabel } from '../components';
+import {BusinessUnit} from '../components/BusinessUnit';
 import { componentstyles } from '../styles'
 import { View, ImageBackground, ActivityIndicator, Button, Alert, FlatList,KeyboardAvoidingView ,TouchableOpacity} from 'react-native';
 import { Navigation } from 'react-native-navigation'
@@ -7,7 +8,7 @@ import backgroundImage from '../assets/labmicroBg.jpg';
 import {topBarButtons} from '../constants/'
 import { startTransferOrder, fillOrderDetail } from '../apicalls/transfer_order';
 import { connect } from 'react-redux';
-import { actionUpdateStack } from '../store/actions/actions.creators'
+import { actionUpdateStack, actionSetArticlesMap } from '../store/actions/actions.creators'
 
 class TransferOrder extends React.Component {
 
@@ -25,13 +26,35 @@ class TransferOrder extends React.Component {
 
     }
     navigationButtonPressed = ({ buttonId }) => {
+        
         switch(buttonId){
                case 'close':
                    this.close();
-                   break;              
+                   break; 
+                case 'refresh':
+                    this.resetComponent();
+                    break;                 
                default:
-                    this.close();
+                Navigation.mergeOptions('SideMenu', {
+                    sideMenu: {
+                        left: {
+                            visible: true
+                        }
+                    }
+                });
         } 
+
+    }
+
+    resetComponent = () => {
+        this.setState( {
+            clienteOrigen: "",
+            clienteDestino: this.props.clienteDestino,
+            isLoading: false,
+        });
+        if ( this.props.standaloneProcess) {
+            this.props.dispatch(actionSetArticlesMap(new Map()));            
+        }
     }
     close=()=>{
 
@@ -41,22 +64,33 @@ class TransferOrder extends React.Component {
     }
   
     componentDidMount() {
-        Navigation.mergeOptions(this.props.componentId, {
-            topBar: {
-              title: {
-                text: 'Orden de Transferencia'
-              },
-              drawBehind: true,
-              background: {
-                color: '#8c30f1c7',
-                translucent: true,
-                blur: false
-              },
-              visible: true,
-              ...topBarButtons.rightButtonsClose
+        if(this.props.standaloneProcess){
+
+            Navigation.mergeOptions(this.props.componentId, {
+                topBar: {                  
+                  ...topBarButtons.rightButtonsRefreshOnly,                
+                },
+              });
             
-            },
-          });
+        } else {
+            Navigation.mergeOptions(this.props.componentId, {
+                topBar: {
+                  title: {
+                    text: 'Orden de Transferencia'
+                  },
+                  drawBehind: true,
+                  background: {
+                    color: '#8c30f1c7',
+                    translucent: true,
+                    blur: false
+                  },
+                  visible: true,
+                  ...topBarButtons.rightButtonsClose
+                
+                },
+              });
+        }
+      
         startTransferOrder(this.props.token, (response) => {
             const stack = {
                 stackId: response.data.stackId,
@@ -71,7 +105,9 @@ class TransferOrder extends React.Component {
         this.setState({ isLoading: true });
         const list = [];
 
-        for (let article of this.props.articles.values()) {
+        const articles = this.props.standaloneProcess?this.props.captureArticules:this.props.articles;
+
+        for (let article of articles.values()) {
             //const article = this.props.articles[key]
             if (article.qty) {
                 list.push(article);
@@ -87,13 +123,35 @@ class TransferOrder extends React.Component {
         });
 
     }
+    setupArticles = () => {
+        Navigation.showModal({
+            stack: {
+                children: [
+                    {
+                        component: {
+                            name: 'ArticleSetup',
+                            passProps: {
+                                businessUnit: this.state.clienteOrigen,
+                                setupPrice: false,
+                            }
+                        },
+
+                    }
+                ]
+            }
+        });
+    }
     render() {
         const list = [];
 
-        for (let article of this.props.articles.values()) {
-            //const article = this.props.articles[key]
-            if (article.qty) {
-                list.push(article);
+        const articles = this.props.standaloneProcess?this.props.captureArticules:this.props.articles;
+
+        if(articles){
+            for (let article of articles.values()) {
+                //const article = this.props.articles[key]
+                if (article.qty) {
+                    list.push(article);
+                }
             }
         }
 
@@ -108,26 +166,41 @@ class TransferOrder extends React.Component {
                                     animating={true} size={"large"} />
                                 : null
                         }
-                        <ClientField label="De : "
+                        <BusinessUnit label="De : " placeholder="#####"
                             token={this.props.token}
-                            clientNumber={this.state.clienteOrigen}
-                            setClientNumber={(cliente) => {
+                            defaultValue = {this.state.clienteOrigen}
+                            unidad={(cliente) => {
                                 this.setState({
                                     clienteOrigen: cliente,
                                 });
-                            }} />
-                        <ClientField label="Para : "
-                            token={this.props.token}
-                            clientNumber={this.state.clienteDestino}
-                            setClientNumber={(cliente) => {
-                                this.setState({
-                                    clienteDestino: cliente,
-                                });
-                            }} />
-                        <View style={{marginBottom:20,marginTop:10,padding:10}} >
-                        <Button  title="Guardar Orden de Transferencia" onPress={this.saveOrder} />
+                            }} />   
+                        <BusinessUnit label="Para : " placeholder="#####"
+                        token={this.props.token}
+                        defaultValue = {this.state.clienteDestino}
+                        unidad={(cliente) => {
+                            this.setState({
+                                clienteDestino: cliente,
+                            });
+                        }} />   
+                                                
+                        {
+                            this.props.standaloneProcess
+                                ?<View style={{marginBottom:5,marginTop:10,padding:10}} >
+                                    <Button  title="Agregar Articulos" onPress={this.setupArticles} />
 
-                        </View>
+                                </View> 
+                                :null
+                        }
+
+                        {
+                            list.length 
+                                ?<View style={{marginBottom:20,marginTop:10,padding:10}} >
+                                    <Button  title="Guardar Orden de Transferencia" onPress={this.saveOrder} />
+
+                                </View> 
+                                :null
+                        }
+                        
                         
                         <FlatList data={list}
                         renderItem={({ item, index }) =>
@@ -169,6 +242,7 @@ const mapStateToProps = (state) => {
         user: state.user,
         token: state.user.token,
         stack: state.stack,
+        captureArticules : state.articles
 
     }
 

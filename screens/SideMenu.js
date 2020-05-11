@@ -19,7 +19,8 @@ class SideMenu extends React.Component {
         if (showBarcodeButtons) {
             rightButtons = { ...topBarButtons.rightButtons }
         }
-        Navigation.push(this.props.currentScreen, {
+        let currentScreen = this.props.openMain ? this.props.componentId : this.props.currentScreen;
+        Navigation.push(currentScreen, {
             component: {
                 id: option,
                 name: option,
@@ -45,6 +46,15 @@ class SideMenu extends React.Component {
             }
         });
     }
+    navigationButtonPressed({ buttonId }) {
+        Navigation.mergeOptions('SideMenu', {
+            sideMenu: {
+                left: {
+                    visible: true
+                }
+            }
+        });
+    }
 
     userLogOut = () => {
         this.setState({ isLoading: true });
@@ -64,7 +74,7 @@ class SideMenu extends React.Component {
         return (
             <View style={{ paddingTop: 50, height: "100%", backgroundColor: '#8c30f1' }} >
                 <View style={{ height: '80%' }}>
-                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false)}
+                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Listado de Conteo", false)}
                         optionName="Conteo Ciclico" />
                     <SideMenuItem 
                         optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false,{
@@ -98,7 +108,10 @@ class SideMenu extends React.Component {
                     />
                      <SideMenuItem optionName="Orden de Transferencia**"
                         optionClickHandle={() =>
-                            this.optionClickHandle("TransferOrder", "Orden de Transferencia", false)}
+                            this.optionClickHandle("TransferOrder", "Orden de Transferencia", false,
+                            {
+                                standaloneProcess:true,
+                            })}
                     />
                 </View>
                 <View style={{ height: '20%' }}>

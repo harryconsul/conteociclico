@@ -86,7 +86,7 @@ export const fillOrderDetail = (token, stack, form,rows, callback) => {
 
     const action = pushStack(token, actionSetTransferDetail(form,rows), stack);
     callStackService(action, (response) => {
-        console.warn(response);
+        
         if (!errorHelpers.handleErrors(response.data.fs_P564210F_W564210FA)) {
             const stackConfirm = {
                 stackId: response.data.stackId,

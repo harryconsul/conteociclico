@@ -43,6 +43,7 @@ const callMainApp = () => {
                     component: {
                         id: "SideMenu",
                         name: "SideMenu",
+                       
                     }
                 },
                 center: {
@@ -50,12 +51,16 @@ const callMainApp = () => {
                         children: [
                             {
                                 component: {
-                                    id: "CyclicCountList",
-                                    name: 'CyclicCountList',
+                                    id: "SideMenu",
+                                    name: 'SideMenu',
+                                    passProps : {
+                                        openMain:true,
+            
+                                    },
                                     options: {
                                         topBar: {
                                             title: {
-                                                text: 'Listados de Conteo',
+                                                text: 'DICIPA - BIENVENIDO',
                                                 color: "#ffffff"
                                             },
                                         }
