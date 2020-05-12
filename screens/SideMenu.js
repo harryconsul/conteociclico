@@ -14,7 +14,7 @@ class SideMenu extends React.Component {
     state = {
         isLoading: false,
     }
-    optionClickHandle = (option, title, showBarcodeButtons,optionProps) => {
+    optionClickHandle = (option, title, showBarcodeButtons, optionProps) => {
         let rightButtons = null;
         if (showBarcodeButtons) {
             rightButtons = { ...topBarButtons.rightButtons }
@@ -24,7 +24,7 @@ class SideMenu extends React.Component {
             component: {
                 id: option,
                 name: option,
-                passProps:optionProps?{...optionProps}:null,
+                passProps: optionProps ? { ...optionProps } : null,
                 options: {
                     topBar: {
                         title: {
@@ -72,14 +72,14 @@ class SideMenu extends React.Component {
     }
     render() {
         return (
-            <View style={{ paddingTop: 50, paddingLeft:15, height: "100%", backgroundColor: '#8c30f1' }} >
+            <View style={{ paddingTop: 50, paddingLeft: 15, height: "100%", backgroundColor: '#8c30f1' }} >
                 <View style={{ height: '80%' }}>
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Administra Inventarios", false)}
                         optionName="Administra Inventarios" />
-                    <SideMenuItem 
-                        optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false,{
-                                conteoSucursal:true
-                         })}
+                    <SideMenuItem
+                        optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false, {
+                            conteoSucursal: true
+                        })}
                         optionName="Conteo Ciclico - Sucursal" />
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("QueryArticles", "Consulta de Existensias", true)}
                         optionName="Consulta de Existensias" />
@@ -104,12 +104,16 @@ class SideMenu extends React.Component {
                         optionClickHandle={() =>
                             this.optionClickHandle("SaleOrder", "Orden de Venta", false)}
                     />
-                     <SideMenuItem optionName="Orden de Transferencia**"
+                    <SideMenuItem optionName="Orden de Transferencia**"
                         optionClickHandle={() =>
                             this.optionClickHandle("TransferOrder", "Orden de Transferencia", false,
-                            {
-                                standaloneProcess:true,
-                            })}
+                                {
+                                    standaloneProcess: true,
+                                })}
+                    />
+                    <SideMenuItem optionName="Entregas"
+                        optionClickHandle={() =>
+                            this.optionClickHandle("Deliveries", "Entregas", false)}
                     />
                 </View>
                 <View style={{ height: '20%' }}>

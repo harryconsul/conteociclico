@@ -6,7 +6,7 @@ import {AppRegistry} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
 */
-import  axios from 'axios';
+import axios from 'axios';
 import React from 'react';
 import { Navigation } from 'react-native-navigation';
 import Auth from './screens/Auth';
@@ -27,13 +27,14 @@ import PlaceAgreement from './screens/PlaceAgreement';
 import ArticleSetup from './screens/ArticleSetup';
 import TransferOrder from './screens/TransferOrder';
 import ConfirmTransfer from './screens/ConfirmTransfer';
+import Deliveries from './screens/Deliveries';
 import store from './store/store';
 import { actionSetCurrentScreen } from './store/actions/actions.creators';
 import { Provider } from 'react-redux';
 import AddProduct from './screens/AddProduct';
-import {navigationHelpers} from './helpers'
+import { navigationHelpers } from './helpers'
 
-axios.defaults.baseURL="http://207.249.158.84:91/jderest/";
+axios.defaults.baseURL = "http://207.249.158.84:91/jderest/";
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8';
 axios.defaults.timeout = 4 * 60 * 1000;
 
@@ -149,12 +150,18 @@ Navigation.registerComponent("ConfirmTransfer", () => (props) => (
   </Provider>
 ));
 
+Navigation.registerComponent("Deliveries", () => (props) => (
+  <Provider store={store}>
+    <Deliveries {...props} />
+  </Provider>
+));
+
 
 
 
 // Subscribe
 const screenEventListener = Navigation.events().registerComponentDidAppearListener(({ componentId, componentName, passProps }) => {
-  
+
   if (componentId !== "SideMenu") {
     store.dispatch(actionSetCurrentScreen(componentId))
   }
@@ -162,7 +169,7 @@ const screenEventListener = Navigation.events().registerComponentDidAppearListen
 
 Navigation.events().registerAppLaunchedListener(() => {
   navigationHelpers.callLogin();
- 
+
 });
 
 

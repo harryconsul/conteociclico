@@ -46,8 +46,13 @@ export const componentstyles=StyleSheet.create({
         fontSize:22,
         fontWeight:"bold",
         
-    }
-   
+    },
+    opacity:{
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0, 0.45)',
+        height: "100%",
+        width: "100%",
+    },
 
 
 })
