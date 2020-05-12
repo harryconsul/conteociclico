@@ -188,29 +188,19 @@ class ProductsPickup extends React.Component {
                     rid: response.data.rid,
                 }
 
-                const printRows = new Map();
-                for (let i = 0; i < rawRows.length; i++) {
-
-                    if (parseInt(rawRows[i].sLastStat_38.value) == 560) {
-                        const key = rawRows[i].rowIndex;
-                        const value = {
-                            key,
-                            rowId: rawRows[i].rowIndex,
-                        }
-
-                        printRows.set(key, value);
-                    }
-                }
-
-                const list = [];
-                for (let article of printRows.values()) {
-                    list.push({ ...article });
-                }
+                const lineas = rawRows.map(row => ({
+                    status: row.sLastStat_38.value,
+                    rowId: "1." + String(row.rowIndex),
+                }));
+                
+                const list = lineas.filter((item)=> item.status === "560");
 
                 if (list.length > 0) {
                     printShipment(this.props.token, stack, list, (response) => {
                         resolve(true);
                     })
+                }else{
+                    Alert.alert("No existen lineas en estatus 560 para Imprimir");
                 }
             }, (reason) => reject(reason));
         });
@@ -401,12 +391,15 @@ class ProductsPickup extends React.Component {
                     }
                     //Sólo mostrar productos que esten en 560 y que tenga número de lote.
                     // y que su orderBackup no sea X
-                    if (nextStatus === '560' && lote !== '' && recoleccionCompletada !== "X") {
-                        this.unidadMedida(itemNumber).then((conversiones) => {
-                            value.conversiones = conversiones;
-                        });
+                    if (nextStatus === '560' && lote !== '') {
+                        //Interesa saber el total, incluso las que ya estan con X por esa razón se agrega este if y se quito el AND
+                        if (recoleccionCompletada !== "X") {
+                            this.unidadMedida(itemNumber).then((conversiones) => {
+                                value.conversiones = conversiones;
+                            });
 
-                        toPickup.set(key, value);
+                            toPickup.set(key, value);
+                        }
 
                         lineas += 1;
                     }

@@ -225,7 +225,7 @@ const actionClickPrint = (rows) => (
         formActions: [
             rows.map(row => ({
                 "command": "SelectRow",
-                "controlID": "1." + row.rowId.toString()
+                "controlID": row.rowId
             })
             ),
             {
