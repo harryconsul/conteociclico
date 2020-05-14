@@ -16,7 +16,7 @@ import {
 import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, actionSetSucursal } from '../store/actions/actions.creators';
 import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
-import backgroundImage from '../assets/labmicroBg.jpg';
+import backgroundImage from '../assets/almacen.jpg';
 import { businessUnit, unidadMedida } from '../apicalls/business_unit.operations';
 
 const initialState = {

@@ -7,11 +7,10 @@ import {
 import { Navigation } from 'react-native-navigation';
 import { connect } from 'react-redux';
 import { actionLogin } from '../store/actions/actions.creators';
-
 import Realm from 'realm';
 import userLogin from '../apicalls/user.login';
 import userLogout from '../apicalls/user.logout';
-import backgroundImage from '../assets/mainBg.jpg';
+import backgroundImage from '../assets/labmicroBg.jpg';
 import menuIcon from '../assets/iconmenu.png'
 
 import { componentstyles } from '../styles'
