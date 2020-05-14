@@ -215,18 +215,17 @@ class ConfirmTransfer extends React.Component {
                     status: item.sRLastStat_126.value,
                 }));
 
-                if (rows.length) {
+                if (rows.length > 0) {
                     //Solo proceden ordenes con estatus 620
-                    const orders = rows.filter(row => {
-                        return row.status === "620";
-                    });
+                    const orders = rows.filter((item)=> item.status === "620");
 
                     if (orders.length) {
+                        //1er Item, para mostrar.
                         const order = orders[0];
                         this.getSucursal(order.sucursal).then((sucursal) => {
                             order.sucursal = sucursal;
                             this.setState({ order, isLoading: false, isConfirming: true });
-                        })
+                        });
 
                         const stack = {
                             stackId: response.data.stackId,
@@ -259,12 +258,12 @@ class ConfirmTransfer extends React.Component {
         this.setState({ isConfirming: false, isLoading: true });
 
         startConfirmation(this.props.token, this.props.stack, (response) => {
-
+            
             const errors = response.data.fs_P594312B_W594312BA.errors;
 
             if (errors.length === 0) {
                 const rawRows = response.data.fs_P594312B_W594312BA.data.gridData.rowset;
-
+                
                 const productsToConfirm = new Map();
                 const length = rawRows.length;
 
@@ -317,6 +316,7 @@ class ConfirmTransfer extends React.Component {
                 }
 
                 this.props.dispatch(actionUpdateStack(stack));
+                
             } else {
                 this.setState({ isLoading: false });
 
@@ -353,49 +353,57 @@ class ConfirmTransfer extends React.Component {
         for (let article of confirmed) {
             list.push({ ...article, confirmed: parseInt(article.qtyToPickUp) - parseInt(article.qty), set: "0" });
         }
-
+        //console.warn('Lista:',list);
+        
         if (list.length > 0) {
             this.setState({ isLoading: true });
+            try {
+                transferConfirmation(this.props.token, this.props.stack, list, (response) => {
 
-            transferConfirmation(this.props.token, this.props.stack, list, (response) => {
-                const errors = response.data.fs_P594312B_W594312BA.errors;
+                    const errors = response.data.fs_P594312B_W594312BD.errors;
 
-                if (errors.length === 0) {
-                    //Success
-                    Alert.alert('Proceso terminado',
-                        alert, [
-                        {
-                            text: "Aceptar",
-                            onPress: () => {
-                                //TEMPORAL: this.showPlaceAgreement();
-                                this.refreshScreen();
+                    if (errors.length === 0) {
+                        //Success
+                        Alert.alert('Proceso terminado',
+                            alert, [
+                            {
+                                text: "Aceptar",
+                                onPress: () => {
+                                    //TEMPORAL: this.showPlaceAgreement();
+                                    this.refreshScreen();
+                                }
                             }
-                        }
-                    ]);
+                        ]);
 
-                } else {
-                    this.setState({ isLoading: false });
+                    } else {
+                        this.setState({ isLoading: false });
 
-                    let mensaje = ''
-                    for (let error of errors)
-                        mensaje += mensaje !== '' ? ', ' + error.TITLE : error.TITLE;
+                        let mensaje = ''
+                        for (let error of errors)
+                            mensaje += mensaje !== '' ? ', ' + error.TITLE : error.TITLE;
 
-                    //se usa el siguiente alert, porque algunas veces viene vacío aunque tiene valor
-                    const alert = mensaje !== '' ? mensaje : 'La orden tiene errores, no puede ser procesada';
-                    Alert.alert('No. de Orden ' + this.state.number,
-                        alert, [
-                        {
-                            text: "Aceptar",
-                            onPress: () => {
-                                this.refreshScreen();
+                        //se usa el siguiente alert, porque algunas veces viene vacío aunque tiene valor
+                        const alert = mensaje !== '' ? mensaje : 'La orden tiene errores, no puede ser procesada';
+                        Alert.alert('No. de Orden ' + this.state.number,
+                            alert, [
+                            {
+                                text: "Aceptar",
+                                onPress: () => {
+                                    this.refreshScreen();
+                                }
                             }
-                        }
-                    ]);
-                }
-            });
+                        ]);
+                    }
+
+                });
+            }catch(error){
+                console.error(error);
+            }
+            
         } else {
-            Alert.alert("No ha confirmado al menos un artículo.");
+            Alert.alert("Confirme al menos un artículo.");
         }
+        
     }
 
     handleSelectRow = () => {

@@ -97,7 +97,11 @@ const actionTransferConfirmation = (rows) => (
                                     "command": "SetGridCellValue",
                                     "columnID": "116"
                                 },
-
+                                {
+                                    "value": "DICIPA",
+                                    "command": "SetGridCellValue",
+                                    "columnID": "126"
+                                },
                             ]
                         })
                     ),
