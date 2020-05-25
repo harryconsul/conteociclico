@@ -192,14 +192,14 @@ class ProductsPickup extends React.Component {
                     status: row.sLastStat_38.value,
                     rowId: "1." + String(row.rowIndex),
                 }));
-                
-                const list = lineas.filter((item)=> item.status === "560");
+
+                const list = lineas.filter((item) => item.status === "560");
 
                 if (list.length > 0) {
                     printShipment(this.props.token, stack, list, (response) => {
                         resolve(true);
                     })
-                }else{
+                } else {
                     Alert.alert("No existen lineas en estatus 560 para Imprimir");
                 }
             }, (reason) => reject(reason));
@@ -227,13 +227,11 @@ class ProductsPickup extends React.Component {
         if (orderNumber != '') {
             this.setState({ isLoading: true });
 
-
-
             searchShipment(orderNumber, this.props.token, (response) => {
 
                 const rawRows = response.data.fs_P554205A_W554205AD.data.gridData.rowset;
 
-                const rows = rawRows.map((item) => ({
+                const orders = rawRows.map((item) => ({
                     rowId: item.rowIndex,
                     orden: item.mnOrderNumber_27.value,
                     cliente: item.sSoldToName_64.value,
@@ -242,11 +240,7 @@ class ProductsPickup extends React.Component {
                     sucursal: item.sBusinessUnit_37.value,
                     status: item.sNextStat_39.value,
                     ruta: item.sRuta_92.value,
-                }));
-
-                const orders = rows.filter(row => {
-                    return row.status === '560';
-                });
+                })).filter(item => item.status === '560');
 
                 if (orders.length != 0) {
                     //Usar el 1er item
@@ -274,9 +268,6 @@ class ProductsPickup extends React.Component {
                             if (rowsBackup.length > 0) {
                                 this.setState({ rowsBackup, stackBackup });
                             }
-
-
-
                         }, null);
 
                     }, null);
@@ -488,35 +479,38 @@ class ProductsPickup extends React.Component {
                     }, (error) => { console.warn('Error al confirmar almacenista ', error) });
 
                     const orden = this.state.orderNumber;
+                    setTimeout(() => {
+                        Alert.alert(
+                            'Proceso terminado',
+                            '¿Imprimir documento?',
+                            [
+                                {
+                                    text: 'No',
+                                    onPress: () => {
+                                    }
+                                },
+                                {
+                                    text: 'Si',
+                                    onPress: () => {
+                                        this.printOrder(orden).then((respuesta) => {
+                                            if (respuesta) {
+                                                //Eliminar en tabla Backup
+                                                this.deleteBackup(stackBackup, rowsBackup).then((response) => {
+                                                }, (error) => { console.warn('Error al eliminar backup ', error) });
+                                            }
+                                        }, (error) => { Alert.alert('Error al imprimir documento ', error) });
+                                    }
+                                }
+                            ],
+                            { cancelable: false },
+                        );
 
-                    Alert.alert(
-                        'Proceso terminado',
-                        '¿Imprimir documento?',
-                        [
-                            {
-                                text: 'No',
-                                onPress: () => {
-                                }
-                            },
-                            {
-                                text: 'Si',
-                                onPress: () => {
-                                    this.printOrder(orden).then((respuesta) => {
-                                        if (respuesta) {
-                                            //Eliminar en tabla Backup
-                                            this.deleteBackup(stackBackup, rowsBackup).then((response) => {
-                                            }, (error) => { console.warn('Error al eliminar backup ', error) });
-                                        }
-                                    }, (error) => { Alert.alert('Error al imprimir documento ', error) });
-                                }
-                            }
-                        ],
-                        { cancelable: false },
-                    );
-                    //Limpiar variables. 
-                    this.setState({ ...initialState });
-                    this.props.dispatch(actionSetArticlesMap(new Map()));
-                    this.setState({ isLoading: false });
+                        //Limpiar variables. 
+                        this.setState({ ...initialState });
+                        this.props.dispatch(actionSetArticlesMap(new Map()));
+                        this.setState({ isLoading: false });
+                    }, 3500);
+
                 } else {
                     const { orderNumber } = this.state;
                     this.setState({ isLoading: false });
@@ -687,7 +681,8 @@ const styles = StyleSheet.create({
     itemText: {
         color: "#000000",
         fontSize: 20,
-    }, linea: {
+    }, 
+    linea: {
         flexDirection: 'row',
         justifyContent: "space-between",
     },

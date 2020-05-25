@@ -23,6 +23,7 @@ import { businessUnit, unidadMedida } from '../apicalls/business_unit.operations
 const initialState = {
     isLoading: false,
     ruta: '',
+    documentos: null,
 }
 
 class Deliveries extends React.Component {
@@ -84,18 +85,60 @@ class Deliveries extends React.Component {
             this.setState({ isLoading: true });
             searchRoute(ruta, this.props.token, (response) => {
                 //Validar que no haya errores
-                const errors = response.data.fs_P55R4201_W55R4201A.errors;
-                
+                const errors = response.data.fs_P55R4202_W55R4202B.errors;
+
                 if (errors.length === 0) {
-                    const rawRows = response.data.fs_P55R4201_W55R4201A.subforms.s_W55R4201A_S55R4201A_55.data.gridData.rowset;
-                    console.warn('Ruta:' , rawRows);
+                    const rawRows = response.data.fs_P55R4202_W55R4202B.data.gridData.rowset;
+
+                    const documentos = rawRows.map((item) => ({
+                        rowId: item.rowIndex,
+                        ruta: item.mnNmeroRuta_24.value,
+                        factura: item.mnNmeroFactura_25.value,
+                        tipoFactura: item.sTipoFactura_26.value,
+                        fechaFactura: item.dtFechaFactura_27.value,
+                        numeroCliente: item.mnNmeroCliente_28.value,
+                        nombreCliente: item.sNombreCliente_29.value,
+                        recibe: item.sNombredequienRecibe_35.value,
+                    }));
+
+                    const stack = {
+                        stackId: response.data.stackId,
+                        stateId: response.data.stateId,
+                        rid: response.data.rid,
+                        currentApplication: "P55R4202_W55R4202B",
+                    }
+
+                    if (documentos.length != 0) {
+                        this.setState({ documentos })
+                    } else {
+                        Alert.alert("Ruta " + ruta + " sin pendientes de entrega");
+                    }
+                } else {
+                    let mensaje = ''
+                    for (let error of errors)
+                        mensaje += mensaje !== '' ? ', ' + error.TITLE : error.TITLE;
+
+                    //se usa el siguiente alert, porque algunas veces viene vacío aunque tiene valor
+                    const alert = mensaje !== '' ? mensaje : 'La ruta tiene errores, no puede ser procesada';
+                    Alert.alert('No. de Ruta ' + ruta,
+                        alert, [
+                        {
+                            text: "Aceptar",
+                            onPress: () => {
+                                this.refreshScreen();
+                            }
+                        }
+                    ]);
                 }
-                
+                this.setState({ isLoading: false });
+
             }, (error) => console.warn(error));
+            this.setState({ isLoading: false });
         }
     }
 
     render() {
+        const { documentos } = this.state;
 
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
@@ -119,6 +162,33 @@ class Deliveries extends React.Component {
                             onSubmitEditing={this.searchRuta}
                             blurOnSubmit={true}
                         />
+
+                        <FlatList data={documentos}
+                            renderItem={({ item, index }) =>
+                                <TouchableOpacity key={item.rowIndex} index={index.toString()}>
+                                    <ItemView index={index} >
+                                        <View style={styles.linea}>
+                                            <View style={{ width: "55%" }}>
+                                                <ItemHightLight text={"Documento: " + item.factura} />
+                                            </View>
+                                            <View style={{ width: "45%" }}>
+                                                <ItemHightLight text={"Tipo Doc: " + item.tipoFactura} />
+                                            </View>
+                                        </View>
+                                        <ItemLabel text={"Fecha: " + item.fechaFactura} />
+                                        <View style={styles.linea}>
+                                            <View style={{ width: "40%" }}>
+                                                <ItemHightLight text={"Cliente: " + item.numeroCliente} />
+                                            </View>
+                                            <View style={{ width: "60%" }}>
+                                                <ItemHightLight text={item.nombreCliente} />
+                                            </View>
+                                        </View>
+
+                                    </ItemView>
+                                </TouchableOpacity>
+
+                            } />
                     </View>
                 </KeyboardAvoidingView>
             </ImageBackground>
@@ -147,7 +217,8 @@ const styles = StyleSheet.create({
     itemText: {
         color: "#000000",
         fontSize: 20,
-    }, linea: {
+    }, 
+    linea: {
         flexDirection: 'row',
         justifyContent: "space-between",
     },

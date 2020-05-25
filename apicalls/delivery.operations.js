@@ -2,29 +2,28 @@ import axios from 'axios';
 
 const actionSearchRoute = (ruta) => {
     return {
-        formName: "P55R4201_W55R4201A",
+        formName: "P55R4202_W55R4202B",
         version: "",
         maxPageSize: 500,
-        returnControlIDs:"55_24[25,26,27,28,29,30,31,32]",
         formActions: [
             {
                 "command": "SetControlValue",
                 "value": ruta,
-                "controlID": "55_33"
+                "controlID": "13"
             },
             {
                 "command": "SetControlValue",
                 "value": "*",
-                "controlID": "55_35"
+                "controlID": "19"
             },
             {
                 "command": "SetControlValue",
                 "value": "*",
-                "controlID": "55_39"
+                "controlID": "17"
             },
             {
                 "command": "DoAction",
-                "controlID": "55_37",
+                "controlID": "30",
             }
         ]
     }
