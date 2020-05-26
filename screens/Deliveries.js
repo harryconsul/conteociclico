@@ -4,7 +4,7 @@ import {
     ImageBackground, StyleSheet, TouchableOpacity,
     ActivityIndicator, KeyboardAvoidingView, Alert,
 } from 'react-native';
-import { searchRoute } from '../apicalls/delivery.operations';
+import { searchRoute,selectInvoice } from '../apicalls/delivery.operations';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import Field from '../components/Field';
@@ -89,7 +89,7 @@ class Deliveries extends React.Component {
 
                 if (errors.length === 0) {
                     const rawRows = response.data.fs_P55R4202_W55R4202B.data.gridData.rowset;
-
+                    
                     const documentos = rawRows.map((item) => ({
                         rowId: item.rowIndex,
                         ruta: item.mnNmeroRuta_24.value,
@@ -107,7 +107,7 @@ class Deliveries extends React.Component {
                         rid: response.data.rid,
                         currentApplication: "P55R4202_W55R4202B",
                     }
-
+                    this.props.dispatch(actionUpdateStack(stack));
                     if (documentos.length != 0) {
                         this.setState({ documentos })
                     } else {
@@ -136,7 +136,12 @@ class Deliveries extends React.Component {
             this.setState({ isLoading: false });
         }
     }
+    selectRow = (row) => {
+        selectInvoice(row,this.props.token,this.props.stack,(response)=>{
+            console.warn(response);
 
+        },(error)=>console.warn(error))
+    }
     render() {
         const { documentos } = this.state;
 
@@ -165,7 +170,7 @@ class Deliveries extends React.Component {
 
                         <FlatList data={documentos}
                             renderItem={({ item, index }) =>
-                                <TouchableOpacity key={item.rowIndex} index={index.toString()}>
+                                <TouchableOpacity onPress={()=>this.selectRow(item.rowId)} key={item.rowId} index={index.toString()}>
                                     <ItemView index={index} >
                                         <View style={styles.linea}>
                                             <View style={{ width: "55%" }}>

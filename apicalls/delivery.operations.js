@@ -29,8 +29,28 @@ const actionSearchRoute = (ruta) => {
     }
 }
 
+const actionSelectInvoice = (row) => {
+    return {
+        formOID: "W55R4202B",
+        formActions: [
+            {
+                command: "ClickGridCell",
+                controlID: "22." + row + ".25"
+            },
+
+
+        ],
+    }
+}
+
+
 export const searchRoute = (ruta, token, callback, errorHandler) => {
     callStackService(createStack(token, actionSearchRoute(ruta)), callback, errorHandler);
+}
+
+export const selectInvoice = (row,token,stack,callback,errorHandler) => {
+    const formAction = actionSelectInvoice(row);    
+    callStackService(pushStack(token,formAction,stack),callback,errorHandler)
 }
 
 const createStack = (token, formRequest) => {
