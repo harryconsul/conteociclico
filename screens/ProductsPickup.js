@@ -18,6 +18,7 @@ import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
 import backgroundImage from '../assets/almacen.jpg';
 import { businessUnit, unidadMedida } from '../apicalls/business_unit.operations';
+import {clearAllJDEScreens} from '../apicalls/clean_jde.operations';
 
 const initialState = {
     isLoading: false,
@@ -225,10 +226,12 @@ class ProductsPickup extends React.Component {
     searchOrder = () => {
         const { orderNumber } = this.state;
         if (orderNumber != '') {
+            //Eliminar ordenes reservadas.
+            clearAllJDEScreens(this.props.user.token,this.props.user.username);
+
             this.setState({ isLoading: true });
 
             searchShipment(orderNumber, this.props.token, (response) => {
-
                 const rawRows = response.data.fs_P554205A_W554205AD.data.gridData.rowset;
 
                 const orders = rawRows.map((item) => ({
@@ -447,9 +450,7 @@ class ProductsPickup extends React.Component {
             :
             [])
             .filter((item) => item.qty > 0);
-
-
-
+            
         const list = [];
         const { allProducts } = this.state;
 
@@ -480,30 +481,13 @@ class ProductsPickup extends React.Component {
 
                     const orden = this.state.orderNumber;
                     setTimeout(() => {
-                        Alert.alert(
-                            'Proceso terminado',
-                            '¿Imprimir documento?',
-                            [
-                                {
-                                    text: 'No',
-                                    onPress: () => {
-                                    }
-                                },
-                                {
-                                    text: 'Si',
-                                    onPress: () => {
-                                        this.printOrder(orden).then((respuesta) => {
-                                            if (respuesta) {
-                                                //Eliminar en tabla Backup
-                                                this.deleteBackup(stackBackup, rowsBackup).then((response) => {
-                                                }, (error) => { console.warn('Error al eliminar backup ', error) });
-                                            }
-                                        }, (error) => { Alert.alert('Error al imprimir documento ', error) });
-                                    }
-                                }
-                            ],
-                            { cancelable: false },
-                        );
+                        this.printOrder(orden).then((respuesta) => {
+                            if (respuesta) {
+                                //Eliminar en tabla Backup
+                                this.deleteBackup(stackBackup, rowsBackup).then((response) => {
+                                }, (error) => { console.warn('Error al eliminar backup ', error) });
+                            }
+                        }, (error) => { Alert.alert('Error al imprimir documento ', error) });
 
                         //Limpiar variables. 
                         this.setState({ ...initialState });

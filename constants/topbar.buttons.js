@@ -6,6 +6,10 @@ import closeIcon from '../assets/iconclose.png';
 export const rightButtons = {
     rightButtons:[
         {
+            id:"refresh",
+            icon:refreshIcon,
+        },
+        {
             id:"barCode",
             icon:cameraIcon,
         },
@@ -13,11 +17,6 @@ export const rightButtons = {
             id:"inputCode",
             icon:barCodeIcon,
         },
-        {
-            id:"refresh",
-            icon:refreshIcon,
-        }
-
     ]
 
 };

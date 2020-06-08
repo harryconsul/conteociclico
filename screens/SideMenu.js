@@ -86,7 +86,7 @@ class SideMenu extends React.Component {
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("QueryAvailableArticles", "Artículos Disponibles", false)}
                         optionName="Artículos Disponibles" />
                     <SideMenuItem optionClickHandle={() => this.optionClickHandle("ProductsPickup", "Recolección", true)}
-                        optionName="Recoleccion de Producto" />
+                        optionName="Recolección de Producto" />
                     <SideMenuItem
                         optionName="Salidas por Caducidad"
                         optionClickHandle={() =>

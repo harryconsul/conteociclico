@@ -15,7 +15,7 @@ const initialState = {
 
     },
     countRealm: null,
-    sucursal:'',
+    sucursal: '',
 
 }
 const updateArticle = (articles, article) => {
@@ -73,6 +73,12 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 sucursal: action.sucursal,
+            }
+        case actionTypes.SET_INVOICE_DETAIL:
+
+            return {
+                ...state,
+                facturaDetalle: action.facturaDetalle,
             }
 
     }

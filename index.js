@@ -28,6 +28,7 @@ import ArticleSetup from './screens/ArticleSetup';
 import TransferOrder from './screens/TransferOrder';
 import ConfirmTransfer from './screens/ConfirmTransfer';
 import Deliveries from './screens/Deliveries';
+import InvoiceDetail from './screens/InvoiceDetail';
 import store from './store/store';
 import { actionSetCurrentScreen } from './store/actions/actions.creators';
 import { Provider } from 'react-redux';
@@ -156,7 +157,11 @@ Navigation.registerComponent("Deliveries", () => (props) => (
   </Provider>
 ));
 
-
+Navigation.registerComponent("InvoiceDetail", () => (props) => (
+  <Provider store={store}>
+    <InvoiceDetail  {...props} />
+  </Provider>
+));
 
 
 // Subscribe
