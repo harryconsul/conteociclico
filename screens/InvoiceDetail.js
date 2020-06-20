@@ -64,14 +64,24 @@ class InvoiceDetail extends React.Component {
     }
 
     render() {
-        const facturaDetalle = this.props.facturaDetalle;
+        const facturaDetalle = this.props.facturaDetalle ? this.props.facturaDetalle.values() : [];
+        const detailArray = Array.from(facturaDetalle);
 
+        const factura = this.props.factura;
+
+        const facturaView = factura ?
+            <ItemView index={1} >
+                <ItemHightLight text={"No. de Documento: " + factura} />
+            </ItemView>
+            :
+            null;
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
                 <KeyboardAvoidingView
                     style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
                     <View style={componentstyles.containerView}>
-                        <FlatList data={facturaDetalle}
+                        {facturaView}
+                        <FlatList data={detailArray}
                             renderItem={({ item, index }) =>
                                 <TouchableOpacity index={index.toString()}>
                                     <ItemView index={index} >

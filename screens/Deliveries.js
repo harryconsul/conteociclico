@@ -4,7 +4,7 @@ import {
     ImageBackground, StyleSheet, TouchableOpacity,
     ActivityIndicator, KeyboardAvoidingView, Alert,
 } from 'react-native';
-import { searchRoute, selectInvoice } from '../apicalls/delivery.operations';
+import { searchRoute, selectInvoice, searchUser } from '../apicalls/delivery.operations';
 import { connect } from 'react-redux';
 import { Navigation } from 'react-native-navigation';
 import Field from '../components/Field';
@@ -21,7 +21,6 @@ import iconRefresh from '../assets/iconrefresh.png';
 
 const initialState = {
     isLoading: false,
-    ruta: '',
     facturas: null,
     facturaDetalle: null,
 }
@@ -32,11 +31,50 @@ class Deliveries extends React.Component {
         Navigation.events().bindComponent(this);
 
         this.state = {
-            ...initialState
+            ...initialState, ruta: null,
         }
     }
 
     componentDidMount = () => {
+        this.setState({ isLoading: true });
+        const user = this.props.user.username;
+        searchUser(user, this.props.token, (response) => {
+
+            const errors = response.data.fs_P0092_W0092D.errors;
+
+            if (errors.length === 0) {
+                const rawRows = response.data.fs_P0092_W0092D.data.gridData.rowset;
+
+                if (rawRows.length === 1) {
+                    const ruta = {
+                        user: rawRows[0].sUserID_7.value,
+                        userNumber: rawRows[0].mnAddressNumber_60.value,
+                        userName: rawRows[0].sRoleDescription_99.value,
+                    }
+
+                    this.setState({ ruta });
+                }
+
+            } else {
+                let mensaje = ''
+                for (let error of errors)
+                    mensaje += mensaje !== '' ? ', ' + error.TITLE : error.TITLE;
+
+                //se usa el siguiente alert, porque algunas veces viene vacío aunque tiene valor
+                const alert = mensaje !== '' ? mensaje : 'No fue posible recuperar el no. de ruta';
+                Alert.alert('No. de Ruta ' + ruta,
+                    alert, [
+                    {
+                        text: "Aceptar",
+                        onPress: () => {
+                            this.refreshScreen();
+                        }
+                    }
+                ]);
+            }
+        });
+        this.setState({ isLoading: false });
+
         Navigation.mergeOptions(this.props.componentId, {
             topBar: {
                 title: {
@@ -88,7 +126,7 @@ class Deliveries extends React.Component {
         });
     }
 
-    openInvoiceDetail = () => {
+    openInvoiceDetail = (factura) => {
         Navigation.showModal({
             stack: {
                 children: [
@@ -96,7 +134,7 @@ class Deliveries extends React.Component {
                         component: {
                             name: "InvoiceDetail",
                             passProps: {
-                                qtyLabel: "Recolectado",
+                                factura: factura,
                             }
                         },
                         options: {
@@ -122,9 +160,10 @@ class Deliveries extends React.Component {
     searchRuta = () => {
         const { ruta } = this.state;
 
-        if (ruta !== "") {
+        if (ruta !== null) {
             this.setState({ isLoading: true });
-            searchRoute(ruta, this.props.token, (response) => {
+
+            searchRoute(ruta.userNumber, this.props.token, (response) => {
                 //Validar que no haya errores
                 const errors = response.data.fs_P55R4202_W55R4202B.errors;
 
@@ -154,7 +193,7 @@ class Deliveries extends React.Component {
                     if (facturas.length != 0) {
                         this.setState({ facturas })
                     } else {
-                        Alert.alert("Ruta " + ruta + " sin pendientes de entrega");
+                        Alert.alert("Ruta " + ruta.user + " sin pendientes de entrega");
                     }
                 } else {
                     let mensaje = ''
@@ -207,9 +246,8 @@ class Deliveries extends React.Component {
                     toDeliver.set(key, value);
                 }
 
-                console.warn('Deliver', toDeliver);
-                this.props.dispatch(actionSetArticlesMap(toDeliver));
-                //this.props.dispatch(actionSetInvoiceDetail(toDeliver));
+                //this.props.dispatch(actionSetArticlesMap(toDeliver));
+                this.props.dispatch(actionSetInvoiceDetail(toDeliver));
 
                 const stack = {
                     stackId: response.data.stackId,
@@ -220,7 +258,7 @@ class Deliveries extends React.Component {
 
                 this.props.dispatch(actionUpdateStack(stack));
 
-                //this.openInvoiceDetail();
+                this.openInvoiceDetail(factura);
             } else {
                 let mensaje = ''
                 for (let error of errors)
@@ -241,7 +279,22 @@ class Deliveries extends React.Component {
         }, (error) => console.warn(error))
     }
     render() {
-        const { facturas } = this.state;
+        const { ruta, facturas } = this.state;
+
+        const routeView = ruta ?
+            <ItemView index={1} >
+                <View style={styles.linea}>
+                    <View style={{ width: "60%" }}>
+                        <ItemHightLight text={"Usuario: " + ruta.user} />
+                    </View>
+                    <View style={{ width: "40%" }}>
+                        <ItemHightLight text={"No.: " + ruta.userNumber} />
+                    </View>
+                </View>
+                <ItemHightLight text={ruta.userName} />
+            </ItemView>
+            :
+            null;
 
         return (
             <ImageBackground source={backgroundImage} style={componentstyles.background}>
@@ -255,17 +308,15 @@ class Deliveries extends React.Component {
                                 :
                                 null
                         }
-                        <Field
-                            label="No. de Ruta"
-                            autoFocus
-                            placeholder={"####"}
-                            keyboardType={"numeric"}
-                            onChangeText={(ruta) => this.setState({ ruta })}
-                            defaultValue={this.state.ruta}
-                            onSubmitEditing={this.searchRuta}
-                            blurOnSubmit={true}
-                        />
-
+                        {
+                            routeView
+                        }
+                        {
+                            <Button
+                                title="BUSCAR DOCUMENTOS"
+                                onPress={this.searchRuta}
+                            />
+                        }
                         <FlatList data={facturas}
                             renderItem={({ item, index }) =>
                                 <TouchableOpacity onPress={() => this.selectRow(item.rowId, item.factura)} key={item.rowId} index={index.toString()}>
