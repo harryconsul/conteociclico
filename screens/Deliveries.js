@@ -16,13 +16,12 @@ import {
 import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
 import backgroundImage from '../assets/labmicroBg.jpg';
-import { businessUnit, unidadMedida } from '../apicalls/business_unit.operations';
+import { unidadMedida } from '../apicalls/business_unit.operations';
 import iconRefresh from '../assets/iconrefresh.png';
 
 const initialState = {
     isLoading: false,
     facturas: null,
-    facturaDetalle: null,
 }
 
 class Deliveries extends React.Component {
@@ -126,7 +125,7 @@ class Deliveries extends React.Component {
         });
     }
 
-    openInvoiceDetail = (factura) => {
+    openInvoiceDetail = (factura,cliente) => {
         Navigation.showModal({
             stack: {
                 children: [
@@ -135,6 +134,7 @@ class Deliveries extends React.Component {
                             name: "InvoiceDetail",
                             passProps: {
                                 factura: factura,
+                                cliente: cliente,
                             }
                         },
                         options: {
@@ -157,6 +157,31 @@ class Deliveries extends React.Component {
         });
     }
 
+    unidadMedida = (itemNumber) => {
+        return new Promise((resolve, reject) => {
+            unidadMedida(itemNumber, this.props.token, (data) => {
+                const rawRows = data.fs_P41002_W41002A.data.gridData.rowset;
+
+                const conversiones = new Map();
+                for (let i = 0; i < rawRows.length; i++) {
+                    const keyConversion = rawRows[i].rowIndex;
+
+                    const umConversion = {
+                        valor: rawRows[i].chVC_38.value,
+                        unidad: rawRows[i].sFromUOM_6.value,
+                        valorConversion: rawRows[i].mnConversionFactor_7.value,
+                        valorUnidad: rawRows[i].sToUOM_8.value,
+                    }
+
+                    conversiones.set(keyConversion, umConversion);
+                }
+
+                resolve(conversiones);
+
+            }, (reason) => reject(reason));
+        });
+    }
+
     searchRuta = () => {
         const { ruta } = this.state;
 
@@ -169,7 +194,7 @@ class Deliveries extends React.Component {
 
                 if (errors.length === 0) {
                     const rawRows = response.data.fs_P55R4202_W55R4202B.data.gridData.rowset;
-
+                    
                     const facturas = rawRows.map((item) => ({
                         rowId: item.rowIndex,
                         ruta: item.mnNmeroRuta_24.value,
@@ -218,36 +243,42 @@ class Deliveries extends React.Component {
             this.setState({ isLoading: false });
         }
     }
-    selectRow = (row, factura) => {
+
+    selectRow = (row, factura, cliente) => {
         selectInvoice(row, this.props.token, this.props.stack, (response) => {
             const errors = response.data.fs_P55R4202_W55R4202A.errors;
             if (errors.length === 0) {
                 const rawRows = response.data.fs_P55R4202_W55R4202A.data.gridData.rowset;
 
                 const toDeliver = new Map();
-
+                
                 for (let i = 0; i < rawRows.length; i++) {
                     const key = rawRows[i].rowIndex;
+                    const etiqueta = rawRows[i].mnNmeroEtiqueta_31.value;
+                    const itemNumber = rawRows[i].sIdArticulo_23.value;
 
                     const value = {
                         key,
                         rowId: rawRows[i].rowIndex,
+                        etiqueta: etiqueta !== "0" ? etiqueta : 'FALTA',
                         linea: rawRows[i].mnLinea_34.value,
-                        etiqueta: rawRows[i].mnNmeroEtiqueta_31.value,
-                        articuloId: rawRows[i].sIdArticulo_23.value,
+                        itemNumber: itemNumber,
                         articuloDesc: rawRows[i].sDescripcinArticulo_25.value,
+                        qty: rawRows[i].mnCantidadOdenada_20.value,
+                        entregado: rawRows[i].mnCantidadSurtida_28.value,
                         um: rawRows[i].sUniMed_26.value,
                         precio: rawRows[i].mnPrecio_27.value,
-                        ordenado: rawRows[i].mnCantidadOdenada_20.value,
-                        entregado: rawRows[i].mnCantidadSurtida_28.value,
                         observaciones: rawRows[i].sObservacionesdeEntrega_29.value,
                     }
 
+                    this.unidadMedida(itemNumber).then((conversiones) => {
+                        value.conversiones = conversiones;
+                    });
+
                     toDeliver.set(key, value);
                 }
-
-                //this.props.dispatch(actionSetArticlesMap(toDeliver));
-                this.props.dispatch(actionSetInvoiceDetail(toDeliver));
+                
+                this.props.dispatch(actionSetArticlesMap(toDeliver));
 
                 const stack = {
                     stackId: response.data.stackId,
@@ -258,7 +289,7 @@ class Deliveries extends React.Component {
 
                 this.props.dispatch(actionUpdateStack(stack));
 
-                this.openInvoiceDetail(factura);
+                this.openInvoiceDetail(factura,cliente);
             } else {
                 let mensaje = ''
                 for (let error of errors)
@@ -319,7 +350,7 @@ class Deliveries extends React.Component {
                         }
                         <FlatList data={facturas}
                             renderItem={({ item, index }) =>
-                                <TouchableOpacity onPress={() => this.selectRow(item.rowId, item.factura)} key={item.rowId} index={index.toString()}>
+                                <TouchableOpacity onPress={() => this.selectRow(item.rowId, item.factura, item.nombreCliente)} key={item.rowId} index={index.toString()}>
                                     <ItemView index={index} >
                                         <View style={styles.linea}>
                                             <View style={{ width: "55%" }}>
@@ -356,7 +387,6 @@ const mapStateToProps = (state) => {
         token: state.user.token,
         stack: state.stack,
         articles: state.articles,
-        facturaDetalle: state.facturaDetalle,
     }
 
 }

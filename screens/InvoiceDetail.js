@@ -53,25 +53,65 @@ class InvoiceDetail extends React.Component {
         Navigation.dismissModal(this.props.componentId);
     }
 
+    openBarcode = (screen) => {
+        
+        Navigation.showModal({
+            stack: {
+                children: [
+                    {
+                        component: {
+                            name: screen,
+                            passProps: {
+                                qtyLabel: "Entrega",
+                            }
+                        },
+                        options: {
+                            topBar: {
+                                title: {
+                                    text: 'Captura Código de Barras'
+                                },
+                                drawBehind: true,
+                                background: {
+                                    color: '#8c30f1c7',
+                                    translucent: true,
+                                    blur: false
+                                },
+
+                            }
+                        }
+                    }
+                ]
+            }
+        });
+    }
+
     navigationButtonPressed = ({ buttonId }) => {
         switch (buttonId) {
             case 'close':
                 this.close();
                 break;
             case 'barcode':
-                Alert.alert('Trabajando');
+                this.openBarcode('PickupBarcodeInput');
         }
     }
 
     render() {
-        const facturaDetalle = this.props.facturaDetalle ? this.props.facturaDetalle.values() : [];
+        const facturaDetalle = this.props.articles ? this.props.articles.values() : [];
         const detailArray = Array.from(facturaDetalle);
-
+        
         const factura = this.props.factura;
+        const cliente = this.props.cliente;
 
         const facturaView = factura ?
             <ItemView index={1} >
-                <ItemHightLight text={"No. de Documento: " + factura} />
+                <View style={styles.linea}>
+                    <View style={{ width: "33%" }}>
+                        <ItemHightLight text={"Doc.: " + factura} />
+                    </View>
+                    <View style={{ width: "67%" }}>
+                        <ItemHightLight text={cliente} />
+                    </View>
+                </View>
             </ItemView>
             :
             null;
@@ -89,7 +129,7 @@ class InvoiceDetail extends React.Component {
                                         <ItemHightLight text={item.articuloDesc} />
                                         <View style={styles.linea}>
                                             <View style={{ width: "50%" }}>
-                                                <ItemHightLight text={"Ordenado: " + item.ordenado + " " + item.um} />
+                                                <ItemHightLight text={"Ordenado: " + item.qty + " " + item.um} />
                                             </View>
                                             <View style={{ width: "50%" }}>
                                                 <ItemHightLight text={"Entregado: " + item.entregado} />
@@ -111,9 +151,10 @@ class InvoiceDetail extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        facturaDetalle: state.facturaDetalle,
         user: state.user,
         token: state.user.token,
+        articles: state.articles,
+        sucursal: state.sucursal,
     };
 }
 

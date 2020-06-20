@@ -62,10 +62,3 @@ export const actionSetSucursal = (sucursal)=>{
         sucursal,
     }
 }
-
-export const actionSetInvoiceDetail = (facturaDetalle)=>{
-    return{
-        type:actionTypes.SET_INVOICE_DETAIL,
-        facturaDetalle,
-    }
-}
