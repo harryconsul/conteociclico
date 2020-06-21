@@ -60,7 +60,7 @@ class InvoiceDetail extends React.Component {
     }
 
     openModalForSignature = () => {
-
+        
         Navigation.showModal({
             stack: {
                 children: [
@@ -68,7 +68,7 @@ class InvoiceDetail extends React.Component {
                         component: {
                             name: "DeliverySignature",
                             passProps: {
-                                itemKey: this.props.factura,
+                                itemKey: "|"+ this.props.tipoFactura +  "|" + this.props.factura,
                             }
                         },
                         options: {

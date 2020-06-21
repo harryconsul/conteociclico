@@ -125,7 +125,7 @@ class Deliveries extends React.Component {
         });
     }
 
-    openInvoiceDetail = (factura,cliente,lineas) => {
+    openInvoiceDetail = (factura,cliente,lineas,rutaUsuario,tipoFactura) => {
         Navigation.showModal({
             stack: {
                 children: [
@@ -136,6 +136,8 @@ class Deliveries extends React.Component {
                                 factura: factura,
                                 cliente: cliente,
                                 lineas: lineas,
+                                rutaUsuario,
+                                tipoFactura,
                             }
                         },
                         options: {
@@ -194,6 +196,7 @@ class Deliveries extends React.Component {
                 const errors = response.data.fs_P55R4202_W55R4202B.errors;
 
                 if (errors.length === 0) {
+                    
                     const rawRows = response.data.fs_P55R4202_W55R4202B.data.gridData.rowset;
                     
                     const facturas = rawRows.map((item) => ({
@@ -245,7 +248,7 @@ class Deliveries extends React.Component {
         }
     }
 
-    selectRow = (row, factura, cliente) => {
+    selectRow = (row, factura, cliente,rutaUsuario,tipoFactura) => {
         selectInvoice(row, this.props.token, this.props.stack, (response) => {
             const errors = response.data.fs_P55R4202_W55R4202A.errors;
             if (errors.length === 0) {
@@ -293,7 +296,7 @@ class Deliveries extends React.Component {
 
                 this.props.dispatch(actionUpdateStack(stack));
 
-                this.openInvoiceDetail(factura,cliente,rawRows.length);
+                this.openInvoiceDetail(factura,cliente,rawRows.length,rutaUsuario,tipoFactura);
             } else {
                 let mensaje = ''
                 for (let error of errors)
@@ -354,7 +357,7 @@ class Deliveries extends React.Component {
                         }
                         <FlatList data={facturas}
                             renderItem={({ item, index }) =>
-                                <TouchableOpacity onPress={() => this.selectRow(item.rowId, item.factura, item.nombreCliente)} key={item.rowId} index={index.toString()}>
+                                <TouchableOpacity onPress={() => this.selectRow(item.rowId, item.factura, item.nombreCliente,ruta.userNumber,item.tipoFactura)} key={item.rowId} index={index.toString()}>
                                     <ItemView index={index} >
                                         <View style={styles.linea}>
                                             <View style={{ width: "55%" }}>

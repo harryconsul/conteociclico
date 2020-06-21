@@ -172,7 +172,7 @@ export const uploadDeliverySignature = (key, path, token, fileName, callback ) =
         "token": token,
         "deviceName": "RESTclient",
         "ssoEnabled": false,
-        "moStructure": "GT55R4202",
+        "moStructure": "GT55R4101",
         "moKey": [
             key
         ],
@@ -228,7 +228,7 @@ export const uploadDeliveryComments = (token,key,comment,callback) =>{
     const data = {
         "token": token,
         "deviceName": "RESTclient",       
-        "moStructure": "GT55R4202",
+        "moStructure": "GT55R4101",
         "moKey": [
             key
         ],
