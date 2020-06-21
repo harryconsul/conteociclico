@@ -158,6 +158,7 @@ class PickupBarcodInput extends React.Component {
                         [])
                         .filter((item) => item.itemNumber === producto.itemNumber && ( item.lote===undefined || (item.lote === producto.lote)));
 
+                    //.filter((item) => item.itemNumber === producto.itemNumber && item.lote === producto.lote);
                 }
 
                 //lote,um,itemNumber

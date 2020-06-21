@@ -125,7 +125,7 @@ class Deliveries extends React.Component {
         });
     }
 
-    openInvoiceDetail = (factura,cliente) => {
+    openInvoiceDetail = (factura,cliente,lineas) => {
         Navigation.showModal({
             stack: {
                 children: [
@@ -135,6 +135,7 @@ class Deliveries extends React.Component {
                             passProps: {
                                 factura: factura,
                                 cliente: cliente,
+                                lineas: lineas,
                             }
                         },
                         options: {
@@ -256,16 +257,19 @@ class Deliveries extends React.Component {
                     const key = rawRows[i].rowIndex;
                     const etiqueta = rawRows[i].mnNmeroEtiqueta_31.value;
                     const itemNumber = rawRows[i].sIdArticulo_23.value;
+                    const entregado = 0;//rawRows[i].mnCantidadSurtida_28.value
 
                     const value = {
                         key,
-                        rowId: rawRows[i].rowIndex,
+                        rowId: "1." + String(rawRows[i].rowIndex),
                         etiqueta: etiqueta !== "0" ? etiqueta : 'FALTA',
                         linea: rawRows[i].mnLinea_34.value,
                         itemNumber: itemNumber,
                         articuloDesc: rawRows[i].sDescripcinArticulo_25.value,
+                        ordenado: rawRows[i].mnCantidadOdenada_20.value,
                         qty: rawRows[i].mnCantidadOdenada_20.value,
-                        entregado: rawRows[i].mnCantidadSurtida_28.value,
+                        qtyToPickUp: rawRows[i].mnCantidadOdenada_20.value,
+                        entregado: entregado,
                         um: rawRows[i].sUniMed_26.value,
                         precio: rawRows[i].mnPrecio_27.value,
                         observaciones: rawRows[i].sObservacionesdeEntrega_29.value,
@@ -289,7 +293,7 @@ class Deliveries extends React.Component {
 
                 this.props.dispatch(actionUpdateStack(stack));
 
-                this.openInvoiceDetail(factura,cliente);
+                this.openInvoiceDetail(factura,cliente,rawRows.length);
             } else {
                 let mensaje = ''
                 for (let error of errors)

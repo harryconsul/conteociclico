@@ -67,6 +67,36 @@ const actionSearchUser = (user) =>{
     }
 }
 
+const actionSaveDocument = (rows) => (
+    {
+        formOID: "W55R4202A",
+        formActions: [
+            rows.map(row => (
+            {
+                "command": "SelectRow",
+                "controlID": row.rowId
+            },
+            {
+                command: "SetQBEValue",
+                value: rows.entregado,
+                "controlID": "19[28]"
+            }
+            )
+            ),
+            {
+                ".type": "com.oracle.e1.jdemf.FormAction",
+                command: "DoAction",
+                controlID: "38"
+            }
+        ]
+    }
+)
+
+export const saveDocument = (token, stack, rows, callback) => {
+    const actionSave = pushStack(token, actionSaveDocument(rows), stack);
+    callStackService(actionSave, callback);
+}
+
 export const searchRoute = (ruta, token, callback, errorHandler) => {
     callStackService(createStack(token, actionSearchRoute(ruta)), callback, errorHandler);
 }

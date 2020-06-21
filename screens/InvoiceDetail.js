@@ -11,6 +11,12 @@ import backgroundImage from '../assets/labmicroBg.jpg';
 import { componentstyles } from '../styles';
 import closeIcon from '../assets/iconclose.png';
 import iconbarcode from '../assets/iconbarcode.png';
+import { transactionModes } from '../constants';
+import {
+    actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap,
+    actionSetSucursal, actionSetInvoiceDetail
+} from '../store/actions/actions.creators';
+import { saveDocument } from '../apicalls/delivery.operations';
 
 
 class InvoiceDetail extends React.Component {
@@ -86,7 +92,9 @@ class InvoiceDetail extends React.Component {
     }
 
     openBarcode = (screen) => {
-        
+        if (this.props.articles)
+            this.props.dispatch(actionSetTransactionMode(transactionModes.READ_SUBTRACT));
+
         Navigation.showModal({
             stack: {
                 children: [
@@ -127,10 +135,26 @@ class InvoiceDetail extends React.Component {
         }
     }
 
+    saveDocument = () => {
+        const facturaDetalle = this.props.articles ? this.props.articles.values() : [];
+        const delivered = (Array.from(facturaDetalle)).filter((item) => item.ordenado != item.qty);
+        const list = [];
+        for (let article of delivered) {
+            const entregado = article.ordenado - article.qty
+            list.push({ ...article, entregado });
+        }
+        
+        saveDocument(this.props.token, this.props.stack, list, (response) => {
+            console.log(response);
+        });
+    }
+
     render() {
         const facturaDetalle = this.props.articles ? this.props.articles.values() : [];
-        const detailArray = Array.from(facturaDetalle);
-        
+        const detailArray = (Array.from(facturaDetalle)).filter((item) => item.qty);
+        const total = this.props.lineas;
+        const subtotal = detailArray.length;
+
         const factura = this.props.factura;
         const cliente = this.props.cliente;
 
@@ -144,6 +168,11 @@ class InvoiceDetail extends React.Component {
                         <ItemHightLight text={cliente} />
                     </View>
                 </View>
+                <ItemLabel text={"Lineas entregadas: " + (total - subtotal) + " de " + total} />
+                <Button
+                    title="GRABAR ENTREGA"
+                    onPress={this.saveDocument}
+                />
             </ItemView>
             :
             null;
@@ -162,10 +191,10 @@ class InvoiceDetail extends React.Component {
                                         <ItemHightLight text={item.articuloDesc} />
                                         <View style={styles.linea}>
                                             <View style={{ width: "50%" }}>
-                                                <ItemHightLight text={"Ordenado: " + item.qty + " " + item.um} />
+                                                <ItemHightLight text={"Ordenado: " + item.ordenado + " " + item.um} />
                                             </View>
                                             <View style={{ width: "50%" }}>
-                                                <ItemHightLight text={"Entregado: " + item.entregado} />
+                                                <ItemHightLight text={"Entregado: " + (item.ordenado - item.qty)} />
                                             </View>
                                         </View>
 
