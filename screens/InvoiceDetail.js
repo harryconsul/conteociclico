@@ -53,6 +53,38 @@ class InvoiceDetail extends React.Component {
         Navigation.dismissModal(this.props.componentId);
     }
 
+    openModalForSignature = () => {
+
+        Navigation.showModal({
+            stack: {
+                children: [
+                    {
+                        component: {
+                            name: "DeliverySignature",
+                            passProps: {
+                                itemKey: this.props.factura,
+                            }
+                        },
+                        options: {
+                            topBar: {
+                                title: {
+                                    text: 'Comentarios y Firma de Recepción'
+                                },
+                                drawBehind: true,
+                                background: {
+                                    color: '#8c30f1c7',
+                                    translucent: true,
+                                    blur: false
+                                },
+
+                            }
+                        }
+                    }
+                ]
+            }
+        });
+    }
+
     openBarcode = (screen) => {
         
         Navigation.showModal({
@@ -121,6 +153,7 @@ class InvoiceDetail extends React.Component {
                     style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
                     <View style={componentstyles.containerView}>
                         {facturaView}
+                        <Button onPress={this.openModalForSignature} title="Firmar Recepcion" />
                         <FlatList data={detailArray}
                             renderItem={({ item, index }) =>
                                 <TouchableOpacity index={index.toString()}>
