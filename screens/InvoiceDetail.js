@@ -18,11 +18,19 @@ import {
 } from '../store/actions/actions.creators';
 import { saveDocument } from '../apicalls/delivery.operations';
 
+const initialState = {
+    isLoading: false,
+    signed: false,
+}
 
 class InvoiceDetail extends React.Component {
 
     constructor(props) {
         super(props);
+        this.state = {
+            ...initialState
+        }
+
         Navigation.events().bindComponent(this);
     }
 
@@ -55,12 +63,25 @@ class InvoiceDetail extends React.Component {
         });
     }
 
+    componentDidAppear = () => {
+        //se ejecutara en true, después de cerrar el modal de la firma
+        const { signed } = this.state;
+        if (signed){
+            this.props.afterSigned(true);
+            this.close();
+        }
+    }
+
     close = () => {
         Navigation.dismissModal(this.props.componentId);
     }
 
+    closeAfterSign = (respuesta) => {
+        this.setState({ signed: respuesta })
+    }
+
     openModalForSignature = () => {
-        
+
         Navigation.showModal({
             stack: {
                 children: [
@@ -68,7 +89,8 @@ class InvoiceDetail extends React.Component {
                         component: {
                             name: "DeliverySignature",
                             passProps: {
-                                itemKey: "|"+ this.props.tipoFactura +  "|" + this.props.factura,
+                                itemKey: "|" + this.props.tipoFactura + "|" + this.props.factura,
+                                closeAfterSign: this.closeAfterSign,
                             }
                         },
                         options: {
@@ -136,6 +158,7 @@ class InvoiceDetail extends React.Component {
     }
 
     saveDocument = () => {
+        const factura = this.props.factura;
         const facturaDetalle = this.props.articles ? this.props.articles.values() : [];
         const delivered = (Array.from(facturaDetalle)).filter((item) => item.ordenado != item.qty);
         const list = [];
@@ -143,10 +166,25 @@ class InvoiceDetail extends React.Component {
             const entregado = article.ordenado - article.qty
             list.push({ ...article, entregado });
         }
-        
-        saveDocument(this.props.token, this.props.stack, list, (response) => {
-            console.log(response);
-        });
+        this.setState({ isLoading: true });
+        if (list.length !== 0) {
+
+            saveDocument(this.props.token, this.props.stack, list, (response) => {
+                this.openModalForSignature();
+
+            });
+        } else {
+            const alert = 'No ha entregado ningún artículo';
+            Alert.alert('Documento ' + factura,
+                alert, [
+                {
+                    text: "Aceptar",
+                    onPress: () => {
+                    }
+                }
+            ]);
+        }
+        this.setState({ isLoading: false });
     }
 
     render() {
@@ -181,8 +219,14 @@ class InvoiceDetail extends React.Component {
                 <KeyboardAvoidingView
                     style={{ height: "100%", width: "100%" }} keyboardVerticalOffset={20} behavior="padding">
                     <View style={componentstyles.containerView}>
+                        {
+                            this.state.isLoading ?
+                                <ActivityIndicator color="#ffffff"
+                                    animating={true} size={"large"} />
+                                :
+                                null
+                        }
                         {facturaView}
-                        <Button onPress={this.openModalForSignature} title="Firmar Recepcion" />
                         <FlatList data={detailArray}
                             renderItem={({ item, index }) =>
                                 <TouchableOpacity index={index.toString()}>
@@ -217,6 +261,7 @@ const mapStateToProps = state => {
         token: state.user.token,
         articles: state.articles,
         sucursal: state.sucursal,
+        stack: state.stack,
     };
 }
 

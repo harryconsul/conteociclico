@@ -11,13 +11,12 @@ class PlaceAgreement extends React.Component{
         comments:"",
     }
     close=(response)=>{
-              
+            this.props.closeAfterSign(true);
             Navigation.dismissModal(this.props.componentId);
     
     }
     saveComments=()=>{
         uploadDeliveryComments(this.props.user.token,this.props.itemKey,this.state.comments,(response)=>{
-            console.warn(response);
             this.setState({savingComments:false});
         });
     }
@@ -49,7 +48,7 @@ class PlaceAgreement extends React.Component{
                     <Text>
                         {this.state.savingComments
                             ? "Escriba sus comentarios"
-                            : "Firme de Recepción"}
+                            : "Firmar de Recibido"}
                     </Text>
                     {
                         this.state.savingComments

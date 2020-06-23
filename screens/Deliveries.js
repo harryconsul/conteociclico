@@ -22,6 +22,7 @@ import iconRefresh from '../assets/iconrefresh.png';
 const initialState = {
     isLoading: false,
     facturas: null,
+    signed: false,
 }
 
 class Deliveries extends React.Component {
@@ -98,6 +99,13 @@ class Deliveries extends React.Component {
         });
     }
 
+    componentDidAppear = () => {
+        //se ejecutara en true, después de cerrar el modal de la firma
+        const { signed } = this.state;
+        if (signed)
+            this.searchRuta();
+    }
+
     navigationButtonPressed = ({ buttonId }) => {
         switch (buttonId) {
             case 'sideMenu':
@@ -125,6 +133,10 @@ class Deliveries extends React.Component {
         });
     }
 
+    afterSigned = (respuesta) => {
+        this.setState({ signed: respuesta });
+    }
+
     openInvoiceDetail = (factura,cliente,lineas,rutaUsuario,tipoFactura) => {
         Navigation.showModal({
             stack: {
@@ -138,6 +150,7 @@ class Deliveries extends React.Component {
                                 lineas: lineas,
                                 rutaUsuario,
                                 tipoFactura,
+                                afterSigned: this.afterSigned,
                             }
                         },
                         options: {
