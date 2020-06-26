@@ -11,6 +11,7 @@ import backgroundImage from '../assets/labmicroBg.jpg';
 import { componentstyles } from '../styles';
 import closeIcon from '../assets/iconclose.png';
 import iconbarcode from '../assets/iconbarcode.png';
+import icondeliver from '../assets/icondeliver.png';
 import { transactionModes } from '../constants';
 import {
     actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap,
@@ -56,6 +57,10 @@ class InvoiceDetail extends React.Component {
                         id: 'barcode',
                         icon: iconbarcode,
                     },
+                    {
+                        id:'deliver',
+                        icon:icondeliver,
+                    }
                 ]
 
 
@@ -147,6 +152,35 @@ class InvoiceDetail extends React.Component {
         });
     }
 
+    deliverAll = () => {
+        //Deliver all document items, without scanning.
+        const factura = this.props.factura;
+        const facturaDetalle = this.props.articles ? this.props.articles.values() : [];
+        const delivered = (Array.from(facturaDetalle));
+        const list = [];
+        for (let article of delivered) {
+            const entregado = article.ordenado
+            list.push({ ...article, entregado });
+        }
+        this.setState({ isLoading: true });
+        if (list.length !== 0) {
+            saveDocument(this.props.token, this.props.stack, list, (response) => {
+                this.openModalForSignature();
+            });
+        } else {
+            const alert = 'No hay artículos pendientes de entregar';
+            Alert.alert('Documento ' + factura,
+                alert, [
+                {
+                    text: "Aceptar",
+                    onPress: () => {
+                    }
+                }
+            ]);
+        }
+        this.setState({ isLoading: false });
+    }
+
     navigationButtonPressed = ({ buttonId }) => {
         switch (buttonId) {
             case 'close':
@@ -154,6 +188,8 @@ class InvoiceDetail extends React.Component {
                 break;
             case 'barcode':
                 this.openBarcode('PickupBarcodeInput');
+            case 'deliver':
+                this.deliverAll();
         }
     }
 

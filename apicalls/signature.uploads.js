@@ -223,7 +223,7 @@ export const uploadDeliverySignature = (key, path, token, fileName, callback ) =
 
 }
 
-export const uploadDeliveryComments = (token,key,comment,callback) =>{
+export const uploadDeliveryComments = (token,key,comment,recibe,callback) =>{
     
     const data = {
         "token": token,
@@ -234,7 +234,7 @@ export const uploadDeliveryComments = (token,key,comment,callback) =>{
         ],
         "formName": "P55R4202_W55R4202B",
         "version": "",
-        "inputText": comment,
+        "inputText": "Recibe: " + recibe + ", Comentarios: " + comment,
         "appendText": true,
     }
     uploadText(data,callback);

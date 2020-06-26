@@ -1,32 +1,33 @@
 import React from 'react';
 import SignCanvas from '../components/SignCanvas';
-import {uploadDeliveryComments,uploadDeliverySignature} from '../apicalls/signature.uploads'
-import {Navigation} from 'react-native-navigation'
-import {View,TextInput, Text,Button} from 'react-native';
-import {connect} from 'react-redux';
+import { uploadDeliveryComments, uploadDeliverySignature } from '../apicalls/signature.uploads'
+import { Navigation } from 'react-native-navigation'
+import { View, TextInput, Text, Button } from 'react-native';
+import { connect } from 'react-redux';
 import { componentstyles } from '../styles/';
-class PlaceAgreement extends React.Component{
+class PlaceAgreement extends React.Component {
     state = {
-        savingComments :true,
-        comments:"",
+        savingComments: true,
+        comments: "",
+        recibe: "",
     }
-    close=(response)=>{
-            this.props.closeAfterSign(true);
-            Navigation.dismissModal(this.props.componentId);
-    
+    close = (response) => {
+        this.props.closeAfterSign(true);
+        Navigation.dismissModal(this.props.componentId);
+
     }
-    saveComments=()=>{
-        uploadDeliveryComments(this.props.user.token,this.props.itemKey,this.state.comments,(response)=>{
-            this.setState({savingComments:false});
+    saveComments = () => {
+        uploadDeliveryComments(this.props.user.token, this.props.itemKey, this.state.comments, this.state.recibe, (response) => {
+            this.setState({ savingComments: false });
         });
     }
-    onSaveSignature = (filepath)=>{
-        uploadDeliverySignature(this.props.itemKey,filepath, this.props.user.token,"rececibido",
-        (response)=>{
-            this.close();
-        })
+    onSaveSignature = (filepath) => {
+        uploadDeliverySignature(this.props.itemKey, filepath, this.props.user.token, "rececibido",
+            (response) => {
+                this.close();
+            })
     }
-    componentDidMount(){
+    componentDidMount() {
         Navigation.mergeOptions(this.props.componentId, {
             topBar: {
                 title: {
@@ -42,43 +43,48 @@ class PlaceAgreement extends React.Component{
             },
         });
     }
-    render(){
-        return(
+    render() {
+        return (
             <View style={componentstyles.containerView}>
-                    <Text>
-                        {this.state.savingComments
-                            ? "Escriba sus comentarios"
-                            : "Firmar de Recibido"}
-                    </Text>
-                    {
-                        this.state.savingComments
-                            ? 
-                            <View>
-                                <TextInput style={{borderColor:"#000",borderStyle:"solid",borderWidth:1}} value={this.state.comments} 
+                {
+                    this.state.savingComments ? null: <Text>Firmar de Recibido</Text>
+                }
+                {
+                    this.state.savingComments
+                        ?
+                        <View>
+                            <Text>¿Quién Recibe?</Text>
+                            <TextInput style={{ borderColor: "#000", borderStyle: "solid", borderWidth: 1 }}
+                                value={this.state.recibe}
+                                onChangeText={(recibe) => this.setState({ recibe })}
+                            />
+                            <Text>Ingrese sus comentarios</Text>
+                            <TextInput style={{ borderColor: "#000", borderStyle: "solid", borderWidth: 1 }}
+                                value={this.state.comments}
                                 multiline={true}
                                 numberOfLines={4}
-                                onChangeText={(comments)=>this.setState({comments})}/>
-                                <Button title="Guardar Comentarios" onPress={this.saveComments} />
-                            </View>
-                            :<SignCanvas itemKey={this.props.itemKey}
+                                onChangeText={(comments) => this.setState({ comments })} />
+                            <Button title="Guardar Comentarios" onPress={this.saveComments} />
+                        </View>
+                        : <SignCanvas itemKey={this.props.itemKey}
                             fileName={this.props.fileName}
-                            close={this.close} 
-                            onSave={this.onSaveSignature}                   
+                            close={this.close}
+                            onSave={this.onSaveSignature}
                             token={this.props.user.token}
                             signatureType={this.props.signatureType}
                             realm={this.props.realm}
-                            />
+                        />
 
-                    }
-                    
+                }
+
             </View>
         )
     }
 }
 const mapStateToProps = (state) => {
     return {
-        user: state.user,      
-        realm: state.countRealm,  
+        user: state.user,
+        realm: state.countRealm,
     }
 
 }
