@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {Alert} from 'react-native';
-
+import {errorHelpers} from '../helpers';
 const searchCyclicCount = (businessUnit) => {
     return {
         formName: "P5541240_W5541240A",        
@@ -143,9 +143,13 @@ const pushStack = (token,actionRequest,stack) => {
         deviceName: "RESTclient",
     }
 }
-const callStackService = (action,callback,errorHandler)=>{
+const callStackService = (action,callback,)=>{
     
-    axios.post("appstack",action).then(callback).catch((error)=>console.warn(error));
+    axios.post("appstack",action)
+    .then(callback)
+    .catch((error)=>{
+        errorHelpers.handleServerErrors();        
+    });
 }
 
 

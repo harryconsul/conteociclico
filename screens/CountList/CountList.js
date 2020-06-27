@@ -53,8 +53,7 @@ class CountList extends React.Component {
 
             listCyclicCount(this.props.user.token, this.state.businessUnit, (response) => {
 
-                const rawRows = response.data.fs_P5541240_W5541240A.data.gridData.rowset;
-    
+                const rawRows = response.data.fs_P5541240_W5541240A.data.gridData.rowset;                
                 const rows = rawRows.map(item => ({
                     key: item.mnCycleNumber_25.value,
                     number: item.mnCycleNumber_25.value,

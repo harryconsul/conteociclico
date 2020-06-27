@@ -109,6 +109,17 @@ class Auth extends Component {
     }
 
     componentDidMount() {
+        
+        if (this.props.realm) {
+            this.props.realm.close();
+        }
+
+        this.initRealm();
+       
+
+    }
+
+    initRealm = () => {
         Realm.open({ schema: [UserSchema,TokenSchema] }).then((realm) => {
 
             realm.write(()=>{
@@ -138,8 +149,9 @@ class Auth extends Component {
             this.setState({ realm })
         });
 
-
     }
+
+   
 
     login = () => {
         if (this.state.username != '' && this.state.password != '') {
@@ -326,4 +338,10 @@ const mapDispatchToProps = (dispatch) => {
         login: (user) => dispatch(actionLogin(user)),
     }
 };
-export default connect(null, mapDispatchToProps)(Auth);
+const mapStateToProps = (state)=> {
+    return {        
+        
+        realm: state.countRealm,
+    }
+}
+export default connect(mapStateToProps, mapDispatchToProps)(Auth);
