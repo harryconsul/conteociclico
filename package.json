@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@terrylinla/react-native-sketch-canvas": "^0.8.0",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "react": "16.8.3",
     "react-native": "0.59.4",
     "react-native-camera": "^2.11.1",
