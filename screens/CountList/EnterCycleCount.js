@@ -228,7 +228,7 @@ class EnterCycleCount extends React.Component {
     }
     createSaleOrder = () => {
 
-        const articlesToOrder = mapHelpers.reviewToArticles(this.state.review);
+        const articlesToOrder = mapHelpers.reviewToArticles(this.state.review,this.props.isWareHouse);
 
         this.props.dispatch(actionSetArticlesMap(articlesToOrder));
                 
@@ -363,8 +363,8 @@ const Review = ({ list, isWareHouse }) => (
                         <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
                             <ItemLabel text={"Lote/Serie : " + item.serial} />
                             <ItemLabel text={"Ubicación: " + item.location} />
-                            {isWareHouse ? null
-                                : <ItemLabel text={"Inventario Seguridad: " + item.safetyStock} />
+                            {isWareHouse ? <ItemLabel text={"Inventario Seguridad: " + item.safetyStock} />
+                                : null
                             }
                         </View> : null
                     }

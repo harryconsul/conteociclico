@@ -74,7 +74,9 @@ class SideMenu extends React.Component {
         return (
             <View style={{ paddingTop: 80, paddingLeft: 15, height: "100%", backgroundColor: '#8c30f1' }} >
                 <View style={{ height: '80%' }}>
-                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Administra Inventarios", false)}
+                    <SideMenuItem optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Administra Inventarios", false,{
+                            conteoSucursal: false
+                        })}
                         optionName="Administra Inventarios" />
                     <SideMenuItem
                         optionClickHandle={() => this.optionClickHandle("CyclicCountList", "Conteo Cíclico", false, {

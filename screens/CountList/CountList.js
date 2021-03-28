@@ -85,7 +85,10 @@ class CountList extends React.Component {
             });
 
         }else{
-            const rows = offlineCount.listCyclicCounts(this.props.realm,Number(this.state.businessUnit));  
+            if(!this.props.conteoSucursal){
+                const rows = offlineCount.listCyclicCounts(this.props.realm,Number(this.state.businessUnit));
+            }    
+              
             this.setState({rows,isLoading:false});    
         }
        
@@ -112,11 +115,15 @@ class CountList extends React.Component {
     
                     return previous;
                 }, new Map());
-    
-                offlineCount.insertCyclicCount(this.props.realm,{
-                    ...row,
-                    articles:articlesMap 
-                });
+
+                
+                if(!this.props.conteoSucursal){
+                    offlineCount.insertCyclicCount(this.props.realm,{
+                        ...row,
+                        articles:articlesMap 
+                    });
+                }
+                
     
                 const stack = {
                     stackId: response.data.stackId,
@@ -261,7 +268,7 @@ class CountList extends React.Component {
                 passProps: {
                     cycleCountNumber,
                     businessUnit:this.state.businessUnit,
-                    conteoSucursal:this.props.conteoSucursal,
+                    isWareHouse:this.props.conteoSucursal,
                 },
                 options: {
                     topBar: {

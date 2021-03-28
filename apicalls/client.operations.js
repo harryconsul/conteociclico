@@ -13,7 +13,9 @@ export const searchContracts = (clientNumber, token, callback) => {
 }
 
 const formServiceRequest = (formAction, callback) => {
-    axios.post("formservice", formAction)
+    axios.post("formservice", formAction,{
+        timeout: 5 * 1000 // only wait 10 s
+    })
     .then((response) => {
         callback(response.data);
     })
@@ -44,7 +46,7 @@ const clientFormAction = (token , number) => (
 const contractFormAction = (token , clientNumber) => (
     {
         token,
-        version: "DICIPA22",
+        version: "",
         formServiceAction: "R",        
         "formActions": [               
             {

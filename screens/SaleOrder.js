@@ -180,7 +180,9 @@ class SaleOrder extends React.Component {
             } else {
                 this.setState({ isLoading: false });
             }
-        },()=>{
+        },(stackError)=>{
+            
+            this.props.dispatch(actionUpdateStack(stackError));
             this.setState({ isLoading: false });
         })
 

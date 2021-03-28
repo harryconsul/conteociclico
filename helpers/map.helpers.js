@@ -1,7 +1,8 @@
-export const reviewToArticles = (review) => {
+export const reviewToArticles = (review,isWareHouse) => {
     let totalToPush = null;
     let safetyStock = null;
-    let qtyCounted = 0 ; 
+    let qtyCounted = 0 ;
+    let qtyOnHand = 0 ;  
     const summary = review.reduce((previous,current)=>{
         if(current.isItem){
             totalToPush={...current};
@@ -9,13 +10,16 @@ export const reviewToArticles = (review) => {
             if(safetyStock===null){
                 safetyStock  = Number(totalToPush.safetyStock);
             }
+            //summary QtyVariance =
+            qtyOnHand += Number(totalToPush.qtyOnHand);
            
 
         }else{
-            totalToPush.qtyVariance=qtyCounted - safetyStock ;
+            totalToPush.qtyVariance= isWareHouse ? qtyCounted - safetyStock : qtyCounted - qtyOnHand  ;
             totalToPush.qty  = Math.abs(totalToPush.qtyVariance);
             previous.push(totalToPush);
             qtyCounted=0;
+            qtyOnHand = 0;
             safetyStock = null;
         }
         return previous;

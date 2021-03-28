@@ -148,7 +148,7 @@ const callStackService = (action,callback,)=>{
     axios.post("appstack",action)
     .then(callback)
     .catch((error)=>{
-        errorHelpers.handleServerErrors();        
+        errorHelpers.handleServerErrors(error);        
     });
 }
 
