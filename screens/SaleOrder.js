@@ -204,7 +204,7 @@ class SaleOrder extends React.Component {
 
         fillOrderDetail(token, stack, list, articlesBusinessUnit,fromCyclicCount ,(response) => {
             this.setState({ isLoading: false })
-            if (response) {
+            if (response) {               
                 Alert.alert("Operación Exitosa", "Se ha guardado la orden de venta #" +
                     response.data.fs_P574210F_W574210FG.data.txtPreviousOrderNumber_102.value, [
                     {
@@ -220,7 +220,7 @@ class SaleOrder extends React.Component {
                                                     id: 'TransferOrder',
                                                     passProps: {
                                                         clienteDestino: this.props.clienteEntrega,
-                                                        articles: this.state.articlesToOrder,
+                                                        articles: this.props.articlesToTransfer,
                                                     },
                                                     options: {
                                                         topBar: {

@@ -17,6 +17,8 @@ export const reviewToArticles = (review,isWareHouse) => {
         }else{
             totalToPush.qtyVariance= isWareHouse ? qtyCounted - safetyStock : qtyCounted - qtyOnHand  ;
             totalToPush.qty  = Math.abs(totalToPush.qtyVariance);
+            totalToPush.qtyFromStockVariance = qtyCounted - safetyStock;
+            totalToPush.qtyFromStock =  Math.abs(totalToPush.qtyFromStockVariance);
             previous.push(totalToPush);
             qtyCounted=0;
             qtyOnHand = 0;
@@ -25,12 +27,17 @@ export const reviewToArticles = (review,isWareHouse) => {
         return previous;
     },[]);
     
-    const articles = new Map();
+    const articlesToOrder = new Map();
+    const articlesToTransfer = new Map();
     for (let item of summary) {
         
         if ( item.qtyVariance<0) {
-            articles.set(item.key, { ...item,price:0, });
+            articlesToOrder.set(item.key, { ...item,price:0, });
+        }
+
+        if ( item.qtyFromStockVariance<0) {
+            articlesToTransfer.set(item.key, { ...item,qty:item.qtyFromStock,price:0, });
         }
     }
-    return articles;
+    return {articlesToOrder,articlesToTransfer};
 }

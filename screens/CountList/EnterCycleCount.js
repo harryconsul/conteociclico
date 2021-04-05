@@ -228,7 +228,7 @@ class EnterCycleCount extends React.Component {
     }
     createSaleOrder = () => {
 
-        const articlesToOrder = mapHelpers.reviewToArticles(this.state.review,this.props.isWareHouse);
+        const {articlesToOrder, articlesToTransfer }= mapHelpers.reviewToArticles(this.state.review,this.props.isWareHouse);
 
         this.props.dispatch(actionSetArticlesMap(articlesToOrder));
                 
@@ -237,8 +237,10 @@ class EnterCycleCount extends React.Component {
                 name: 'SaleOrder',
                 id: 'SaleOrder',
                 passProps: {
+                    articlesToTransfer,
                     fromCyclicCount: true,
                     clienteEntrega: this.props.businessUnit,
+                    
                 },
                 options: {
                     topBar: {
