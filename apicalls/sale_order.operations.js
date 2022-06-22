@@ -5,11 +5,11 @@ const actionStartSaleOrder = (fromCyclicCount) => {
     return {
 
         formName: "P574210F_W574210FG",
-        version: fromCyclicCount?"DICIPA022":"DICIPA22",
+        version: fromCyclicCount?"DICIPA022":"ANALISIS3",
         formInputs: [
             {
                 id: "84",
-                value: fromCyclicCount?"S9":"S8"
+                value: fromCyclicCount?"S9":"S9"
             }
         ],
 
@@ -138,6 +138,60 @@ const actionSetSaleDetail = (rows,businessUnit,fromCyclicCount) => {
     }
 }
 
+const actionSetSaleDetailNormal = (rows,businessUnit,fromCyclicCount) => {
+    return {
+        formOID: "W574210FA",
+        formActions: [
+            {
+                "gridAction": {
+                    "gridID": "1",
+                    "gridRowInsertEvents": rows.map(row => (
+                        {
+                            "gridColumnEvents": [
+                                {
+                                    "value": row.itemNumber,
+                                    "command": "SetGridCellValue",
+                                    "columnID": "89"
+                                },
+                                {
+                                    "value": row.qty,
+                                    "command": "SetGridCellValue",
+                                    "columnID": "53"
+                                },
+                                {
+                                    "value": row.price,
+                                    "command": "SetGridCellValue",
+                                    "columnID": "57"
+                                },
+                                {
+                                    "value": row.location,
+                                    "command": "SetGridCellValue",
+                                    "columnID": "132"
+                                },
+                                {
+                                    "value": row.serial,
+                                    "command": "SetGridCellValue",
+                                    "columnID": "133"
+                                },
+                                {
+                                    "value": businessUnit,
+                                    "command": "SetGridCellValue",
+                                    "columnID": "35"
+                                }
+
+                            ]
+                        })
+                    ),
+                }
+            },
+            {
+                command: "DoAction",
+                controlID: "4"
+            }
+        ]
+    }
+}
+
 export const startSaleOrder = (token,fromCyclicCount=false,callback) => {
     const _action = actionStartSaleOrder(fromCyclicCount);
     const _stack = createStack(token, _action)
@@ -182,7 +236,11 @@ export const fillOrderHeader = (token, stack, form, callback,errorHandler=null) 
 
 export const fillOrderDetail = (token, stack, rows,businessUnit,fromCyclicCount, callback,errorHandler=null) => {
 
-    const action = pushStack(token, actionSetSaleDetail(rows,businessUnit,fromCyclicCount), stack);
+    //const action = pushStack(token, actionSetSaleDetail(rows,businessUnit,fromCyclicCount), stack);
+    const action = fromCyclicCount ? pushStack(token, actionSetSaleDetail(rows,businessUnit,fromCyclicCount), stack) 
+    : 
+    pushStack(token, actionSetSaleDetailNormal(rows,businessUnit,fromCyclicCount), stack);
+
     callStackService(action, (response) => {
 
         if (!errorHelpers.handleErrors(response.data.fs_P574210F_W574210FA)) {

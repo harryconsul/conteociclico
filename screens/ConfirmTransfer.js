@@ -9,6 +9,7 @@ import { Navigation } from 'react-native-navigation';
 import Field from '../components/Field';
 import { ItemView, ItemHightLight, ItemLabel } from '../components'
 import { searchOrder, startConfirmation, transferConfirmation } from '../apicalls/confirm_transfer.operations';
+import { queryArticleByCatalogo } from '../apicalls/query.operation';
 import { actionUpdateStack, actionSetTransactionMode, actionSetArticlesMap, actionSetArticle } from '../store/actions/actions.creators';
 import { transactionModes } from '../constants'
 import { componentstyles } from '../styles';
@@ -128,6 +129,19 @@ class ConfirmTransfer extends React.Component {
         });
     }
 
+    getArticuloEtiqueta = (catalogo, lote) => {
+        return new Promise((resolve, reject) => {
+            queryArticleByCatalogo(catalogo, lote, this.props.token, (data) => {
+                const rawRows = data.fs_P5541001_W5541001A.data.gridData.rowset;
+                if(rawRows.length > 0)
+                    resolve(rawRows[0].mnNmeronico_24.value);
+                else
+                    resolve('SIN ETIQUETA');
+
+            }, (reason) => reject(reason));
+        });
+    }
+
     unidadMedida = (itemNumber) => {
         return new Promise((resolve, reject) => {
             unidadMedida(itemNumber, this.props.token, (data) => {
@@ -217,7 +231,7 @@ class ConfirmTransfer extends React.Component {
 
                 if (rows.length > 0) {
                     //Solo proceden ordenes con estatus 620
-                    const orders = rows.filter((item)=> item.status === "620");
+                    const orders = rows.filter((item) => item.status === "620");
 
                     if (orders.length) {
                         //1er Item, para mostrar.
@@ -258,12 +272,12 @@ class ConfirmTransfer extends React.Component {
         this.setState({ isConfirming: false, isLoading: true });
 
         startConfirmation(this.props.token, this.props.stack, (response) => {
-            
+
             const errors = response.data.fs_P594312B_W594312BA.errors;
 
             if (errors.length === 0) {
                 const rawRows = response.data.fs_P594312B_W594312BA.data.gridData.rowset;
-                
+
                 const productsToConfirm = new Map();
                 const length = rawRows.length;
 
@@ -272,10 +286,12 @@ class ConfirmTransfer extends React.Component {
 
                     const etiqueta = rawRows[i].mnNmeronico_598.value;
                     const itemNumber = rawRows[i].s2ndItemNumber_103.value;
+                    const lote = rawRows[i].sLotSerial_46.value;
+
                     const value = {
                         key,
                         rowId: rawRows[i].rowIndex,
-                        etiqueta: etiqueta !== "0" ? etiqueta : 'FALTA',
+                        etiqueta: etiqueta,
                         itemNumber: rawRows[i].s2ndItemNumber_103.value,
                         qty: rawRows[i].mnQuantity_116.value,
                         qtyToPickUp: rawRows[i].mnQuantity_116.value,
@@ -294,6 +310,13 @@ class ConfirmTransfer extends React.Component {
                         value.conversiones = conversiones;
                     });
 
+                    if (value.etiqueta == "0") {
+                        //En caso que llegue etiqueta vacía, hay que buscar en una pantalla alterna
+                        this.getArticuloEtiqueta(itemNumber, lote).then((etiqueta) => {
+                            value.etiqueta = (etiqueta !== "0" ? etiqueta : 'FALTA');
+                        });
+                    }
+                    
                     //Set MAP
                     productsToConfirm.set(key, value);
 
@@ -316,7 +339,7 @@ class ConfirmTransfer extends React.Component {
                 }
 
                 this.props.dispatch(actionUpdateStack(stack));
-                
+
             } else {
                 this.setState({ isLoading: false });
 
@@ -353,57 +376,79 @@ class ConfirmTransfer extends React.Component {
         for (let article of confirmed) {
             list.push({ ...article, confirmed: parseInt(article.qtyToPickUp) - parseInt(article.qty), set: "0" });
         }
-        //console.warn('Lista:',list);
-        
+
         if (list.length > 0) {
-            this.setState({ isLoading: true });
-            try {
-                transferConfirmation(this.props.token, this.props.stack, list, (response) => {
 
-                    const errors = response.data.fs_P594312B_W594312BD.errors;
+            const newList = list.filter(item => parseInt(item.qtyToPickUp) == parseInt(item.confirmed));
 
-                    if (errors.length === 0) {
-                        //Success
-                        Alert.alert('Proceso terminado',
-                            alert, [
-                            {
-                                text: "Aceptar",
-                                onPress: () => {
-                                    //TEMPORAL: this.showPlaceAgreement();
-                                    this.refreshScreen();
+            if (newList.length > 0) {
+                this.setState({ isLoading: true });
+
+                try {
+                    transferConfirmation(this.props.token, this.props.stack, newList, (response) => {
+                        
+                        let erroresP59 = [];
+                        let erroresP42 = [];
+                        console.warn("Warnings: ",response.data);
+                        
+                        let responseData = response.data.toString();
+                        
+                        try {
+                            if (responseData.indexOf('fs_P594312B_W594312BA') > 0)
+                                erroresP59 = response.data.fs_P594312B_W594312BA.errors;
+                            if (responseData.indexOf('fs_P4220_W4220C') > 0)
+                                erroresP42 = response.data.fs_P4220_W4220C.errors;
+                          } catch (error) {
+                            console.error(error);
+                          }
+                        
+                        if (erroresP59.length === 0 && erroresP42.length === 0) {
+                            //Success
+                            Alert.alert('Proceso terminado',
+                                alert, [
+                                {
+                                    text: "Aceptar",
+                                    onPress: () => {
+                                        //TEMPORAL: this.showPlaceAgreement();
+                                        this.refreshScreen();
+                                    }
                                 }
-                            }
-                        ]);
+                            ]);
 
-                    } else {
-                        this.setState({ isLoading: false });
+                        } else {
+                            this.setState({ isLoading: false });
 
-                        let mensaje = ''
-                        for (let error of errors)
-                            mensaje += mensaje !== '' ? ', ' + error.TITLE : error.TITLE;
+                            let mensaje = ''
+                            for (let error of errors)
+                                mensaje += mensaje !== '' ? ', ' + error.TITLE : error.TITLE;
 
-                        //se usa el siguiente alert, porque algunas veces viene vacío aunque tiene valor
-                        const alert = mensaje !== '' ? mensaje : 'La orden tiene errores, no puede ser procesada';
-                        Alert.alert('No. de Orden ' + this.state.number,
-                            alert, [
-                            {
-                                text: "Aceptar",
-                                onPress: () => {
-                                    this.refreshScreen();
+                            //se usa el siguiente alert, porque algunas veces viene vacío aunque tiene valor
+                            const alert = mensaje !== '' ? mensaje : 'La orden tiene errores, no puede ser procesada';
+                            Alert.alert('No. de Orden ' + this.state.number,
+                                alert, [
+                                {
+                                    text: "Aceptar",
+                                    onPress: () => {
+                                        this.refreshScreen();
+                                    }
                                 }
-                            }
-                        ]);
-                    }
+                            ]);
+                        }
+                        
+                    });
+                } catch (error) {
+                    console.error(error);
+                }
 
-                });
-            }catch(error){
-                console.error(error);
+
+            } else {
+                Alert.alert("Solo lineas confirmadas completas");
             }
-            
+
         } else {
             Alert.alert("Confirme al menos un artículo.");
         }
-        
+
     }
 
     handleSelectRow = () => {

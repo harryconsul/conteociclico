@@ -80,7 +80,6 @@ const actionTransferConfirmation = (rows) => (
         formOID: "W594312BA",
         formActions: [
             {
-
                 "gridAction": {
                     "gridID": "1",
                     "gridRowUpdateEvents": rows.map(row => (
@@ -92,16 +91,18 @@ const actionTransferConfirmation = (rows) => (
                                     "command": "SetGridCellValue",
                                     "columnID": "382"
                                 },
+                                
                                 {
                                     "value": parseInt(row.confirmed),
                                     "command": "SetGridCellValue",
                                     "columnID": "116"
                                 },
+                                /*
                                 {
                                     "value": "DICIPA",
                                     "command": "SetGridCellValue",
                                     "columnID": "126"
-                                },
+                                },*/
                             ]
                         })
                     ),
@@ -111,7 +112,7 @@ const actionTransferConfirmation = (rows) => (
             {
                 ".type": "com.oracle.e1.jdemf.FormAction",
                 command: "DoAction",
-                controlID: "12"
+                controlID: "4"
             }
         ]
     }

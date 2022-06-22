@@ -5,6 +5,11 @@ export const queryArticle = (unidad, producto, token, callback) => {
     formServiceRequest(_formAction, callback);
 }
 
+export const queryArticleByCatalogo = (catalogo, lote, token, callback) => {
+    const _formAction = formActionByCatalogo(catalogo, lote, token);
+    formServiceRequest(_formAction, callback);
+}
+
 export const queryArticleByItemNumber = (unidad, producto, token, callback) => {
     const _formAction = formActionByItemNumber(unidad, producto, token);
     formServiceRequest(_formAction, callback);
@@ -39,6 +44,33 @@ const formAction = (unidad, producto, token) => (
                 "command": "SetControlValue",
                 "value": unidad,
                 "controlID": "49"
+            },
+            {
+                "command": "DoAction",
+                "controlID": "15"
+            }
+        ],
+        "deviceName": "RESTclient",
+        "formName": "P5541001_W5541001A"
+    }
+)
+
+const formActionByCatalogo = (catalogo, lote, token) => (
+    {
+        token,
+        version: "",
+        maxPageSize: 500,
+        "formActions": [
+
+            {
+                "command": "SetQBEValue",
+                "value": catalogo,
+                "controlID": "1[33]"
+            },
+            {
+                "command": "SetQBEValue",
+                "value": lote,
+                "controlID": "1[37]"
             },
             {
                 "command": "DoAction",

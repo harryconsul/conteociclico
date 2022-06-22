@@ -15,6 +15,9 @@ import ContractPicker from '../components/ContractPicker';
 import DatePicker from '../components/DatePicker';
 import { startSaleOrder, fillOrderHeader, fillOrderDetail } from '../apicalls/sale_order.operations';
 import { queryArticleByItemNumber } from '../apicalls/query.operation';
+import {
+    searchOrder,printShipment,
+} from '../apicalls/pickup.operations';
 import { topBarButtons } from '../constants'
 import { dateHelpers } from '../helpers/'
 
@@ -29,6 +32,7 @@ class SaleOrder extends React.Component {
             isLoading: false,
             articlesToOrder: new Map(props.articles),
             isOnDetail: false,
+            clienteSucursal: "",
             clienteVenta: "",
             clienteEntrega: props.clienteEntrega ? props.clienteEntrega : "",
             fechaEntrega: new Date(),
@@ -92,21 +96,21 @@ class SaleOrder extends React.Component {
 
     confirmHeader = () => {
         const { token, stack } = this.props;
-        const { clienteEntrega, clienteVenta, contrato, fechaEntrega } = this.state
-
-
+        const { clienteEntrega, clienteVenta, clienteSucursal, contrato, fechaEntrega } = this.state
+        
         const form = {
             clienteEntrega,
             clienteVenta,
             contrato:contrato?contrato:"",
             fechaEntrega: dateHelpers.dateToLatinString(fechaEntrega),
-            sucursal:this.props.fromCyclicCount?clienteEntrega:" ",
+            sucursal:this.props.fromCyclicCount?clienteEntrega:clienteSucursal,
         };
+        //Sucursal 22 esta harcodeado temporal
         this.setState({ isLoading: true });
        
         fillOrderHeader(token, stack, form, (response) => {
             const data = response.data.fs_P574210F_W574210FA.data;
-           
+           console.log("datos" , data);
             const cabecera = {
                 numeroOrden: data.txtOrderNumber_17.value,
                 sucursal: this.props.fromCyclicCount ? this.props.clienteEntrega : data.txtBusinessUnit_11.value,  
@@ -185,7 +189,36 @@ class SaleOrder extends React.Component {
             this.props.dispatch(actionUpdateStack(stackError));
             this.setState({ isLoading: false });
         })
+    }
 
+    printOrder = (orderNumber) => {
+        return new Promise((resolve, reject) => {
+            searchOrder(orderNumber, this.props.token, (response) => {
+                
+                const rawRows = response.data.fs_P554205A_W554205AD.data.gridData.rowset;
+                console.warn("response print",rawRows);
+                const stack = {
+                    stackId: response.data.stackId,
+                    stateId: response.data.stateId,
+                    rid: response.data.rid,
+                }
+    
+                const lineas = rawRows.map(row => ({
+                    status: row.sNextStat_39.value,
+                    rowId: "1." + String(row.rowIndex),
+                }));
+    
+                const list = lineas.filter((item) => item.status === "580");
+    
+                if (list.length > 0) {
+                    printShipment(this.props.token, stack, list, (response) => {
+                        resolve(true);
+                    })
+                } else {
+                    Alert.alert("No existen lineas en estatus 560 para Imprimir");
+                }
+            }, (reason) => reject(reason));
+        });
     }
 
     confirmOrderDetail = () => {
@@ -199,14 +232,16 @@ class SaleOrder extends React.Component {
             }
         }
 
-        const { token, stack, clienteEntrega, fromCyclicCount } = this.props;
-        const articlesBusinessUnit = fromCyclicCount ? clienteEntrega : ""
+        const { token, stack, clienteEntrega , clienteSucursal, fromCyclicCount } = this.props;
+        const articlesBusinessUnit = fromCyclicCount ? clienteEntrega : clienteSucursal;
+        //22 esta harcodeado.
 
         fillOrderDetail(token, stack, list, articlesBusinessUnit,fromCyclicCount ,(response) => {
+            console.log("Respuesta detail",response);
             this.setState({ isLoading: false })
-            if (response) {               
-                Alert.alert("Operación Exitosa", "Se ha guardado la orden de venta #" +
-                    response.data.fs_P574210F_W574210FG.data.txtPreviousOrderNumber_102.value, [
+            if (response) {
+                const orderNumber = response.data.fs_P574210F_W574210FG.data.txtPreviousOrderNumber_102.value;               
+                Alert.alert("Operación Exitosa", "Se ha guardado la orden de venta #" + orderNumber, [
                     {
                         text: "Aceptar",
                         onPress: () => {
@@ -255,11 +290,21 @@ class SaleOrder extends React.Component {
                                     });
                                 });
                             } else {
+                                setTimeout(() => {
+                                    this.printOrder(orderNumber).then((respuesta) => {
+                                        if (respuesta) {
+                                            //Eliminar en tabla Backup
+                                            console.warn("respuesta",respuesta);
+                                        }
+                                    }, (error) => { Alert.alert('Error al imprimir documento ', error) });
+                                    
+                                }, 3500);
                                 this.props.dispatch(actionSetArticlesMap(new Map()));
                                 this.setState({
                                     isLoading: false,
                                     articles: null,
                                     isOnDetail: false,
+                                    clienteSucursal: "",
                                     clienteVenta: "",
                                     clienteEntrega: "",
                                     fechaEntrega: new Date(),
@@ -318,10 +363,17 @@ class SaleOrder extends React.Component {
                                 </ItemView>
                             </View>
                             :
-                            <View style={{ height: 380 }}>
+                            <View style={{ height: 520 }}>
                                 <ItemView index={2} >
 
-
+                                    <ClientField label="Sucursal"
+                                        token={this.props.token}
+                                        clientNumber={this.state.clienteSucursal}
+                                        setClientNumber={(sucursal) => {
+                                            this.setState({
+                                                clienteSucursal: sucursal,
+                                            });
+                                        }} />
 
                                     <ClientField label="Vendido a"
                                         token={this.props.token}

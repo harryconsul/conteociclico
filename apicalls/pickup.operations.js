@@ -25,6 +25,30 @@ const actionSearchShipment = (orderNumber) => {
     }
 }
 
+const actionSearchOrder = (orderNumber) => {
+    return {
+        formName: "P554205A_W554205AD",
+        version: "DICIPA25",
+        maxPageSize: 500,
+        formActions: [
+            {
+                command: "SetControlValue",
+                value: orderNumber,
+                "controlID": "19"
+            },
+            {
+                command: "SetControlValue",
+                value: "*",
+                "controlID": "20"
+            },
+            {
+                command: "DoAction",
+                controlID: "15",
+            }
+        ]
+    }
+}
+
 const actionSearchAlmacenista = (orderNumber) => {
     return {
         formName: "P554211C_W554211CA",
@@ -266,6 +290,12 @@ export const shipmentConfirmation = (token, stack, rows, callback) => {
 export const searchShipment = (orderNumber, token, callback, errorHandler) => {
 
     callStackService(createStack(token, actionSearchShipment(orderNumber)), callback, errorHandler);
+
+}
+
+export const searchOrder = (orderNumber, token, callback, errorHandler) => {
+
+    callStackService(createStack(token, actionSearchOrder(orderNumber)), callback, errorHandler);
 
 }
 
