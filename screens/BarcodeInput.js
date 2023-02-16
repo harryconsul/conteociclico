@@ -32,7 +32,7 @@ class BarcodeInput extends React.Component {
         Navigation.mergeOptions(this.props.componentId, {
             topBar: {
                 title: {
-                    text: 'Lectura de Codigo de Barras'
+                    text: 'Lectura de Código de Barras'
                 },
                 drawBehind: true,
                 background: {

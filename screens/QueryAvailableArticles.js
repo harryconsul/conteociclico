@@ -153,12 +153,12 @@ class QueryAvailableArticles extends React.Component {
                                 ubicacionPS: item.chPS_12.value,
                                 ubicacionSinFormato: item.sUnformattedLocation_10.value,
                                 lote: item.sLotSerial_11.value,
-                                caducidad: item.dtDateExpiresMonth_507.value,
+                                caducidad: item.dtFechaCaducidad_508.value,
                                 comprometido: item.mnCommitted_48.value,
                                 disponible: item.mnAvailable_47.value,
                                 existenciasFisicas: item.mnOnHand_13.value,
                                 ultimaRecepcion: item.dtLastRcptDate_276.value,
-                                ventasABC: item.chABCSls_508.value,
+                                ventasABC: item.chABC3Inv_509.value,
                             }));
 
                             const rows = allRows.filter(row => {

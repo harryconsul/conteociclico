@@ -25,7 +25,7 @@ const actionDelete = (rows) => (
     {
         formOID: "W00095A",
         formActions: [
-            rows.map(row => ({
+            ...rows.map(row => ({
                 "command": "SelectRow",
                 "controlID": "1." + row.rowIndex
             })

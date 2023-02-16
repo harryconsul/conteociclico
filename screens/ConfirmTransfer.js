@@ -386,25 +386,42 @@ class ConfirmTransfer extends React.Component {
 
                 try {
                     transferConfirmation(this.props.token, this.props.stack, newList, (response) => {
+                        console.log("transferConfirmation",response);
                         
-                        let erroresP59 = [];
+                        let erroresP59BA = [];
+                        let erroresP59BD = [];
                         let erroresP42 = [];
-                        console.warn("Warnings: ",response.data);
-                        
-                        let responseData = response.data.toString();
+                        let errores = [];
+                        let recibo = '';
                         
                         try {
-                            if (responseData.indexOf('fs_P594312B_W594312BA') > 0)
-                                erroresP59 = response.data.fs_P594312B_W594312BA.errors;
-                            if (responseData.indexOf('fs_P4220_W4220C') > 0)
+                            const obj = response.data;
+                            const myJSON = JSON.stringify(obj);
+                            let responseData = myJSON;
+
+                            if (responseData.indexOf('fs_P594312B_W594312BA') > 0){
+                                erroresP59BA = response.data.fs_P594312B_W594312BA.errors;
+                                errores = erroresP59BA;
+                            }
+                            if (responseData.indexOf('fs_P594312B_W594312BD') > 0){
+                                erroresP59BD = response.data.fs_P594312B_W594312BD.errors;
+                                errores = erroresP59BD;
+                                recibo = response.data.fs_P594312B_W594312BD.data.txtReceiptDocument_97.value;
+                                console.log("recibo",recibo);
+                            }
+                                
+                            if (responseData.indexOf('fs_P4220_W4220C') > 0){
                                 erroresP42 = response.data.fs_P4220_W4220C.errors;
+                                errores = erroresP42;
+                            }
+                                
                           } catch (error) {
                             console.error(error);
                           }
                         
-                        if (erroresP59.length === 0 && erroresP42.length === 0) {
+                        if (erroresP59BA.length === 0 && erroresP59BD.length === 0 && erroresP42.length === 0) {
                             //Success
-                            Alert.alert('Proceso terminado',
+                            Alert.alert('Proceso terminado ' + recibo,
                                 alert, [
                                 {
                                     text: "Aceptar",
@@ -419,7 +436,7 @@ class ConfirmTransfer extends React.Component {
                             this.setState({ isLoading: false });
 
                             let mensaje = ''
-                            for (let error of errors)
+                            for (let error of errores)
                                 mensaje += mensaje !== '' ? ', ' + error.TITLE : error.TITLE;
 
                             //se usa el siguiente alert, porque algunas veces viene vacío aunque tiene valor

@@ -93,119 +93,122 @@ class CountList extends React.Component {
         }
        
     }
+
     onlineArticleSetup=(response,row)=>{
-
+        
         const rowsData = response.data.fs_P4141_W4141A.data.gridData.rowset;
-                const cycleCountNumber = response.data.fs_P4141_W4141A.data.txtCycleCountNumber_8.value;
+        const cycleCountNumber = response.data.fs_P4141_W4141A.data.txtCycleCountNumber_8.value;
+        
+        const articlesMap = rowsData.reduce((previous, current, index) => {
+            const key = current.mnNmeroEtiqueta_182.value;
+            previous.set(key, {
+                key,
+                serial: current.sLotSerial_27.value,
+                description: current.sDescription_30.value,
+                location: current.sLocation_82.value,
+                um: current.sUM_32.value,
+                itemNumber : current.sItemNumber_125.value,
+                rowId: current.rowIndex,
+                qty:0,
                 
-               
-                const articlesMap = rowsData.reduce((previous, current, index) => {
-                    const key = current.mnNmeroEtiqueta_182.value;
-                    previous.set(key, {
-                        key,
-                        serial: current.sLotSerial_27.value,
-                        description: current.sDescription_30.value,
-                        location: current.sLocation_82.value,
-                        um: current.sUM_32.value,
-                        itemNumber : current.sItemNumber_125.value,
-                        rowId: current.rowIndex,
-                        qty:0,
-                        
-                    });
-    
-                    return previous;
-                }, new Map());
+            });
+
+            return previous;
+        }, new Map());
 
                 
-                if(!this.props.conteoSucursal){
-                    offlineCount.insertCyclicCount(this.props.realm,{
-                        ...row,
-                        articles:articlesMap 
-                    });
-                }
-                
-    
-                const stack = {
-                    stackId: response.data.stackId,
-                    stateId: response.data.stateId,
-                    rid: response.data.rid,
-    
-                }
-                this.props.dispatch(actionUpdateStack(stack));
-    
-                this.startCount(articlesMap,cycleCountNumber);
+        if(!this.props.conteoSucursal){
+            offlineCount.insertCyclicCount(this.props.realm,{
+                ...row,
+                articles:articlesMap 
+            });
+        }
+        
+
+        const stack = {
+            stackId: response.data.stackId,
+            stateId: response.data.stateId,
+            rid: response.data.rid,
+
+        }
+        this.props.dispatch(actionUpdateStack(stack));
+
+        this.startCount(articlesMap,cycleCountNumber);
 
     }
     handleSelectRow = (row) => {
         this.setState({ isLoading: true });
         if(this.props.user.token){
-
-            selectCyclicCount(this.props.user.token, this.props.stack, row.rowId, (response) => {
-                if(!row.needsSyncronize){
-                    this.onlineArticleSetup(response,row);
-                }else{
-                    
-                    const stack = {
-                        stackId: response.data.stackId,
-                        stateId: response.data.stateId,
-                        rid: response.data.rid,
-        
-                    }
-                    this.props.dispatch(actionUpdateStack(stack));
-
-                    Alert.alert('Sincronizacíon Requerida','Este conteo sera enviado al sistema JD Edwards',
-                      [
-                          {
-                              text:"Sincronizar",
-                              onPress:()=>{
-                                    syncronizeCount.uploadCount(this.props.user.token,
-                                        this.props.stack,row.key,row.articles,row.whoCountsSignature,row.whoCountsSignatureTxt,
-                                        row.whoAutorizeSignature,row.whoAutorizeSignatureTxt,(enterCountResponse)=>{
-                                            const stack = {
-                                                stackId: enterCountResponse.data.stackId,
-                                                stateId: enterCountResponse.data.stateId,
-                                                rid: enterCountResponse.data.rid,
-                                
-                                            }
-                                            
-                                            this.props.dispatch(actionUpdateStack(stack));
-                                            processReview(enterCountResponse,row.key,this.props.user.token,stack)
-                                            .then((review)=>{
-                                               
-                                                offlineCount.deleteCyclicCount(this.props.realm,row.key);
-                                                Alert.alert("Aviso", "Conteo Ciclico Autorizado", [
-                                                    {
-                                                        text: "Crear Orden de Venta",
-                                                        onPress:()=>this.createSaleOrder(review),
-                                        
-                                                    },
-                                                    {
-                                                        text: "Cerrar",
-                                                        onPress: () => Navigation.pop(this.props.componentId)
-                                        
-                                                    }
-                                                ])
-
-
-                                            })
-                                            .catch((error)=>{
-                                                Alert.alert(error);
-                                                this.setState({isLoading:false});
-                                            });
-
-                                            
-
-                                        });
-                              }
-                          }
-                      ]
-                    )
-
-                }
-               
-                
+            try{
+                selectCyclicCount(this.props.user.token, this.props.stack, row.rowId, (response) => {
+                    const sincronizar = row.needsSyncronize == undefined ? false : row.needsSyncronize;
+                    if(!sincronizar){
+                        this.onlineArticleSetup(response,row);
+                    }else{
+                        
+                        const stack = {
+                            stackId: response.data.stackId,
+                            stateId: response.data.stateId,
+                            rid: response.data.rid,
+            
+                        }
+                        this.props.dispatch(actionUpdateStack(stack));
     
-            });
+                        Alert.alert('Sincronizacíon Requerida','Este conteo sera enviado al sistema JD Edwards',
+                          [
+                              {
+                                  text:"Sincronizar",
+                                  onPress:()=>{
+                                        syncronizeCount.uploadCount(this.props.user.token,
+                                            this.props.stack,row.key,row.articles,row.whoCountsSignature,row.whoCountsSignatureTxt,
+                                            row.whoAutorizeSignature,row.whoAutorizeSignatureTxt,(enterCountResponse)=>{
+                                                const stack = {
+                                                    stackId: enterCountResponse.data.stackId,
+                                                    stateId: enterCountResponse.data.stateId,
+                                                    rid: enterCountResponse.data.rid,
+                                    
+                                                }
+                                                
+                                                this.props.dispatch(actionUpdateStack(stack));
+                                                processReview(enterCountResponse,row.key,this.props.user.token,stack)
+                                                .then((review)=>{
+                                                   
+                                                    offlineCount.deleteCyclicCount(this.props.realm,row.key);
+                                                    Alert.alert("Aviso", "Conteo Ciclico Autorizado", [
+                                                        {
+                                                            text: "Crear Orden de Venta",
+                                                            onPress:()=>this.createSaleOrder(review),
+                                            
+                                                        },
+                                                        {
+                                                            text: "Cerrar",
+                                                            onPress: () => Navigation.pop(this.props.componentId)
+                                            
+                                                        }
+                                                    ])
+    
+    
+                                                })
+                                                .catch((error)=>{
+                                                    Alert.alert(error);
+                                                    this.setState({isLoading:false});
+                                                });
+    
+                                                
+    
+                                            });
+                                  }
+                              }
+                          ]
+                        )
+    
+                    }
+                   
+                });
+            }catch(e){
+                console.log("Exception: ",e);
+            }
+            
 
         }else{
            
@@ -303,11 +306,11 @@ class CountList extends React.Component {
                             disabled={this.state.businessUnit ? false : true}
                         />
 
-                        <FlatList data={this.state.rows}
+                        <FlatList style={{ marginTop: 6}} data={this.state.rows}
                             renderItem={({ item, index }) =>
                                 <TouchableOpacity onPress={() => this.handleSelectRow(item)}>
                                     <ItemView index={index} >
-                                        <ItemLabel text={"Numero: " + item.number} />
+                                        <ItemLabel text={"Número: " + item.number} />
                                         <ItemHightLight text={"Descripcion: " + item.description} />
                                         {
                                             item.needsSyncronize?

@@ -247,11 +247,10 @@ const actionClickPrint = (rows) => (
     {
         formOID: "W554205AD",
         formActions: [
-            rows.map(row => ({
+            ...rows.map(row => ({
                 "command": "SelectRow",
                 "controlID": row.rowId
-            })
-            ),
+            })),
             {
                 ".type": "com.oracle.e1.jdemf.FormAction",
                 command: "DoAction",

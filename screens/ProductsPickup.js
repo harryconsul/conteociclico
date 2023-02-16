@@ -182,7 +182,7 @@ class ProductsPickup extends React.Component {
         return new Promise((resolve, reject) => {
             searchShipment(orderNumber, this.props.token, (response) => {
                 const rawRows = response.data.fs_P554205A_W554205AD.data.gridData.rowset;
-
+                
                 const stack = {
                     stackId: response.data.stackId,
                     stateId: response.data.stateId,
@@ -194,7 +194,8 @@ class ProductsPickup extends React.Component {
                     rowId: "1." + String(row.rowIndex),
                 }));
 
-                const list = lineas.filter((item) => item.status === "560");
+                //Nota: se manda a imprimir solo la primer linea, si selecciona todas imprime 1 pdf por linea.
+                const list = lineas.filter((item) => item.status === "560" && item.rowId === "1.0");
 
                 if (list.length > 0) {
                     printShipment(this.props.token, stack, list, (response) => {
@@ -387,13 +388,11 @@ class ProductsPickup extends React.Component {
                     // y que su orderBackup no sea X
                     if (nextStatus === '560' && lote !== '') {
                         //Interesa saber el total, incluso las que ya estan con X por esa razón se agrega este if y se quito el AND
-                        if (recoleccionCompletada !== "X") {
-                            this.unidadMedida(itemNumber).then((conversiones) => {
-                                value.conversiones = conversiones;
-                            });
+                        this.unidadMedida(itemNumber).then((conversiones) => {
+                            value.conversiones = conversiones;
+                        });
 
-                            toPickup.set(key, value);
-                        }
+                        toPickup.set(key, value);
 
                         lineas += 1;
                     }
@@ -436,7 +435,6 @@ class ProductsPickup extends React.Component {
     }
 
     confirmShipment = () => {
-        //this.setState({ isLoading: true });
         const products = this.props.articles ? Array.from(this.props.articles.values()) : [];
 
         const collected = (this.state.articles ?
